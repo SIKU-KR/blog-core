@@ -1,0 +1,133 @@
+package park.bumsiku.controller;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.view.RedirectView;
+import park.bumsiku.domain.dto.*;
+
+import java.util.List;
+
+@Tag(name = "Public API", description = "공개적으로 접근 가능한 API")
+@Validated
+public interface PublicAPI {
+
+    @Operation(
+            summary = "Swagger UI 리디렉션",
+            description = "루트 경로 접근 시 Swagger UI 페이지로 리디렉션합니다."
+    )
+    @ApiResponse(responseCode = "302", description = "Found - Swagger UI 페이지로 리디렉션")
+    @GetMapping("/")
+    RedirectView redirectToSwagger();
+
+    @Operation(
+            summary = "게시글 목록 조회",
+            description = "페이지네이션 및 정렬 기능 제공"
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "OK",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = Response.class)
+            )
+    )
+    @ApiResponse(responseCode = "400", description = "잘못된 요청 (페이지 또는 사이즈 파라미터 오류)")
+    @GetMapping("/posts")
+    Response<PostListResponse> getPosts(
+            @RequestParam(value = "category", required = false) Integer categoryId,
+            @Parameter(description = "페이지 번호 (0부터 시작)")
+            @RequestParam(defaultValue = "0") @Min(value = 0, message = "페이지 번호는 0 이상이어야 합니다") int page,
+            @Parameter(description = "페이지 크기")
+            @RequestParam(defaultValue = "10") @Min(value = 1, message = "페이지 크기는 1 이상이어야 합니다") int size,
+            @Parameter(description = "정렬 기준 (예: createdAt,desc)")
+            @RequestParam(defaultValue = "createdAt,desc") String sort
+    );
+
+    @Operation(
+            summary = "특정 게시글 조회",
+            description = "ID를 이용하여 특정 게시글 상세 정보를 조회합니다."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "OK",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = Response.class)
+            )
+    )
+    @ApiResponse(responseCode = "400", description = "잘못된 요청 (ID 형식 오류)")
+    @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")
+    @GetMapping("/posts/{postId}")
+    Response<PostResponse> getPostById(
+            @Parameter(description = "조회할 게시글 ID")
+            @PathVariable("postId")
+            @Min(value = 1, message = "게시글 ID는 1 이상이어야 합니다") int postId
+    );
+
+    @Operation(
+            summary = "특정 게시글의 댓글 목록 조회",
+            description = "게시글 ID를 이용하여 해당 게시글의 모든 댓글을 조회합니다."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "OK",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = Response.class)
+            )
+    )
+    @ApiResponse(responseCode = "400", description = "잘못된 요청 (ID 형식 오류)")
+    @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")
+    @GetMapping("/comments/{postId}")
+    Response<List<CommentResponse>> getCommentsByPostId(
+            @Parameter(description = "댓글을 조회할 게시글 ID")
+            @PathVariable("postId")
+            @Min(value = 1, message = "게시글 ID는 1 이상이어야 합니다") int postId
+    );
+
+    @Operation(
+            summary = "댓글 작성",
+            description = "특정 게시글에 새로운 댓글을 작성합니다."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "OK",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = Response.class)
+            )
+    )
+    @ApiResponse(responseCode = "400", description = "잘못된 요청 (요청 본문 오류)")
+    @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")
+    @PostMapping("/comments/{postId}")
+    Response<CommentResponse> postComment(
+            @Parameter(description = "댓글을 작성할 게시글 ID")
+            @PathVariable("postId")
+            @Min(value = 1, message = "게시글 ID는 1 이상이어야 합니다") int postId,
+            @Valid @RequestBody CommentRequest commentRequest
+    );
+
+    @Operation(
+            summary = "카테고리 목록 조회",
+            description = "블로그에 등록된 모든 카테고리를 조회합니다."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "OK",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = Response.class)
+            )
+    )
+    @ApiResponse(responseCode = "500", description = "서버 오류")
+    @GetMapping("/categories")
+    Response<List<CategoryResponse>> getCategories();
+}
