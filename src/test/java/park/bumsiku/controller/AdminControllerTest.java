@@ -17,18 +17,15 @@ import park.bumsiku.service.PrivateService;
 import park.bumsiku.validator.ArgumentValidator;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AdminController.class)
 @Import(SecurityConfig.class)
@@ -68,8 +65,8 @@ public class AdminControllerTest {
 
         // Perform request and verify
         mockMvc.perform(put("/admin/categories")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.data.id", is(1)))
@@ -93,9 +90,9 @@ public class AdminControllerTest {
     public void testAddImage_Success() throws Exception {
         // Prepare test data
         MockMultipartFile imageFile = new MockMultipartFile(
-                "image", 
-                "test-image.jpg", 
-                MediaType.IMAGE_JPEG_VALUE, 
+                "image",
+                "test-image.jpg",
+                MediaType.IMAGE_JPEG_VALUE,
                 "test image content".getBytes()
         );
 
@@ -108,7 +105,7 @@ public class AdminControllerTest {
 
         // Perform request and verify
         mockMvc.perform(multipart("/admin/images")
-                .file(imageFile))
+                        .file(imageFile))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.data.url", is("/images/test-image.jpg")));
@@ -138,8 +135,8 @@ public class AdminControllerTest {
 
         // Perform request and verify
         mockMvc.perform(post("/admin/posts")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.data.id", is(1)))
@@ -182,8 +179,8 @@ public class AdminControllerTest {
 
         // Perform request and verify
         mockMvc.perform(put("/admin/posts/1")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.data.id", is(1)))
@@ -207,8 +204,8 @@ public class AdminControllerTest {
 
         // Perform request and verify
         mockMvc.perform(put("/admin/posts/999")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.error.code", is(404)))

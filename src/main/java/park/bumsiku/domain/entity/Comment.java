@@ -1,7 +1,8 @@
 package park.bumsiku.domain.entity;
 
-import lombok.*;
 import jakarta.persistence.*;
+import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Entity

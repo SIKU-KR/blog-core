@@ -17,7 +17,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Response<Void>> handleConstraintViolationException(IllegalArgumentException e) {
-        Response<Void> response = Response.<Void>error(
+        Response<Void> response = Response.error(
                 400,
                 e.getMessage() != null ? e.getMessage() : "Invalid Argument"
         );
@@ -26,7 +26,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Response<Void>> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
-        Response<Void> response = Response.<Void>error(
+        Response<Void> response = Response.error(
                 400,
                 "Invalid request body"
         );
@@ -35,7 +35,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(PostNotFoundException.class)
     public ResponseEntity<Response<Void>> handlePostNotFoundException(PostNotFoundException e) {
-        Response<Void> response = Response.<Void>error(
+        Response<Void> response = Response.error(
                 404,
                 e.getMessage() != null ? e.getMessage() : "Post not found"
         );
@@ -45,7 +45,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Response<Void>> handleConstraintViolationException(ConstraintViolationException e) {
         log.error("Validation error: {}", e.getMessage());
-        Response<Void> response = Response.<Void>error(
+        Response<Void> response = Response.error(
                 400,
                 e.getMessage() != null ? e.getMessage() : "유효성 검증 오류"
         );
@@ -55,7 +55,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Response<Void>> handleUnhandledException(Exception e) {
         log.error("Unhandled exception occurred:", e);
-        Response<Void> response = Response.<Void>error(
+        Response<Void> response = Response.error(
                 500,
                 "Internal Server Error"
         );

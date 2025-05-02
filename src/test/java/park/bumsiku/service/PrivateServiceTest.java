@@ -1,14 +1,13 @@
 package park.bumsiku.service;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.Assertions;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 import park.bumsiku.domain.dto.CreatePostRequest;
 import park.bumsiku.domain.dto.PostResponse;
@@ -17,11 +16,9 @@ import park.bumsiku.domain.dto.UpdatePostRequest;
 import park.bumsiku.domain.entity.Category;
 import park.bumsiku.domain.entity.Comment;
 import park.bumsiku.domain.entity.Post;
-//import park.bumsiku.domain.entity.PostImage;
 import park.bumsiku.exception.PostNotFoundException;
 import park.bumsiku.repository.CategoryRepository;
 import park.bumsiku.repository.CommentRepository;
-//import park.bumsiku.repository.PostImageRepository;
 import park.bumsiku.repository.PostRepository;
 
 import java.time.LocalDateTime;
@@ -29,10 +26,9 @@ import java.util.Collections;
 import java.util.NoSuchElementException;
 
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.mock;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class PrivateServiceTest {
@@ -105,6 +101,7 @@ public class PrivateServiceTest {
         verify(commentRepository).findById(commentId);
         verify(commentRepository).delete(existingComment.getId());
     }
+
     @Test
     void deleteComment_whenCommentNotExists_shouldThrowException() {
         long commentId = 999L;

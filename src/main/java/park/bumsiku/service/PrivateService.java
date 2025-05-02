@@ -7,7 +7,6 @@ import org.springframework.web.multipart.MultipartFile;
 import park.bumsiku.domain.dto.*;
 import park.bumsiku.repository.CategoryRepository;
 import park.bumsiku.repository.CommentRepository;
-//import park.bumsiku.repository.PostImageRepository;
 import park.bumsiku.repository.PostRepository;
 
 @Service

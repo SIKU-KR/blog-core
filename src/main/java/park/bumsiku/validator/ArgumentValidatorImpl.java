@@ -1,7 +1,5 @@
 package park.bumsiku.validator;
 
-import jakarta.validation.Validator;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import park.bumsiku.domain.dto.CommentRequest;
 import park.bumsiku.domain.dto.CreatePostRequest;

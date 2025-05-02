@@ -16,16 +16,16 @@ import park.bumsiku.validator.ArgumentValidator;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(PublicController.class)
@@ -80,9 +80,9 @@ public class PublicControllerTest {
 
         // Perform request and verify
         mockMvc.perform(get("/posts")
-                .param("page", "0")
-                .param("size", "10")
-                .param("sort", "createdAt,desc"))
+                        .param("page", "0")
+                        .param("size", "10")
+                        .param("sort", "createdAt,desc"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.data.content", hasSize(2)))
@@ -99,7 +99,7 @@ public class PublicControllerTest {
                 .summary("Summary")
                 .build();
 
-        List<PostSummaryResponse> posts = Arrays.asList(post);
+        List<PostSummaryResponse> posts = Collections.singletonList(post);
         PostListResponse postListResponse = PostListResponse.builder()
                 .content(posts)
                 .totalElements(1)
@@ -113,10 +113,10 @@ public class PublicControllerTest {
 
         // Perform request and verify
         mockMvc.perform(get("/posts")
-                .param("category", "1")
-                .param("page", "0")
-                .param("size", "10")
-                .param("sort", "createdAt,desc"))
+                        .param("category", "1")
+                        .param("page", "0")
+                        .param("size", "10")
+                        .param("sort", "createdAt,desc"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.data.content", hasSize(1)))
@@ -131,9 +131,9 @@ public class PublicControllerTest {
 
         // Perform request and verify
         mockMvc.perform(get("/posts")
-                .param("page", "-1")
-                .param("size", "10")
-                .param("sort", "createdAt,desc"))
+                        .param("page", "-1")
+                        .param("size", "10")
+                        .param("sort", "createdAt,desc"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.error.code", is(400)))
@@ -227,8 +227,8 @@ public class PublicControllerTest {
 
         // Perform request and verify
         mockMvc.perform(post("/comments/1")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(commentRequest)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(commentRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.data.authorName", is("Test Author")))
@@ -249,8 +249,8 @@ public class PublicControllerTest {
 
         // Perform request and verify
         mockMvc.perform(post("/comments/1")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(commentRequest)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(commentRequest)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.error.code", is(400)))

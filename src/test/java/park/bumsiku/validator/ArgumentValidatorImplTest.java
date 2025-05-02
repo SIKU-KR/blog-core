@@ -1,7 +1,5 @@
 package park.bumsiku.validator;
 
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,7 +11,8 @@ import park.bumsiku.domain.dto.CreatePostRequest;
 import park.bumsiku.domain.dto.UpdateCategoryRequest;
 import park.bumsiku.domain.dto.UpdatePostRequest;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @Import(MethodValidationTestConfig.class)
