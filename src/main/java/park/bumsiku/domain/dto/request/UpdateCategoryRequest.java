@@ -17,8 +17,8 @@ public class UpdateCategoryRequest {
     private Integer id;
 
     @NotBlank(message = "Category cannot be blank")
-    private String category;
+    private String name;
 
     @NotNull(message = "Order cannot be null")
-    private Integer order;
+    private Integer orderNum;
 }

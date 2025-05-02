@@ -142,8 +142,8 @@ public class ArgumentValidatorImplTest {
         // Valid category request
         UpdateCategoryRequest validRequest = UpdateCategoryRequest.builder()
                 .id(1)
-                .category("Technology")
-                .order(1)
+                .name("Technology")
+                .orderNum(1)
                 .build();
         assertDoesNotThrow(() -> validator.validateCategoryRequest(validRequest));
 
@@ -153,24 +153,24 @@ public class ArgumentValidatorImplTest {
         // Invalid category request - null id
         UpdateCategoryRequest invalidId = UpdateCategoryRequest.builder()
                 .id(null)
-                .category("Technology")
-                .order(1)
+                .name("Technology")
+                .orderNum(1)
                 .build();
         assertThrows(IllegalArgumentException.class, () -> validator.validateCategoryRequest(invalidId));
 
         // Invalid category request - blank category
         UpdateCategoryRequest invalidCategory = UpdateCategoryRequest.builder()
                 .id(1)
-                .category("")
-                .order(1)
+                .name("")
+                .orderNum(1)
                 .build();
         assertThrows(IllegalArgumentException.class, () -> validator.validateCategoryRequest(invalidCategory));
 
         // Invalid category request - null order
         UpdateCategoryRequest invalidOrder = UpdateCategoryRequest.builder()
                 .id(1)
-                .category("Technology")
-                .order(null)
+                .name("Technology")
+                .orderNum(null)
                 .build();
         assertThrows(IllegalArgumentException.class, () -> validator.validateCategoryRequest(invalidOrder));
     }

@@ -54,8 +54,8 @@ public class AdminControllerTest {
         // Prepare test data
         UpdateCategoryRequest request = UpdateCategoryRequest.builder()
                 .id(1)
-                .category("Updated Category")
-                .order(1)
+                .name("Updated Category")
+                .orderNum(1)
                 .build();
 
         CategoryResponse response = CategoryResponse.builder()

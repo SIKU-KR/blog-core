@@ -144,8 +144,8 @@ public class ArgumentValidatorImpl implements ArgumentValidator {
             throw new IllegalArgumentException("요청 정보가 없습니다");
         }
         validateCategoryId(request.getId());
-        validateCategory(request.getCategory());
-        validateCategoryOrder(request.getOrder());
+        validateCategory(request.getName());
+        validateCategoryOrder(request.getOrderNum());
     }
 
     @Override
