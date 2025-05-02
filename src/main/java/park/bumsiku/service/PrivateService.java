@@ -10,9 +10,17 @@ import park.bumsiku.domain.dto.request.UpdatePostRequest;
 import park.bumsiku.domain.dto.response.CategoryResponse;
 import park.bumsiku.domain.dto.response.PostResponse;
 import park.bumsiku.domain.dto.response.UploadImageResponse;
+import park.bumsiku.domain.entity.Category;
+import park.bumsiku.domain.entity.Comment;
+import park.bumsiku.domain.entity.Post;
+import park.bumsiku.exception.PostNotFoundException;
 import park.bumsiku.repository.CategoryRepository;
 import park.bumsiku.repository.CommentRepository;
 import park.bumsiku.repository.PostRepository;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @Transactional
@@ -31,13 +39,39 @@ public class PrivateService {
 //    private PostImageRepository imageRepository;
 
     public CategoryResponse updateCategory(UpdateCategoryRequest request) {
-        // TODO: business logic 구현
-        throw new UnsupportedOperationException("Not implemented");
+        Category category = new Category();
+        category.setId(request.getId());
+        category.setName(request.getName());
+        category.setOrderNum(request.getOrderNum());
+
+        // Try to update first
+        int updatedRows = categoryRepository.update(category);
+
+        // If no rows were updated, insert a new category
+        if (updatedRows == 0) {
+            category = categoryRepository.insert(category);
+        } else {
+            // If updated, get the updated category
+            category = categoryRepository.findById(request.getId());
+        }
+
+        return CategoryResponse.builder()
+                .id(category.getId())
+                .name(category.getName())
+                .orderNum(category.getOrderNum())
+                .createdAt(category.getCreatedAt())
+                .build();
     }
 
     public void deleteComment(String commentId) {
-        // TODO: business logic 구현
-        throw new UnsupportedOperationException("Not implemented");
+        long id = Long.parseLong(commentId);
+        Comment comment = commentRepository.findById(id);
+
+        if (comment == null) {
+            throw new NoSuchElementException("Comment not found with id: " + commentId);
+        }
+
+        commentRepository.delete(comment.getId());
     }
 
     public UploadImageResponse uploadImage(MultipartFile image) {
@@ -46,17 +80,98 @@ public class PrivateService {
     }
 
     public PostResponse createPost(CreatePostRequest request) {
-        // TODO: business logic 구현
-        throw new UnsupportedOperationException("Not implemented");
+        // Find the category by name
+        Category category = findCategoryByName(request.getCategory());
+
+        // Create a new post
+        Post post = Post.builder()
+                .title(request.getTitle())
+                .content(request.getContent())
+                .summary(request.getSummary())
+                .category(category)
+                .state("published")
+                .build();
+
+        // Save the post
+        Post savedPost = postRepository.insert(post);
+
+        // Create and return the response
+        return PostResponse.builder()
+                .id(savedPost.getId())
+                .title(savedPost.getTitle())
+                .content(savedPost.getContent())
+                .createdAt(savedPost.getCreatedAt().toString())
+                .updatedAt(savedPost.getUpdatedAt().toString())
+                .build();
     }
 
     public void deletePost(int postId) {
-        // TODO: business logic 구현
-        throw new UnsupportedOperationException("Not implemented");
+        Post post = postRepository.findById(postId);
+
+        if (post == null) {
+            throw new PostNotFoundException("Post not found with id: " + postId);
+        }
+
+        // Delete all comments associated with the post
+        commentRepository.findAllByPost(post).forEach(comment ->
+                commentRepository.delete(comment.getId())
+        );
+
+        // Delete the post
+        postRepository.delete(postId);
+    }
+
+    /**
+     * Helper method to find a category by name
+     *
+     * @param categoryName the name of the category to find
+     * @return the found category or the default category (ID 1) if not found
+     */
+    private Category findCategoryByName(String categoryName) {
+        if (categoryName == null || categoryName.isEmpty()) {
+            return categoryRepository.findById(1); // Default to ID 1 if name is null or empty
+        }
+
+        // Find all categories and filter by name
+        List<Category> categories = categoryRepository.findAll();
+        for (Category category : categories) {
+            if (categoryName.equals(category.getName())) {
+                return category;
+            }
+        }
+
+        // Default to ID 1 if not found
+        return categoryRepository.findById(1);
     }
 
     public PostResponse updatePost(int postId, UpdatePostRequest request) {
-        // TODO: business logic 구현
-        throw new UnsupportedOperationException("Not implemented");
+        // Find the post
+        Post post = postRepository.findById(postId);
+
+        if (post == null) {
+            throw new PostNotFoundException("Post not found with id: " + postId);
+        }
+
+        // Find the category by name
+        Category category = findCategoryByName(request.getCategory());
+
+        // Update the post
+        post.setTitle(request.getTitle());
+        post.setContent(request.getContent());
+        post.setSummary(request.getSummary());
+        post.setCategory(category);
+        post.setUpdatedAt(LocalDateTime.now());
+
+        // Save the updated post
+        Post updatedPost = postRepository.update(post);
+
+        // Create and return the response
+        return PostResponse.builder()
+                .id(updatedPost.getId())
+                .title(updatedPost.getTitle())
+                .content(updatedPost.getContent())
+                .createdAt(updatedPost.getCreatedAt().toString())
+                .updatedAt(updatedPost.getUpdatedAt().toString())
+                .build();
     }
 }
