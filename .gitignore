@@ -201,4 +201,6 @@ replay_pid*
 *.war
 *.ear
 
-/src/main/resources/wallet/**
+!gradlew
+!gradlew.bat
+!gradle/wrapper/gradle-wrapper.properties
