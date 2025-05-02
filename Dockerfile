@@ -3,7 +3,7 @@
 #############################
 # Stage 1 – Build the JAR   #
 #############################
-ARG TARGETPLATFORM
+ARG TARGETPLATFORM=linux/arm64
 FROM --platform=${TARGETPLATFORM} gradle:7-jdk17 AS build
 
 WORKDIR /app
