@@ -1,4 +1,4 @@
-package park.bumsiku.domain.dto;
+package park.bumsiku.domain.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

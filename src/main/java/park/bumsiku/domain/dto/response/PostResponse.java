@@ -1,4 +1,4 @@
-package park.bumsiku.domain.dto;
+package park.bumsiku.domain.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,9 +9,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CommentResponse {
+public class PostResponse {
     private int id;
-    private String authorName;
+    private String title;
     private String content;
     private String createdAt;
+    private String updatedAt;
 }

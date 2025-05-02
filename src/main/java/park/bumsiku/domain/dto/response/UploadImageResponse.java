@@ -1,4 +1,4 @@
-package park.bumsiku.domain.dto;
+package park.bumsiku.domain.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

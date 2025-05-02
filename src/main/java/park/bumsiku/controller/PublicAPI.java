@@ -8,7 +8,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
-import park.bumsiku.domain.dto.*;
+import park.bumsiku.domain.dto.request.CommentRequest;
+import park.bumsiku.domain.dto.response.*;
 
 import java.util.List;
 

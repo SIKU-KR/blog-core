@@ -1,4 +1,4 @@
-package park.bumsiku.domain.dto;
+package park.bumsiku.domain.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

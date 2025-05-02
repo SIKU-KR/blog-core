@@ -1,10 +1,10 @@
 package park.bumsiku.validator;
 
 import org.springframework.stereotype.Component;
-import park.bumsiku.domain.dto.CommentRequest;
-import park.bumsiku.domain.dto.CreatePostRequest;
-import park.bumsiku.domain.dto.UpdateCategoryRequest;
-import park.bumsiku.domain.dto.UpdatePostRequest;
+import park.bumsiku.domain.dto.request.CommentRequest;
+import park.bumsiku.domain.dto.request.CreatePostRequest;
+import park.bumsiku.domain.dto.request.UpdateCategoryRequest;
+import park.bumsiku.domain.dto.request.UpdatePostRequest;
 
 @Component
 public class ArgumentValidatorImpl implements ArgumentValidator {

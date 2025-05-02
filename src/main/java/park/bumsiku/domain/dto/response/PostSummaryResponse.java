@@ -1,18 +1,20 @@
-package park.bumsiku.domain.dto;
+package park.bumsiku.domain.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PostResponse {
+public class PostSummaryResponse {
     private int id;
     private String title;
-    private String content;
-    private String createdAt;
-    private String updatedAt;
+    private String summary;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

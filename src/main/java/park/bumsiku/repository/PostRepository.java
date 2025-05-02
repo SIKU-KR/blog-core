@@ -4,7 +4,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import org.springframework.stereotype.Repository;
-import park.bumsiku.domain.dto.PostSummaryResponse;
+import park.bumsiku.domain.dto.response.PostSummaryResponse;
 import park.bumsiku.domain.entity.Post;
 
 import java.util.List;
@@ -57,7 +57,7 @@ public class PostRepository {
     }
 
     private String buildPostSummarySelectClause() {
-        return "SELECT new park.bumsiku.domain.dto.PostSummaryResponse(" +
+        return "SELECT new park.bumsiku.domain.dto.response.PostSummaryResponse(" +
                 "p.id, p.title, p.summary, p.createdAt, p.updatedAt) ";
     }
 }

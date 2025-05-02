@@ -15,7 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import park.bumsiku.domain.dto.LoginRequest;
+import park.bumsiku.domain.dto.request.LoginRequest;
 
 @Tag(name = "Authentication", description = "인증 관련 API")
 @RestController
