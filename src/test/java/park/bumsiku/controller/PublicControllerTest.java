@@ -288,4 +288,83 @@ public class PublicControllerTest {
                 .andExpect(jsonPath("$.data[0].name", is("Category 1")))
                 .andExpect(jsonPath("$.data[1].name", is("Category 2")));
     }
+
+    // Additional tests for missing HTTP status codes
+
+    @Test
+    public void testGetPostById_BadRequest() throws Exception {
+        // Mock service to throw exception
+        when(publicService.getPostById(eq(-1)))
+                .thenThrow(new IllegalArgumentException("게시글 ID는 양수여야 합니다"));
+
+        // Perform request and verify
+        mockMvc.perform(get("/posts/-1"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("게시글 ID는 양수여야 합니다")));
+    }
+
+    @Test
+    public void testGetCommentsByPostId_BadRequest() throws Exception {
+        // Mock service to throw exception
+        when(publicService.getCommentsById(eq(-1)))
+                .thenThrow(new IllegalArgumentException("게시글 ID는 양수여야 합니다"));
+
+        // Perform request and verify
+        mockMvc.perform(get("/comments/-1"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("게시글 ID는 양수여야 합니다")));
+    }
+
+    @Test
+    public void testGetCommentsByPostId_NotFound() throws Exception {
+        // Mock service to throw exception
+        when(publicService.getCommentsById(eq(999)))
+                .thenThrow(new PostNotFoundException("게시글을 찾을 수 없습니다"));
+
+        // Perform request and verify
+        mockMvc.perform(get("/comments/999"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(404)))
+                .andExpect(jsonPath("$.error.message", is("게시글을 찾을 수 없습니다")));
+    }
+
+    @Test
+    public void testPostComment_NotFound() throws Exception {
+        // Prepare test data
+        CommentRequest commentRequest = CommentRequest.builder()
+                .author("Test Author")
+                .content("Test Comment")
+                .build();
+
+        // Mock service to throw exception
+        when(publicService.createComment(eq(999), any(CommentRequest.class)))
+                .thenThrow(new PostNotFoundException("게시글을 찾을 수 없습니다"));
+
+        // Perform request and verify
+        mockMvc.perform(post("/comments/999")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(commentRequest)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(404)))
+                .andExpect(jsonPath("$.error.message", is("게시글을 찾을 수 없습니다")));
+    }
+
+    @Test
+    public void testGetCategories_ServerError() throws Exception {
+        // Mock service to throw runtime exception
+        when(publicService.getCategories())
+                .thenThrow(new RuntimeException("서버 내부 오류"));
+
+        // Perform request and verify
+        mockMvc.perform(get("/categories"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(500)));
+    }
 }

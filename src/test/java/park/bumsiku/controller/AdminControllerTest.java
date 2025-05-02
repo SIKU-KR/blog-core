@@ -21,13 +21,14 @@ import park.bumsiku.exception.PostNotFoundException;
 import park.bumsiku.service.PrivateService;
 import park.bumsiku.validator.ArgumentValidator;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -222,5 +223,291 @@ public class AdminControllerTest {
         // Test without authentication
         mockMvc.perform(get("/admin/posts/1"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    // Tests for 400 Bad Request status codes
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testPutCategory_BadRequest() throws Exception {
+        // Prepare invalid test data
+        UpdateCategoryRequest request = UpdateCategoryRequest.builder()
+                .id(1)
+                .name("") // Empty name is invalid
+                .orderNum(1)
+                .build();
+
+        // Mock validator to throw exception
+        doThrow(new IllegalArgumentException("카테고리 이름은 필수입니다"))
+                .when(privateService).updateCategory(any(UpdateCategoryRequest.class));
+
+        // Perform request and verify
+        mockMvc.perform(put("/admin/categories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("카테고리 이름은 필수입니다")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testDeleteComment_BadRequest() throws Exception {
+        // Mock service to throw exception
+        doThrow(new IllegalArgumentException("유효하지 않은 댓글 ID입니다"))
+                .when(privateService).deleteComment("invalid");
+
+        // Perform request and verify
+        mockMvc.perform(delete("/admin/comments/invalid"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("유효하지 않은 댓글 ID입니다")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testAddImage_BadRequest() throws Exception {
+        // Prepare empty file
+        MockMultipartFile emptyFile = new MockMultipartFile(
+                "image",
+                "",
+                MediaType.IMAGE_JPEG_VALUE,
+                new byte[0]
+        );
+
+        // Mock service to throw exception
+        when(privateService.uploadImage(any()))
+                .thenThrow(new IllegalArgumentException("이미지 파일이 필요합니다"));
+
+        // Perform request and verify
+        mockMvc.perform(multipart("/admin/images")
+                        .file(emptyFile))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("이미지 파일이 필요합니다")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testAddPost_BadRequest() throws Exception {
+        // Prepare invalid test data
+        CreatePostRequest request = CreatePostRequest.builder()
+                .title("")  // Empty title is invalid
+                .content("Post Content")
+                .summary("Post Summary")
+                .category("Test Category")
+                .build();
+
+        // Mock service to throw exception
+        when(privateService.createPost(any(CreatePostRequest.class)))
+                .thenThrow(new IllegalArgumentException("제목은 필수입니다"));
+
+        // Perform request and verify
+        mockMvc.perform(post("/admin/posts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("제목은 필수입니다")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testDeletePost_BadRequest() throws Exception {
+        // Mock service to throw exception
+        doThrow(new IllegalArgumentException("유효하지 않은 게시글 ID입니다"))
+                .when(privateService).deletePost(-1);
+
+        // Perform request and verify
+        mockMvc.perform(delete("/admin/posts/-1"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("유효하지 않은 게시글 ID입니다")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testEditPost_BadRequest() throws Exception {
+        // Prepare invalid test data
+        UpdatePostRequest request = UpdatePostRequest.builder()
+                .title("")  // Empty title is invalid
+                .content("Updated Content")
+                .summary("Updated Summary")
+                .category("Updated Category")
+                .build();
+
+        // Mock service to throw exception
+        when(privateService.updatePost(eq(1), any(UpdatePostRequest.class)))
+                .thenThrow(new IllegalArgumentException("제목은 필수입니다"));
+
+        // Perform request and verify
+        mockMvc.perform(put("/admin/posts/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("제목은 필수입니다")));
+    }
+
+    // Tests for 404 Not Found status codes
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testDeleteComment_NotFound() throws Exception {
+        // Mock service to throw exception
+        doThrow(new PostNotFoundException("댓글을 찾을 수 없습니다"))
+                .when(privateService).deleteComment("999");
+
+        // Perform request and verify
+        mockMvc.perform(delete("/admin/comments/999"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(404)))
+                .andExpect(jsonPath("$.error.message", is("댓글을 찾을 수 없습니다")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testDeletePost_NotFound() throws Exception {
+        // Mock service to throw exception
+        doThrow(new PostNotFoundException("게시글을 찾을 수 없습니다"))
+                .when(privateService).deletePost(999);
+
+        // Perform request and verify
+        mockMvc.perform(delete("/admin/posts/999"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(404)))
+                .andExpect(jsonPath("$.error.message", is("게시글을 찾을 수 없습니다")));
+    }
+
+    // Tests for 500 Server Error status codes
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testPutCategory_ServerError() throws Exception {
+        // Prepare test data
+        UpdateCategoryRequest request = UpdateCategoryRequest.builder()
+                .id(1)
+                .name("Updated Category")
+                .orderNum(1)
+                .build();
+
+        // Mock service to throw runtime exception
+        when(privateService.updateCategory(any(UpdateCategoryRequest.class)))
+                .thenThrow(new RuntimeException("서버 내부 오류"));
+
+        // Perform request and verify
+        mockMvc.perform(put("/admin/categories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(500)));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testDeleteComment_ServerError() throws Exception {
+        // Mock service to throw runtime exception
+        doThrow(new RuntimeException("서버 내부 오류"))
+                .when(privateService).deleteComment("1");
+
+        // Perform request and verify
+        mockMvc.perform(delete("/admin/comments/1"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(500)));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testAddImage_ServerError() throws Exception {
+        // Prepare test data
+        MockMultipartFile imageFile = new MockMultipartFile(
+                "image",
+                "test-image.jpg",
+                MediaType.IMAGE_JPEG_VALUE,
+                "test image content".getBytes()
+        );
+
+        // Mock service to throw runtime exception
+        when(privateService.uploadImage(any()))
+                .thenThrow(new RuntimeException("서버 내부 오류"));
+
+        // Perform request and verify
+        mockMvc.perform(multipart("/admin/images")
+                        .file(imageFile))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(500)));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testAddPost_ServerError() throws Exception {
+        // Prepare test data
+        CreatePostRequest request = CreatePostRequest.builder()
+                .title("New Post")
+                .content("Post Content")
+                .summary("Post Summary")
+                .category("Test Category")
+                .build();
+
+        // Mock service to throw runtime exception
+        when(privateService.createPost(any(CreatePostRequest.class)))
+                .thenThrow(new RuntimeException("서버 내부 오류"));
+
+        // Perform request and verify
+        mockMvc.perform(post("/admin/posts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(500)));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testDeletePost_ServerError() throws Exception {
+        // Mock service to throw runtime exception
+        doThrow(new RuntimeException("서버 내부 오류"))
+                .when(privateService).deletePost(1);
+
+        // Perform request and verify
+        mockMvc.perform(delete("/admin/posts/1"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(500)));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testEditPost_ServerError() throws Exception {
+        // Prepare test data
+        UpdatePostRequest request = UpdatePostRequest.builder()
+                .title("Updated Post")
+                .content("Updated Content")
+                .summary("Updated Summary")
+                .category("Updated Category")
+                .build();
+
+        // Mock service to throw runtime exception
+        when(privateService.updatePost(eq(1), any(UpdatePostRequest.class)))
+                .thenThrow(new RuntimeException("서버 내부 오류"));
+
+        // Perform request and verify
+        mockMvc.perform(put("/admin/posts/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(500)));
     }
 }
