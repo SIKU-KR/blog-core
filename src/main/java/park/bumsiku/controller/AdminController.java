@@ -32,9 +32,8 @@ public class AdminController implements AdminAPI {
             @RequestBody UpdateCategoryRequest request
     ) {
         validator.validateCategoryRequest(request);
-
-        // TODO: 관리자용 카테고리 추가/수정 로직 구현
-        throw new UnsupportedOperationException("Not yet implemented");
+        CategoryResponse categoryResponse = service.updateCategory(request);
+        return Response.success(categoryResponse);
     }
 
     @Override
@@ -43,9 +42,8 @@ public class AdminController implements AdminAPI {
             @PathVariable String commentId
     ) {
         validator.validateCommentId(commentId);
-
-        // TODO: 댓글 삭제 로직 구현
-        throw new UnsupportedOperationException("Not yet implemented");
+        service.deleteComment(commentId);
+        return Response.success(Map.of("message", "Comment deleted successfully"));
     }
 
     @Override
@@ -56,8 +54,8 @@ public class AdminController implements AdminAPI {
     public Response<UploadImageResponse> addImage(
             @RequestPart(value = "image", required = true) MultipartFile image
     ) {
-        // TODO: 이미지 업로드 로직 구현
-        throw new UnsupportedOperationException("Not yet implemented");
+        UploadImageResponse response = service.uploadImage(image);
+        return Response.success(response);
     }
 
     @Override
@@ -66,9 +64,8 @@ public class AdminController implements AdminAPI {
             @RequestBody CreatePostRequest request
     ) {
         validator.validatePostRequest(request);
-
-        // TODO: 게시물 작성 로직 구현
-        throw new UnsupportedOperationException("Not yet implemented");
+        PostResponse postResponse = service.createPost(request);
+        return Response.success(postResponse);
     }
 
     @Override
@@ -77,9 +74,8 @@ public class AdminController implements AdminAPI {
             @PathVariable int postId
     ) {
         validator.validatePostId(postId);
-
-        // TODO: 게시물 삭제 로직 구현
-        throw new UnsupportedOperationException("Not yet implemented");
+        service.deletePost(postId);
+        return Response.success(Map.of("message", "Post deleted successfully"));
     }
 
     @Override
@@ -89,8 +85,7 @@ public class AdminController implements AdminAPI {
             @RequestBody UpdatePostRequest request
     ) {
         validator.validatePostIdAndPostRequest(postId, request);
-
-        // TODO: 게시물 수정 로직 구현
-        throw new UnsupportedOperationException("Not yet implemented");
+        PostResponse postResponse = service.updatePost(postId, request);
+        return Response.success(postResponse);
     }
 }
