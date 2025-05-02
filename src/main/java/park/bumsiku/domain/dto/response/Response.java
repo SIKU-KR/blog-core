@@ -23,11 +23,11 @@ public class Response<T> {
                 .build();
     }
 
-    public static <T> Response<T> error(int status, String message) {
+    public static <T> Response<T> error(int code, String message) {
         return Response.<T>builder()
                 .success(false)
                 .data(null)
-                .error(new ErrorInfo(status, message))
+                .error(new ErrorInfo(code, message))
                 .build();
     }
 }
