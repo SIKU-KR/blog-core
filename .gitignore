@@ -200,3 +200,5 @@ replay_pid*
 *.jar
 *.war
 *.ear
+
+/src/main/resources/wallet/**
