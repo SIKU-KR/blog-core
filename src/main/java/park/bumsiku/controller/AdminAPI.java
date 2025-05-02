@@ -7,10 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
 import org.springframework.http.MediaType;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import park.bumsiku.domain.dto.*;
@@ -19,7 +16,6 @@ import java.util.Map;
 
 @Tag(name = "Admin API", description = "관리자 전용 API")
 @SecurityRequirement(name = "AdminAuth")
-@Validated
 public interface AdminAPI {
 
     @Operation(
@@ -40,7 +36,7 @@ public interface AdminAPI {
     @PutMapping("/admin/categories")
     Response<CategoryResponse> putCategory(
             @Parameter(description = "카테고리 정보")
-            @Valid @RequestBody UpdateCategoryRequest request
+            @RequestBody UpdateCategoryRequest request
     );
 
     @Operation(
@@ -62,9 +58,7 @@ public interface AdminAPI {
     @DeleteMapping("/admin/comments/{commentId}")
     Response<Map<String, String>> deleteComment(
             @Parameter(description = "삭제할 댓글 ID")
-            @PathVariable
-            @Min(value = 1, message = "댓글 ID는 1 이상이어야 합니다")
-            String commentId
+            @PathVariable String commentId
     );
 
     @Operation(
@@ -112,7 +106,7 @@ public interface AdminAPI {
     @PostMapping("/admin/posts")
     Response<PostResponse> addPost(
             @Parameter(description = "게시물 정보")
-            @Valid @RequestBody CreatePostRequest request
+            @RequestBody CreatePostRequest request
     );
 
     @Operation(
@@ -134,9 +128,7 @@ public interface AdminAPI {
     @DeleteMapping("/admin/posts/{postId}")
     Response<Map<String, String>> deletePost(
             @Parameter(description = "삭제할 게시물 ID")
-            @PathVariable
-            @Min(value = 1, message = "게시글 ID는 1 이상이어야 합니다")
-            int postId
+            @PathVariable int postId
     );
 
     @Operation(
@@ -158,10 +150,8 @@ public interface AdminAPI {
     @PutMapping("/admin/posts/{postId}")
     Response<PostResponse> editPost(
             @Parameter(description = "수정할 게시물 ID")
-            @PathVariable
-            @Min(value = 1, message = "게시글 ID는 1 이상이어야 합니다")
-            int postId,
+            @PathVariable int postId,
             @Parameter(description = "수정할 게시물 정보")
-            @Valid @RequestBody UpdatePostRequest request
+            @RequestBody UpdatePostRequest request
     );
 }

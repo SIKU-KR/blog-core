@@ -6,9 +6,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 import park.bumsiku.domain.dto.*;
@@ -16,7 +13,6 @@ import park.bumsiku.domain.dto.*;
 import java.util.List;
 
 @Tag(name = "Public API", description = "공개적으로 접근 가능한 API")
-@Validated
 public interface PublicAPI {
 
     @Operation(
@@ -44,9 +40,9 @@ public interface PublicAPI {
     Response<PostListResponse> getPosts(
             @RequestParam(value = "category", required = false) Integer categoryId,
             @Parameter(description = "페이지 번호 (0부터 시작)")
-            @RequestParam(defaultValue = "0") @Min(value = 0, message = "페이지 번호는 0 이상이어야 합니다") int page,
+            @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "페이지 크기")
-            @RequestParam(defaultValue = "10") @Min(value = 1, message = "페이지 크기는 1 이상이어야 합니다") int size,
+            @RequestParam(defaultValue = "10") int size,
             @Parameter(description = "정렬 기준 (예: createdAt,desc)")
             @RequestParam(defaultValue = "createdAt,desc") String sort
     );
@@ -68,8 +64,7 @@ public interface PublicAPI {
     @GetMapping("/posts/{postId}")
     Response<PostResponse> getPostById(
             @Parameter(description = "조회할 게시글 ID")
-            @PathVariable("postId")
-            @Min(value = 1, message = "게시글 ID는 1 이상이어야 합니다") int postId
+            @PathVariable("postId") int postId
     );
 
     @Operation(
@@ -89,8 +84,7 @@ public interface PublicAPI {
     @GetMapping("/comments/{postId}")
     Response<List<CommentResponse>> getCommentsByPostId(
             @Parameter(description = "댓글을 조회할 게시글 ID")
-            @PathVariable("postId")
-            @Min(value = 1, message = "게시글 ID는 1 이상이어야 합니다") int postId
+            @PathVariable("postId") int postId
     );
 
     @Operation(
@@ -110,9 +104,8 @@ public interface PublicAPI {
     @PostMapping("/comments/{postId}")
     Response<CommentResponse> postComment(
             @Parameter(description = "댓글을 작성할 게시글 ID")
-            @PathVariable("postId")
-            @Min(value = 1, message = "게시글 ID는 1 이상이어야 합니다") int postId,
-            @Valid @RequestBody CommentRequest commentRequest
+            @PathVariable("postId") int postId,
+            @RequestBody CommentRequest commentRequest
     );
 
     @Operation(
