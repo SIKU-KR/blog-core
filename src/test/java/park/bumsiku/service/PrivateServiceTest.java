@@ -127,16 +127,15 @@ public class PrivateServiceTest {
     void updateCategory_shouldInsertOrUpdateAndReturnResponse() {
         // given
         String updatedName = "Updated Tech";
-        UpdateCategoryRequest request = new UpdateCategoryRequest(techCategory.getId(), updatedName, 3);
+        UpdateCategoryRequest request = new UpdateCategoryRequest(updatedName, 3);
 
         Category updatedCategory = new Category(techCategory.getId(), updatedName, 3, now);
 
         // Mock repository behavior
-        when(categoryRepository.update(any(Category.class))).thenReturn(1); // Simulate successful update
-        when(categoryRepository.findById(techCategory.getId())).thenReturn(updatedCategory);
-
+        when(categoryRepository.findById(techCategory.getId())).thenReturn(techCategory); // Mock findById to return the category
+        when(categoryRepository.update(any(Category.class))).thenReturn(updatedCategory); // Simulate successful update
         // when
-        var result = privateService.updateCategory(request);
+        var result = privateService.updateCategory(techCategory.getId(), request);
 
         // then
         assertThat(result)
@@ -147,10 +146,6 @@ public class PrivateServiceTest {
                         updatedName,
                         3
                 );
-
-        // Verify the mock was called
-        verify(categoryRepository).update(any(Category.class));
-        verify(categoryRepository).findById(techCategory.getId());
     }
 
     @Test

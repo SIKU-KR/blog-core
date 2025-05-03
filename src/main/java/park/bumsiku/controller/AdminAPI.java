@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import park.bumsiku.domain.dto.request.CreateCategoryRequest;
 import park.bumsiku.domain.dto.request.CreatePostRequest;
 import park.bumsiku.domain.dto.request.UpdateCategoryRequest;
 import park.bumsiku.domain.dto.request.UpdatePostRequest;
@@ -25,8 +26,29 @@ import java.util.Map;
 public interface AdminAPI {
 
     @Operation(
-            summary = "카테고리 추가/수정",
-            description = "블로그 카테고리를 추가하거나 수정합니다 (관리자 전용)"
+            summary = "카테고리 추가",
+            description = "새로운 블로그 카테고리를 추가합니다 (관리자 전용)"
+    )
+    @ApiResponse(
+            responseCode = "201",
+            description = "Created",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = CategoryResponse.class)
+            )
+    )
+    @ApiResponse(responseCode = "400", description = "잘못된 요청")
+    @ApiResponse(responseCode = "401", description = "인증 실패")
+    @ApiResponse(responseCode = "500", description = "서버 오류")
+    @PostMapping("/admin/categories")
+    Response<CategoryResponse> createCategory(
+            @Parameter(description = "카테고리 정보")
+            @RequestBody CreateCategoryRequest request
+    );
+
+    @Operation(
+            summary = "카테고리 수정",
+            description = "기존 블로그 카테고리를 수정합니다 (관리자 전용)"
     )
     @ApiResponse(
             responseCode = "200",
@@ -38,9 +60,12 @@ public interface AdminAPI {
     )
     @ApiResponse(responseCode = "400", description = "잘못된 요청")
     @ApiResponse(responseCode = "401", description = "인증 실패")
+    @ApiResponse(responseCode = "404", description = "카테고리를 찾을 수 없음")
     @ApiResponse(responseCode = "500", description = "서버 오류")
-    @PutMapping("/admin/categories")
-    Response<CategoryResponse> putCategory(
+    @PutMapping("/admin/categories/{id}")
+    Response<CategoryResponse> updateCategory(
+            @Parameter(description = "수정할 카테고리 ID")
+            @PathVariable Integer id,
             @Parameter(description = "카테고리 정보")
             @RequestBody UpdateCategoryRequest request
     );
