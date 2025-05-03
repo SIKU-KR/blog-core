@@ -1,12 +1,20 @@
 name: CI/CD
 
 on:
-  push:
-    branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
+    types: [closed]
 
 jobs:
+  run-on-merge:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Notify
+        run: echo "✅ PR has been merged!"
+
   build:
     runs-on: ubuntu-latest
 
