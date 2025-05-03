@@ -1,10 +1,7 @@
 package park.bumsiku.validator;
 
 import org.springframework.stereotype.Component;
-import park.bumsiku.domain.dto.request.CommentRequest;
-import park.bumsiku.domain.dto.request.CreatePostRequest;
-import park.bumsiku.domain.dto.request.UpdateCategoryRequest;
-import park.bumsiku.domain.dto.request.UpdatePostRequest;
+import park.bumsiku.domain.dto.request.*;
 
 @Component
 public class ArgumentValidatorImpl implements ArgumentValidator {
@@ -139,11 +136,19 @@ public class ArgumentValidatorImpl implements ArgumentValidator {
     }
 
     @Override
+    public void validateCategoryRequest(CreateCategoryRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("요청 정보가 없습니다");
+        }
+        validateCategory(request.getName());
+        validateCategoryOrder(request.getOrderNum());
+    }
+
+    @Override
     public void validateCategoryRequest(UpdateCategoryRequest request) {
         if (request == null) {
             throw new IllegalArgumentException("요청 정보가 없습니다");
         }
-        validateCategoryId(request.getId());
         validateCategory(request.getName());
         validateCategoryOrder(request.getOrderNum());
     }

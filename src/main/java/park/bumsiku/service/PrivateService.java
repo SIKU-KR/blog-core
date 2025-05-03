@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import park.bumsiku.domain.dto.request.CreateCategoryRequest;
 import park.bumsiku.domain.dto.request.CreatePostRequest;
 import park.bumsiku.domain.dto.request.UpdateCategoryRequest;
 import park.bumsiku.domain.dto.request.UpdatePostRequest;
@@ -37,28 +38,41 @@ public class PrivateService {
 //    @Autowired
 //    private PostImageRepository imageRepository;
 
-    public CategoryResponse updateCategory(UpdateCategoryRequest request) {
+    public CategoryResponse createCategory(CreateCategoryRequest request) {
         Category category = new Category();
-        category.setId(request.getId());
         category.setName(request.getName());
         category.setOrdernum(request.getOrderNum());
 
-        // Try to update first
-        int updatedRows = categoryRepository.update(category);
-
-        // If no rows were updated, insert a new category
-        if (updatedRows == 0) {
-            category = categoryRepository.insert(category);
-        } else {
-            // If updated, get the updated category
-            category = categoryRepository.findById(request.getId());
-        }
+        Category createdCategory = categoryRepository.insert(category);
 
         return CategoryResponse.builder()
-                .id(category.getId())
-                .name(category.getName())
-                .order(category.getOrdernum())
-                .createdAt(category.getCreatedAt())
+                .id(createdCategory.getId())
+                .name(createdCategory.getName())
+                .order(createdCategory.getOrdernum())
+                .createdAt(createdCategory.getCreatedAt())
+                .build();
+    }
+
+    public CategoryResponse updateCategory(Integer id, UpdateCategoryRequest request) {
+        // Check if the category exists
+        Category existingCategory = categoryRepository.findById(id);
+        if (existingCategory == null) {
+            throw new NoSuchElementException("Category not found with id: " + id);
+        }
+
+        // Update the category
+        Category category = new Category();
+        category.setId(id);
+        category.setName(request.getName());
+        category.setOrdernum(request.getOrderNum());
+
+        Category updatedCategory = categoryRepository.update(category);
+
+        return CategoryResponse.builder()
+                .id(updatedCategory.getId())
+                .name(updatedCategory.getName())
+                .order(updatedCategory.getOrdernum())
+                .createdAt(updatedCategory.getCreatedAt())
                 .build();
     }
 

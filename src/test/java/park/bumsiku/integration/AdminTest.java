@@ -11,7 +11,9 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import park.bumsiku.domain.dto.request.CreateCategoryRequest;
 import park.bumsiku.domain.dto.request.CreatePostRequest;
+import park.bumsiku.domain.dto.request.UpdateCategoryRequest;
 import park.bumsiku.domain.dto.request.UpdatePostRequest;
 import park.bumsiku.domain.entity.Category;
 import park.bumsiku.domain.entity.Comment;
@@ -849,5 +851,162 @@ public class AdminTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testAddCategory_Success() throws Exception {
+        // Prepare test data for a new category
+        CreateCategoryRequest request = CreateCategoryRequest.builder()
+                .name("New Test Category")
+                .orderNum(3)
+                .build();
+
+        // Perform request and verify
+        mockMvc.perform(post("/admin/categories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data.id", notNullValue()))
+                .andExpect(jsonPath("$.data.name", is("New Test Category")))
+                .andExpect(jsonPath("$.data.order", is(3)))
+                .andExpect(jsonPath("$.data.createdAt", notNullValue()));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testUpdateCategory_Success() throws Exception {
+        // Get an existing category ID
+        Integer categoryId = categories.get(0).getId();
+
+        // Prepare test data for updating the category
+        UpdateCategoryRequest request = UpdateCategoryRequest.builder()
+                .name("Updated Category Name")
+                .orderNum(10)
+                .build();
+
+        // Perform request and verify
+        mockMvc.perform(put("/admin/categories/" + categoryId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data.id", is(categoryId)))
+                .andExpect(jsonPath("$.data.name", is("Updated Category Name")))
+                .andExpect(jsonPath("$.data.order", is(10)))
+                .andExpect(jsonPath("$.data.createdAt", notNullValue()));
+
+        // Verify the category was actually updated
+        Category updatedCategory = categoryRepository.findById(categoryId);
+        assert updatedCategory != null;
+        assert updatedCategory.getName().equals("Updated Category Name");
+        assert updatedCategory.getOrdernum() == 10;
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testUpdateCategory_EmptyName() throws Exception {
+        // Get an existing category ID
+        Integer categoryId = categories.get(0).getId();
+
+        // Prepare test data with empty name
+        UpdateCategoryRequest request = UpdateCategoryRequest.builder()
+                .name("")
+                .orderNum(10)
+                .build();
+
+        // Perform request and verify
+        mockMvc.perform(put("/admin/categories/" + categoryId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("카테고리를 선택해주세요")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testUpdateCategory_NullOrderNum() throws Exception {
+        // Get an existing category ID
+        Integer categoryId = categories.get(0).getId();
+
+        // Create a JSON string with null orderNum
+        String requestJson = "{\"name\":\"Test Category\",\"orderNum\":null}";
+
+        // Perform request and verify
+        mockMvc.perform(put("/admin/categories/" + categoryId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("Order cannot be null")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testUpdateCategory_ZeroId() throws Exception {
+        // Use an ID of 0, which should be rejected by the validator
+        Integer invalidId = 0;
+
+        // Prepare test data
+        UpdateCategoryRequest request = UpdateCategoryRequest.builder()
+                .name("Test Category")
+                .orderNum(10)
+                .build();
+
+        // Perform request and verify
+        mockMvc.perform(put("/admin/categories/" + invalidId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("카테고리를 선택해주세요")));
+    }
+
+    @Test
+    public void testUpdateCategory_Unauthorized() throws Exception {
+        // Get an existing category ID
+        Integer categoryId = categories.get(0).getId();
+
+        // Prepare test data
+        UpdateCategoryRequest request = UpdateCategoryRequest.builder()
+                .name("Updated Category Name")
+                .orderNum(10)
+                .build();
+
+        // Perform request without authentication and verify
+        mockMvc.perform(put("/admin/categories/" + categoryId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testUpdateCategory_InvalidId() throws Exception {
+        // Use a non-existent category ID
+        Integer nonExistentId = 9999;
+
+        // Prepare test data
+        UpdateCategoryRequest request = UpdateCategoryRequest.builder()
+                .name("Updated Category Name")
+                .orderNum(10)
+                .build();
+
+        // Perform request and verify
+        mockMvc.perform(put("/admin/categories/" + nonExistentId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(404)))
+                .andExpect(jsonPath("$.error.message", containsString("Category not found")));
     }
 }

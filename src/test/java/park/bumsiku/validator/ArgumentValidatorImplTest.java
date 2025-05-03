@@ -6,10 +6,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import park.bumsiku.config.MethodValidationTestConfig;
-import park.bumsiku.domain.dto.request.CommentRequest;
-import park.bumsiku.domain.dto.request.CreatePostRequest;
-import park.bumsiku.domain.dto.request.UpdateCategoryRequest;
-import park.bumsiku.domain.dto.request.UpdatePostRequest;
+import park.bumsiku.domain.dto.request.*;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -140,26 +137,17 @@ public class ArgumentValidatorImplTest {
     void testValidateCategoryRequest() {
         // Valid category request
         UpdateCategoryRequest validRequest = UpdateCategoryRequest.builder()
-                .id(1)
                 .name("Technology")
                 .orderNum(1)
                 .build();
         assertDoesNotThrow(() -> validator.validateCategoryRequest(validRequest));
 
         // Invalid category request - null
-        assertThrows(IllegalArgumentException.class, () -> validator.validateCategoryRequest(null));
-
-        // Invalid category request - null id
-        UpdateCategoryRequest invalidId = UpdateCategoryRequest.builder()
-                .id(null)
-                .name("Technology")
-                .orderNum(1)
-                .build();
-        assertThrows(IllegalArgumentException.class, () -> validator.validateCategoryRequest(invalidId));
+        assertThrows(IllegalArgumentException.class, () -> validator.validateCategoryRequest((CreateCategoryRequest) null));
+        assertThrows(IllegalArgumentException.class, () -> validator.validateCategoryRequest((UpdateCategoryRequest) null));
 
         // Invalid category request - blank category
         UpdateCategoryRequest invalidCategory = UpdateCategoryRequest.builder()
-                .id(1)
                 .name("")
                 .orderNum(1)
                 .build();
@@ -167,7 +155,6 @@ public class ArgumentValidatorImplTest {
 
         // Invalid category request - null order
         UpdateCategoryRequest invalidOrder = UpdateCategoryRequest.builder()
-                .id(1)
                 .name("Technology")
                 .orderNum(null)
                 .build();

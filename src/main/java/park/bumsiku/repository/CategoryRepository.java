@@ -2,7 +2,6 @@ package park.bumsiku.repository;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Query;
 import org.springframework.stereotype.Repository;
 import park.bumsiku.domain.entity.Category;
 
@@ -37,13 +36,15 @@ public class CategoryRepository {
         }
     }
 
-    public int update(Category category) {
-        Query query = entityManager.createQuery(
-                "UPDATE Category c SET c.name = :newName, c.ordernum = :newOrderNum WHERE c.id = :id"
-        );
-        query.setParameter("newName", category.getName());
-        query.setParameter("newOrderNum", category.getOrdernum());
-        query.setParameter("id", category.getId());
-        return query.executeUpdate();
+    public Category update(Category category) {
+        Category existingCategory = findById(category.getId());
+        if (existingCategory != null) {
+            existingCategory.setName(category.getName());
+            existingCategory.setOrdernum(category.getOrdernum());
+            entityManager.merge(existingCategory);
+            entityManager.flush();
+            return existingCategory;
+        }
+        return null;
     }
 }
