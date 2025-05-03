@@ -16,7 +16,7 @@ public class CategoryRepository {
 
     public List<Category> findAll() {
         return entityManager
-                .createQuery("SELECT c FROM Category c ORDER BY c.orderNum ASC", Category.class)
+                .createQuery("SELECT c FROM Category c ORDER BY c.ordernum ASC", Category.class)
                 .getResultList();
     }
 
@@ -38,7 +38,7 @@ public class CategoryRepository {
 
     public int update(Category category) {
         Query query = entityManager.createQuery(
-                "UPDATE Category c SET c.name = :newName, c.orderNum = :newOrderNum WHERE c.id = :id"
+                "UPDATE Category c SET c.name = :newName, c.ordernum = :newOrderNum WHERE c.id = :id"
         );
         query.setParameter("newName", category.getName());
         query.setParameter("newOrderNum", category.getOrdernum());
