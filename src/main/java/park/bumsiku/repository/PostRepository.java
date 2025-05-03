@@ -17,6 +17,7 @@ public class PostRepository {
 
     public Post insert(Post post) {
         entityManager.persist(post);
+        entityManager.flush();
         return post;
     }
 
@@ -54,6 +55,19 @@ public class PostRepository {
         query.setFirstResult(page * size);
         query.setMaxResults(size);
         return query.getResultList();
+    }
+
+    public int countAll() {
+        String jpql = "SELECT COUNT(p) FROM Post p";
+        TypedQuery<Long> query = entityManager.createQuery(jpql, Long.class);
+        return query.getSingleResult().intValue();
+    }
+
+    public int countByCategoryId(int categoryId) {
+        String jpql = "SELECT COUNT(p) FROM Post p WHERE p.category.id = :categoryId";
+        TypedQuery<Long> query = entityManager.createQuery(jpql, Long.class);
+        query.setParameter("categoryId", categoryId);
+        return query.getSingleResult().intValue();
     }
 
     private String buildPostSummarySelectClause() {

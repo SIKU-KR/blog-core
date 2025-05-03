@@ -8,12 +8,12 @@ import park.bumsiku.domain.dto.response.*;
 import park.bumsiku.domain.entity.Category;
 import park.bumsiku.domain.entity.Comment;
 import park.bumsiku.domain.entity.Post;
-import park.bumsiku.exception.PostNotFoundException;
 import park.bumsiku.repository.CategoryRepository;
 import park.bumsiku.repository.CommentRepository;
 import park.bumsiku.repository.PostRepository;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,7 +33,7 @@ public class PublicService {
         List<PostSummaryResponse> postSummaryList = postRepository.findAll(page, size);
         return PostListResponse.builder()
                 .content(postSummaryList)
-                .totalElements(postSummaryList.size())
+                .totalElements(postRepository.countAll())
                 .pageNumber(page)
                 .pageSize(size)
                 .build();
@@ -43,7 +43,7 @@ public class PublicService {
         List<PostSummaryResponse> postSummaryList = postRepository.findAllByCategoryId(categoryId, page, size);
         return PostListResponse.builder()
                 .content(postSummaryList)
-                .totalElements(postSummaryList.size())
+                .totalElements(postRepository.countByCategoryId(categoryId))
                 .pageNumber(page)
                 .pageSize(size)
                 .build();
@@ -95,8 +95,9 @@ public class PublicService {
                 .map(cat -> CategoryResponse.builder()
                         .id(cat.getId())
                         .name(cat.getName())
-                        .orderNum(cat.getOrderNum())
+                        .order(cat.getOrdernum())
                         .createdAt(cat.getCreatedAt())
+                        .postCount(postRepository.countByCategoryId(cat.getId()))
                         .build())
                 .collect(Collectors.toList());
     }
@@ -104,7 +105,7 @@ public class PublicService {
     private Post requirePostById(int id) {
         Post post = postRepository.findById(id);
         if (post == null) {
-            throw new PostNotFoundException("Post not found");
+            throw new NoSuchElementException("Post not found");
         }
         return post;
     }

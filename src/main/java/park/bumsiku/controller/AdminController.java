@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import park.bumsiku.domain.dto.request.CreateCategoryRequest;
 import park.bumsiku.domain.dto.request.CreatePostRequest;
 import park.bumsiku.domain.dto.request.UpdateCategoryRequest;
 import park.bumsiku.domain.dto.request.UpdatePostRequest;
@@ -27,12 +28,24 @@ public class AdminController implements AdminAPI {
     private ArgumentValidator validator;
 
     @Override
-    @PutMapping("/categories")
-    public Response<CategoryResponse> putCategory(
-            @RequestBody UpdateCategoryRequest request
+    @PostMapping("/categories")
+    public Response<CategoryResponse> createCategory(
+            @RequestBody CreateCategoryRequest request
     ) {
         validator.validateCategoryRequest(request);
-        CategoryResponse categoryResponse = service.updateCategory(request);
+        CategoryResponse categoryResponse = service.createCategory(request);
+        return Response.success(categoryResponse);
+    }
+
+    @Override
+    @PutMapping("/categories/{id}")
+    public Response<CategoryResponse> updateCategory(
+            @PathVariable Integer id,
+            @RequestBody UpdateCategoryRequest request
+    ) {
+        validator.validateCategoryId(id);
+        validator.validateCategoryRequest(request);
+        CategoryResponse categoryResponse = service.updateCategory(id, request);
         return Response.success(categoryResponse);
     }
 

@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 public class CategoryResponse {
     private int id;
     private String name;
-    private int orderNum;
+    private int order;
     private LocalDateTime createdAt;
+    private int postCount;
 }
