@@ -147,7 +147,7 @@ public class PrivateServiceTest {
         // then
         assertThat(result)
             .isNotNull()
-            .extracting("id", "name", "orderNum")
+            .extracting("id", "name", "order")
             .containsExactly(
                 techCategory.getId(),
                 updatedName,

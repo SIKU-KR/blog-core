@@ -42,7 +42,7 @@ public class PrivateService {
         Category category = new Category();
         category.setId(request.getId());
         category.setName(request.getName());
-        category.setOrderNum(request.getOrderNum());
+        category.setOrdernum(request.getOrderNum());
 
         // Try to update first
         int updatedRows = categoryRepository.update(category);
@@ -58,7 +58,7 @@ public class PrivateService {
         return CategoryResponse.builder()
                 .id(category.getId())
                 .name(category.getName())
-                .orderNum(category.getOrderNum())
+                .order(category.getOrdernum())
                 .createdAt(category.getCreatedAt())
                 .build();
     }

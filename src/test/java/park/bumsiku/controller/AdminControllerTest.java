@@ -21,7 +21,6 @@ import park.bumsiku.exception.PostNotFoundException;
 import park.bumsiku.service.PrivateService;
 import park.bumsiku.validator.ArgumentValidator;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 
 import static org.hamcrest.Matchers.containsString;
@@ -62,7 +61,7 @@ public class AdminControllerTest {
         CategoryResponse response = CategoryResponse.builder()
                 .id(1)
                 .name("Updated Category")
-                .orderNum(1)
+                .order(1)
                 .createdAt(LocalDateTime.now())
                 .build();
 

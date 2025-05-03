@@ -23,7 +23,7 @@ public class Category {
 
     // 정렬 순서: 낮을수록 먼저
     @Column(nullable = false)
-    private Integer orderNum;
+    private Integer ordernum;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;

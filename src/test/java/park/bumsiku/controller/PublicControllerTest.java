@@ -264,15 +264,17 @@ public class PublicControllerTest {
         CategoryResponse category1 = CategoryResponse.builder()
                 .id(1)
                 .name("Category 1")
-                .orderNum(1)
+                .order(1)
                 .createdAt(LocalDateTime.now())
+                .postCount(5)
                 .build();
 
         CategoryResponse category2 = CategoryResponse.builder()
                 .id(2)
                 .name("Category 2")
-                .orderNum(2)
+                .order(2)
                 .createdAt(LocalDateTime.now())
+                .postCount(3)
                 .build();
 
         List<CategoryResponse> categories = Arrays.asList(category1, category2);
@@ -286,7 +288,9 @@ public class PublicControllerTest {
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.data", hasSize(2)))
                 .andExpect(jsonPath("$.data[0].name", is("Category 1")))
-                .andExpect(jsonPath("$.data[1].name", is("Category 2")));
+                .andExpect(jsonPath("$.data[0].postCount", is(5)))
+                .andExpect(jsonPath("$.data[1].name", is("Category 2")))
+                .andExpect(jsonPath("$.data[1].postCount", is(3)));
     }
 
     // Additional tests for missing HTTP status codes
