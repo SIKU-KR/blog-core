@@ -49,11 +49,15 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_PAT }}
 
-      - name: Extract metadata for Docker
+      - name: Convert repository name to lowercase
+        id: repo_name
+        run: echo "REPO_LC=ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: ${{ env.REPO_LC }}
           tags: |
             type=ref,event=branch
             type=ref,event=tag
@@ -75,6 +79,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Convert repository name to lowercase for deployment
+        id: repo_name
+        run: echo "IMAGE=ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]'):latest" >> $GITHUB_ENV
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
         with:
@@ -83,8 +91,6 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            IMAGE=ghcr.io/${{ github.repository }}:latest
-
             docker pull $IMAGE
             docker stop blog-backend || true
             docker rm blog-backend || true
