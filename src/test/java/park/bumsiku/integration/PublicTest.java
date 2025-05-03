@@ -156,4 +156,40 @@ public class PublicTest {
                 .andExpect(jsonPath("$.data.content", hasSize(0))); // But it should return an empty list
     }
 
+    @Test
+    public void testGetPostByIdSuccess() throws Exception {
+        int existingPostId = posts.get(0).getId();
+
+        mockMvc.perform(get("/posts/{postId}", existingPostId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data.id", is(existingPostId)))
+                .andExpect(jsonPath("$.data.title", startsWith("Test Post")))
+                .andExpect(jsonPath("$.data.content", startsWith("This is test content")));
+    }
+
+    @Test
+    public void testGetPostByIdNotFound() throws Exception {
+        int nonExistentPostId = 9999;
+
+        mockMvc.perform(get("/posts/{postId}", nonExistentPostId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(404)))
+                .andExpect(jsonPath("$.error.message", containsString("Post not found")));
+    }
+
+    @Test
+    public void testGetPostByIdInvalid() throws Exception {
+        int invalidPostId = 0;
+
+        mockMvc.perform(get("/posts/{postId}", invalidPostId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("게시글 ID는 1 이상이어야 합니다")));
+    }
 }
