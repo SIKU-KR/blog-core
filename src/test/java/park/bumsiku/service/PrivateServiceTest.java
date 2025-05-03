@@ -8,14 +8,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import park.bumsiku.domain.dto.request.CreatePostRequest;
-import park.bumsiku.domain.dto.response.CategoryResponse;
-import park.bumsiku.domain.dto.response.PostResponse;
 import park.bumsiku.domain.dto.request.UpdateCategoryRequest;
 import park.bumsiku.domain.dto.request.UpdatePostRequest;
+import park.bumsiku.domain.dto.response.PostResponse;
 import park.bumsiku.domain.entity.Category;
 import park.bumsiku.domain.entity.Comment;
 import park.bumsiku.domain.entity.Post;
-import park.bumsiku.exception.PostNotFoundException;
 import park.bumsiku.repository.CategoryRepository;
 import park.bumsiku.repository.CommentRepository;
 import park.bumsiku.repository.PostRepository;
@@ -25,15 +23,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class PrivateServiceTest {
@@ -88,8 +82,8 @@ public class PrivateServiceTest {
                 .build();
     }
 
-    private Post createPost(Integer id, String title, String content, String summary, Category category, 
-                           LocalDateTime createdAt, LocalDateTime updatedAt) {
+    private Post createPost(Integer id, String title, String content, String summary, Category category,
+                            LocalDateTime createdAt, LocalDateTime updatedAt) {
         return Post.builder()
                 .id(id)
                 .title(title)
@@ -108,13 +102,13 @@ public class PrivateServiceTest {
 
     private void assertPostResponseMatchesPost(PostResponse response, Post post) {
         assertThat(response)
-            .isNotNull()
-            .extracting("id", "title", "content")
-            .containsExactly(
-                post.getId(),
-                post.getTitle(),
-                post.getContent()
-            );
+                .isNotNull()
+                .extracting("id", "title", "content")
+                .containsExactly(
+                        post.getId(),
+                        post.getTitle(),
+                        post.getContent()
+                );
 
         assertEquals(post.getCreatedAt().toString(), response.getCreatedAt());
         assertEquals(post.getUpdatedAt().toString(), response.getUpdatedAt());
@@ -133,30 +127,25 @@ public class PrivateServiceTest {
     void updateCategory_shouldInsertOrUpdateAndReturnResponse() {
         // given
         String updatedName = "Updated Tech";
-        UpdateCategoryRequest request = new UpdateCategoryRequest(techCategory.getId(), updatedName, 3);
+        UpdateCategoryRequest request = new UpdateCategoryRequest(updatedName, 3);
 
         Category updatedCategory = new Category(techCategory.getId(), updatedName, 3, now);
 
         // Mock repository behavior
-        when(categoryRepository.update(any(Category.class))).thenReturn(1); // Simulate successful update
-        when(categoryRepository.findById(techCategory.getId())).thenReturn(updatedCategory);
-
+        when(categoryRepository.findById(techCategory.getId())).thenReturn(techCategory); // Mock findById to return the category
+        when(categoryRepository.update(any(Category.class))).thenReturn(updatedCategory); // Simulate successful update
         // when
-        var result = privateService.updateCategory(request);
+        var result = privateService.updateCategory(techCategory.getId(), request);
 
         // then
         assertThat(result)
-            .isNotNull()
-            .extracting("id", "name", "orderNum")
-            .containsExactly(
-                techCategory.getId(),
-                updatedName,
-                3
-            );
-
-        // Verify the mock was called
-        verify(categoryRepository).update(any(Category.class));
-        verify(categoryRepository).findById(techCategory.getId());
+                .isNotNull()
+                .extracting("id", "name", "order")
+                .containsExactly(
+                        techCategory.getId(),
+                        updatedName,
+                        3
+                );
     }
 
     @Test
@@ -247,7 +236,7 @@ public class PrivateServiceTest {
     @DisplayName("createPost should save post and return response when request is valid")
     void createPost_validRequest_shouldSavePostAndReturnResponse() {
         // given
-        CreatePostRequest request = new CreatePostRequest("New Post", "Content", "Summary", "Tech");
+        CreatePostRequest request = new CreatePostRequest("New Post", "Content", "Summary", 1);
 
         Post expectedPost = Post.builder()
                 .id(1)
@@ -262,6 +251,7 @@ public class PrivateServiceTest {
 
         // Mock repository behavior
         when(postRepository.insert(any(Post.class))).thenReturn(expectedPost);
+        when(categoryRepository.findById(techCategory.getId())).thenReturn(techCategory);
 
         // when
         PostResponse result = privateService.createPost(request);
@@ -269,12 +259,12 @@ public class PrivateServiceTest {
         // then
         // Verify response is not null and has expected values
         assertThat(result)
-            .isNotNull()
-            .extracting("title", "content")
-            .containsExactly(
-                request.getTitle(),
-                request.getContent()
-            );
+                .isNotNull()
+                .extracting("title", "content")
+                .containsExactly(
+                        request.getTitle(),
+                        request.getContent()
+                );
 
         // Verify the mock was called
         verify(postRepository).insert(any(Post.class));
@@ -328,7 +318,7 @@ public class PrivateServiceTest {
 
         // when & then
         assertThatThrownBy(() -> privateService.deletePost(nonExistentPostId))
-                .isInstanceOf(PostNotFoundException.class);
+                .isInstanceOf(NoSuchElementException.class);
 
         // Verify the mock was called
         verify(postRepository).findById(nonExistentPostId);
@@ -382,13 +372,13 @@ public class PrivateServiceTest {
         // then
         // Verify response
         assertThat(result)
-            .isNotNull()
-            .extracting("id", "title", "content")
-            .containsExactly(
-                postId,
-                request.getTitle(),
-                request.getContent()
-            );
+                .isNotNull()
+                .extracting("id", "title", "content")
+                .containsExactly(
+                        postId,
+                        request.getTitle(),
+                        request.getContent()
+                );
 
         // Verify the mocks were called
         verify(postRepository).findById(postId);
@@ -401,9 +391,9 @@ public class PrivateServiceTest {
         // given
         int nonExistentPostId = 999;
         UpdatePostRequest request = new UpdatePostRequest(
-                "Updated Title", 
-                "Updated Content", 
-                "Updated Summary", 
+                "Updated Title",
+                "Updated Content",
+                "Updated Summary",
                 "Life"
         );
 
@@ -412,7 +402,7 @@ public class PrivateServiceTest {
 
         // when & then
         assertThatThrownBy(() -> privateService.updatePost(nonExistentPostId, request))
-                .isInstanceOf(PostNotFoundException.class);
+                .isInstanceOf(NoSuchElementException.class);
 
         // Verify the mock was called
         verify(postRepository).findById(nonExistentPostId);

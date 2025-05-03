@@ -111,7 +111,7 @@ public interface PublicAPI {
 
     @Operation(
             summary = "카테고리 목록 조회",
-            description = "블로그에 등록된 모든 카테고리를 조회합니다."
+            description = "블로그에 등록된 모든 카테고리와 각 카테고리에 속한 게시글 수를 조회합니다."
     )
     @ApiResponse(
             responseCode = "200",

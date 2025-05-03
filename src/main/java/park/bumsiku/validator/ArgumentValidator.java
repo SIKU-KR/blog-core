@@ -1,9 +1,6 @@
 package park.bumsiku.validator;
 
-import park.bumsiku.domain.dto.request.CommentRequest;
-import park.bumsiku.domain.dto.request.CreatePostRequest;
-import park.bumsiku.domain.dto.request.UpdateCategoryRequest;
-import park.bumsiku.domain.dto.request.UpdatePostRequest;
+import park.bumsiku.domain.dto.request.*;
 
 public interface ArgumentValidator {
 
@@ -18,6 +15,8 @@ public interface ArgumentValidator {
     void validatePostRequest(CreatePostRequest request);
 
     void validatePostRequest(UpdatePostRequest request);
+
+    void validateCategoryRequest(CreateCategoryRequest request);
 
     void validateCategoryRequest(UpdateCategoryRequest request);
 

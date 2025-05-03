@@ -2,7 +2,6 @@ package park.bumsiku.repository;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Query;
 import org.springframework.stereotype.Repository;
 import park.bumsiku.domain.entity.Category;
 
@@ -16,7 +15,7 @@ public class CategoryRepository {
 
     public List<Category> findAll() {
         return entityManager
-                .createQuery("SELECT c FROM Category c ORDER BY c.orderNum ASC", Category.class)
+                .createQuery("SELECT c FROM Category c ORDER BY c.ordernum ASC", Category.class)
                 .getResultList();
     }
 
@@ -26,6 +25,7 @@ public class CategoryRepository {
 
     public Category insert(Category category) {
         entityManager.persist(category);
+        entityManager.flush();
         return category;
     }
 
@@ -36,13 +36,15 @@ public class CategoryRepository {
         }
     }
 
-    public int update(Category category) {
-        Query query = entityManager.createQuery(
-                "UPDATE Category c SET c.name = :newName, c.orderNum = :newOrderNum WHERE c.id = :id"
-        );
-        query.setParameter("newName", category.getName());
-        query.setParameter("newOrderNum", category.getOrderNum());
-        query.setParameter("id", category.getId());
-        return query.executeUpdate();
+    public Category update(Category category) {
+        Category existingCategory = findById(category.getId());
+        if (existingCategory != null) {
+            existingCategory.setName(category.getName());
+            existingCategory.setOrdernum(category.getOrdernum());
+            entityManager.merge(existingCategory);
+            entityManager.flush();
+            return existingCategory;
+        }
+        return null;
     }
 }

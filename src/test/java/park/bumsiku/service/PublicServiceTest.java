@@ -13,13 +13,13 @@ import park.bumsiku.domain.dto.response.PostSummaryResponse;
 import park.bumsiku.domain.entity.Category;
 import park.bumsiku.domain.entity.Comment;
 import park.bumsiku.domain.entity.Post;
-import park.bumsiku.exception.PostNotFoundException;
 import park.bumsiku.repository.CategoryRepository;
 import park.bumsiku.repository.CommentRepository;
 import park.bumsiku.repository.PostRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -43,7 +43,7 @@ public class PublicServiceTest {
     private Post postMockData() {
         Category mockCategory = Category.builder()
                 .name("Technology")
-                .orderNum(1)
+                .ordernum(1)
                 .build();
         return Post.builder()
                 .id(1)
@@ -144,7 +144,7 @@ public class PublicServiceTest {
 
         // then
         assertThatThrownBy(() -> publicService.getPostById(postId))
-                .isInstanceOf(PostNotFoundException.class);
+                .isInstanceOf(NoSuchElementException.class);
     }
 
     @Test
@@ -179,7 +179,7 @@ public class PublicServiceTest {
 
         // then
         assertThatThrownBy(() -> publicService.getCommentsById(postId))
-                .isInstanceOf(PostNotFoundException.class);
+                .isInstanceOf(NoSuchElementException.class);
     }
 
     @Test
@@ -221,15 +221,15 @@ public class PublicServiceTest {
 
         // then
         assertThatThrownBy(() -> publicService.createComment(postId, commentRequest))
-                .isInstanceOf(PostNotFoundException.class);
+                .isInstanceOf(NoSuchElementException.class);
     }
 
     @Test
     public void getCategoriesShouldReturnOrderedListOfCategoryResponse() {
         // given
         LocalDateTime now = LocalDateTime.now();
-        Category category1 = Category.builder().id(1).name("Tech").orderNum(1).createdAt(now).build();
-        Category category2 = Category.builder().id(2).name("Life").orderNum(2).createdAt(now).build();
+        Category category1 = Category.builder().id(1).name("Tech").ordernum(1).createdAt(now).build();
+        Category category2 = Category.builder().id(2).name("Life").ordernum(2).createdAt(now).build();
         List<Category> mockCategories = List.of(category1, category2);
 
         when(categoryRepository.findAll()).thenReturn(mockCategories);
@@ -241,10 +241,10 @@ public class PublicServiceTest {
         assertThat(result).isNotNull();
         assertThat(result).hasSize(2);
         assertThat(result)
-                .extracting("id", "name", "orderNum")
+                .extracting("id", "name", "order")
                 .containsExactly(
-                        tuple(category1.getId(), category1.getName(), category1.getOrderNum()),
-                        tuple(category2.getId(), category2.getName(), category2.getOrderNum())
+                        tuple(category1.getId(), category1.getName(), category1.getOrdernum()),
+                        tuple(category2.getId(), category2.getName(), category2.getOrdernum())
                 );
     }
 }

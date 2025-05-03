@@ -11,18 +11,18 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import park.bumsiku.config.SecurityConfig;
+import park.bumsiku.domain.dto.request.CreateCategoryRequest;
 import park.bumsiku.domain.dto.request.CreatePostRequest;
 import park.bumsiku.domain.dto.request.UpdateCategoryRequest;
 import park.bumsiku.domain.dto.request.UpdatePostRequest;
 import park.bumsiku.domain.dto.response.CategoryResponse;
 import park.bumsiku.domain.dto.response.PostResponse;
 import park.bumsiku.domain.dto.response.UploadImageResponse;
-import park.bumsiku.exception.PostNotFoundException;
 import park.bumsiku.service.PrivateService;
 import park.bumsiku.validator.ArgumentValidator;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.NoSuchElementException;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
@@ -51,10 +51,39 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testPutCategory_Success() throws Exception {
+    public void testCreateCategory_Success() throws Exception {
         // Prepare test data
-        UpdateCategoryRequest request = UpdateCategoryRequest.builder()
+        CreateCategoryRequest request = CreateCategoryRequest.builder()
+                .name("New Category")
+                .orderNum(1)
+                .build();
+
+        CategoryResponse response = CategoryResponse.builder()
                 .id(1)
+                .name("New Category")
+                .order(1)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        // Mock service response
+        when(privateService.createCategory(any(CreateCategoryRequest.class))).thenReturn(response);
+
+        // Perform request and verify
+        mockMvc.perform(post("/admin/categories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data.id", is(1)))
+                .andExpect(jsonPath("$.data.name", is("New Category")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testUpdateCategory_Success() throws Exception {
+        // Prepare test data
+        Integer categoryId = 1;
+        UpdateCategoryRequest request = UpdateCategoryRequest.builder()
                 .name("Updated Category")
                 .orderNum(1)
                 .build();
@@ -62,15 +91,15 @@ public class AdminControllerTest {
         CategoryResponse response = CategoryResponse.builder()
                 .id(1)
                 .name("Updated Category")
-                .orderNum(1)
+                .order(1)
                 .createdAt(LocalDateTime.now())
                 .build();
 
         // Mock service response
-        when(privateService.updateCategory(any(UpdateCategoryRequest.class))).thenReturn(response);
+        when(privateService.updateCategory(eq(categoryId), any(UpdateCategoryRequest.class))).thenReturn(response);
 
         // Perform request and verify
-        mockMvc.perform(put("/admin/categories")
+        mockMvc.perform(put("/admin/categories/" + categoryId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -125,7 +154,7 @@ public class AdminControllerTest {
                 .title("New Post")
                 .content("Post Content")
                 .summary("Post Summary")
-                .category("Test Category")
+                .category(1)
                 .build();
 
         PostResponse response = PostResponse.builder()
@@ -206,7 +235,7 @@ public class AdminControllerTest {
 
         // Mock service to throw exception
         when(privateService.updatePost(eq(999), any(UpdatePostRequest.class)))
-                .thenThrow(new PostNotFoundException("게시글을 찾을 수 없습니다"));
+                .thenThrow(new NoSuchElementException("게시글을 찾을 수 없습니다"));
 
         // Perform request and verify
         mockMvc.perform(put("/admin/posts/999")
@@ -229,20 +258,20 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testPutCategory_BadRequest() throws Exception {
+    public void testUpdateCategory_BadRequest() throws Exception {
         // Prepare invalid test data
+        Integer categoryId = 1;
         UpdateCategoryRequest request = UpdateCategoryRequest.builder()
-                .id(1)
                 .name("") // Empty name is invalid
                 .orderNum(1)
                 .build();
 
         // Mock validator to throw exception
         doThrow(new IllegalArgumentException("카테고리 이름은 필수입니다"))
-                .when(privateService).updateCategory(any(UpdateCategoryRequest.class));
+                .when(privateService).updateCategory(eq(categoryId), any(UpdateCategoryRequest.class));
 
         // Perform request and verify
-        mockMvc.perform(put("/admin/categories")
+        mockMvc.perform(put("/admin/categories/" + categoryId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -298,7 +327,7 @@ public class AdminControllerTest {
                 .title("")  // Empty title is invalid
                 .content("Post Content")
                 .summary("Post Summary")
-                .category("Test Category")
+                .category(1)
                 .build();
 
         // Mock service to throw exception
@@ -361,7 +390,7 @@ public class AdminControllerTest {
     @WithMockUser(username = "admin", roles = {"ADMIN"})
     public void testDeleteComment_NotFound() throws Exception {
         // Mock service to throw exception
-        doThrow(new PostNotFoundException("댓글을 찾을 수 없습니다"))
+        doThrow(new NoSuchElementException("댓글을 찾을 수 없습니다"))
                 .when(privateService).deleteComment("999");
 
         // Perform request and verify
@@ -376,7 +405,7 @@ public class AdminControllerTest {
     @WithMockUser(username = "admin", roles = {"ADMIN"})
     public void testDeletePost_NotFound() throws Exception {
         // Mock service to throw exception
-        doThrow(new PostNotFoundException("게시글을 찾을 수 없습니다"))
+        doThrow(new NoSuchElementException("게시글을 찾을 수 없습니다"))
                 .when(privateService).deletePost(999);
 
         // Perform request and verify
@@ -391,20 +420,20 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testPutCategory_ServerError() throws Exception {
+    public void testUpdateCategory_ServerError() throws Exception {
         // Prepare test data
+        Integer categoryId = 1;
         UpdateCategoryRequest request = UpdateCategoryRequest.builder()
-                .id(1)
                 .name("Updated Category")
                 .orderNum(1)
                 .build();
 
         // Mock service to throw runtime exception
-        when(privateService.updateCategory(any(UpdateCategoryRequest.class)))
+        when(privateService.updateCategory(eq(categoryId), any(UpdateCategoryRequest.class)))
                 .thenThrow(new RuntimeException("서버 내부 오류"));
 
         // Perform request and verify
-        mockMvc.perform(put("/admin/categories")
+        mockMvc.perform(put("/admin/categories/" + categoryId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isInternalServerError())
@@ -457,7 +486,7 @@ public class AdminControllerTest {
                 .title("New Post")
                 .content("Post Content")
                 .summary("Post Summary")
-                .category("Test Category")
+                .category(1)
                 .build();
 
         // Mock service to throw runtime exception
