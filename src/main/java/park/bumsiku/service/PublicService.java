@@ -95,8 +95,9 @@ public class PublicService {
                 .map(cat -> CategoryResponse.builder()
                         .id(cat.getId())
                         .name(cat.getName())
-                        .orderNum(cat.getOrderNum())
+                        .order(cat.getOrdernum())
                         .createdAt(cat.getCreatedAt())
+                        .postCount(postRepository.countByCategoryId(cat.getId()))
                         .build())
                 .collect(Collectors.toList());
     }
