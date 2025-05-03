@@ -76,7 +76,7 @@ public class ArgumentValidatorImplTest {
                 .title("Valid Title")
                 .content("Valid content")
                 .summary("Valid summary")
-                .category("Technology")
+                .category(1)
                 .build();
         assertDoesNotThrow(() -> validator.validatePostRequest(validRequest));
 
@@ -88,7 +88,7 @@ public class ArgumentValidatorImplTest {
                 .title("")
                 .content("Valid content")
                 .summary("Valid summary")
-                .category("Technology")
+                .category(1)
                 .build();
         assertThrows(IllegalArgumentException.class, () -> validator.validatePostRequest(invalidTitle));
 
@@ -97,7 +97,7 @@ public class ArgumentValidatorImplTest {
                 .title("Valid Title")
                 .content("")
                 .summary("Valid summary")
-                .category("Technology")
+                .category(1)
                 .build();
         assertThrows(IllegalArgumentException.class, () -> validator.validatePostRequest(invalidContent));
 
@@ -106,7 +106,7 @@ public class ArgumentValidatorImplTest {
                 .title("Valid Title")
                 .content("Valid content")
                 .summary("")
-                .category("Technology")
+                .category(1)
                 .build();
         assertThrows(IllegalArgumentException.class, () -> validator.validatePostRequest(invalidSummary));
 
@@ -115,7 +115,6 @@ public class ArgumentValidatorImplTest {
                 .title("Valid Title")
                 .content("Valid content")
                 .summary("Valid summary")
-                .category("")
                 .build();
         assertThrows(IllegalArgumentException.class, () -> validator.validatePostRequest(invalidCategory));
     }

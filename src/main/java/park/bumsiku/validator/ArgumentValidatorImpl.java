@@ -62,8 +62,8 @@ public class ArgumentValidatorImpl implements ArgumentValidator {
 
     @Override
     public void validateCategoryId(Integer id) {
-        if (id == null) {
-            throw new IllegalArgumentException("Category ID cannot be null");
+        if (id == null || id == 0) {
+            throw new IllegalArgumentException("카테고리를 선택해주세요");
         }
     }
 
@@ -116,7 +116,7 @@ public class ArgumentValidatorImpl implements ArgumentValidator {
         validateTitle(request.getTitle());
         validateContent(request.getContent());
         validateSummary(request.getSummary());
-        validateCategory(request.getCategory());
+        validateCategoryId(request.getCategory());
     }
 
     @Override

@@ -26,6 +26,7 @@ public class CategoryRepository {
 
     public Category insert(Category category) {
         entityManager.persist(category);
+        entityManager.flush();
         return category;
     }
 
