@@ -80,8 +80,8 @@ jobs:
 
     steps:
       - name: Convert repository name to lowercase for deployment
-        id: repo_name
-        run: echo "IMAGE=ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]'):latest" >> $GITHUB_ENV
+        run: |
+          echo "IMAGE=ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]'):latest" >> $GITHUB_ENV
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
@@ -91,7 +91,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            docker pull $IMAGE
+            docker pull ${{ env.IMAGE }}
             docker stop blog-backend || true
             docker rm blog-backend || true
 
@@ -115,4 +115,4 @@ jobs:
               -e SPRINGDOC_PACKAGES_TO_SCAN=park.bumsiku.controller \
               -e SPRINGDOC_API_INFO_TITLE="Bumsiku Blog API" \
               -e SPRINGDOC_API_INFO_VERSION=v1.0.0 \
-              $IMAGE
+              ${{ env.IMAGE }}
