@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import park.bumsiku.domain.dto.response.Response;
 
+import java.util.NoSuchElementException;
+
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -60,5 +62,14 @@ public class GlobalExceptionHandler {
                 "Internal Server Error"
         );
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(NoSuchElementException.class)
+    public ResponseEntity<Response<Void>> handleNoSuchArgumentException(NoSuchElementException e) {
+        Response<Void> response = Response.error(
+                404,
+                e.getMessage() != null ? e.getMessage() : "Argument not found"
+        );
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 }

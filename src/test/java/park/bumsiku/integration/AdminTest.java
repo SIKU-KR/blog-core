@@ -13,8 +13,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import park.bumsiku.domain.dto.request.CreatePostRequest;
 import park.bumsiku.domain.entity.Category;
+import park.bumsiku.domain.entity.Comment;
 import park.bumsiku.domain.entity.Post;
 import park.bumsiku.repository.CategoryRepository;
+import park.bumsiku.repository.CommentRepository;
 import park.bumsiku.repository.PostRepository;
 
 import java.time.LocalDateTime;
@@ -22,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -47,18 +50,24 @@ public class AdminTest {
     @Autowired
     private PostRepository postRepository;
 
+    @Autowired
+    private CommentRepository commentRepository;
+
     private final List<Category> categories = new ArrayList<>();
     private final List<Post> posts = new ArrayList<>();
+    private final List<Comment> comments = new ArrayList<>();
 
     @BeforeEach
     public void setup() {
         // Clear existing data
         categories.clear();
         posts.clear();
+        comments.clear();
 
         // Create test data
         createTestCategories();
         createTestPosts();
+        createTestComments();
 
         // flush
         entityManager.flush();
@@ -91,6 +100,21 @@ public class AdminTest {
                     .updatedAt(LocalDateTime.now().minusDays(5 - i))
                     .build();
             posts.add(postRepository.insert(post));
+        }
+    }
+
+    private void createTestComments() {
+        for (int i = 0; i < posts.size(); i++) {
+            Post post = posts.get(i);
+            // Create 2 comments for each post
+            for (int j = 0; j < 2; j++) {
+                Comment comment = Comment.builder()
+                        .post(post)
+                        .authorName("Test Author " + (j + 1))
+                        .content("This is a test comment " + (j + 1) + " for post " + (i + 1))
+                        .build();
+                comments.add(commentRepository.insert(comment));
+            }
         }
     }
 
@@ -320,6 +344,81 @@ public class AdminTest {
         mockMvc.perform(post("/admin/posts")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testDeleteComment_Success() throws Exception {
+        // Get a valid comment ID
+        Long commentId = comments.get(0).getId();
+
+        // Perform request and verify
+        mockMvc.perform(delete("/admin/comments/" + commentId))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data.message", is("Comment deleted successfully")));
+
+        // Verify the comment was actually deleted
+        Comment deletedComment = commentRepository.findById(commentId);
+        assert deletedComment == null;
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testDeleteComment_InvalidId_NonNumeric() throws Exception {
+        // Perform request with non-numeric ID and verify
+        mockMvc.perform(delete("/admin/comments/abc"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("댓글 ID는 숫자여야 합니다")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testDeleteComment_InvalidId_Zero() throws Exception {
+        // Perform request with zero ID and verify
+        mockMvc.perform(delete("/admin/comments/0"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("댓글 ID는 1 이상이어야 합니다")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testDeleteComment_InvalidId_Negative() throws Exception {
+        // Perform request with negative ID and verify
+        mockMvc.perform(delete("/admin/comments/-1"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("댓글 ID는 1 이상이어야 합니다")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testDeleteComment_NonExistentId() throws Exception {
+        // Use a non-existent comment ID (assuming IDs are sequential)
+        Long nonExistentId = comments.get(comments.size() - 1).getId() + 1000;
+
+        // Perform request and verify
+        mockMvc.perform(delete("/admin/comments/" + nonExistentId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(404)))
+                .andExpect(jsonPath("$.error.message", containsString("Comment not found")));
+    }
+
+    @Test
+    public void testDeleteComment_Unauthorized() throws Exception {
+        // Get a valid comment ID
+        Long commentId = comments.get(0).getId();
+
+        // Perform request without authentication and verify
+        mockMvc.perform(delete("/admin/comments/" + commentId))
                 .andExpect(status().isUnauthorized());
     }
 }
