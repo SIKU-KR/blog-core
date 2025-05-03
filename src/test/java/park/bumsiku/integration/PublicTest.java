@@ -10,8 +10,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import park.bumsiku.domain.entity.Category;
+import park.bumsiku.domain.entity.Comment;
 import park.bumsiku.domain.entity.Post;
 import park.bumsiku.repository.CategoryRepository;
+import park.bumsiku.repository.CommentRepository;
 import park.bumsiku.repository.PostRepository;
 
 import java.time.LocalDateTime;
@@ -40,18 +42,24 @@ public class PublicTest {
     @Autowired
     private PostRepository postRepository;
 
+    @Autowired
+    private CommentRepository commentRepository;
+
     private List<Category> categories = new ArrayList<>();
     private List<Post> posts = new ArrayList<>();
+    private List<Comment> comments = new ArrayList<>();
 
     @BeforeEach
     public void setup() {
         // Clear existing data
         categories.clear();
         posts.clear();
+        comments.clear();
 
         // Create test data
         createTestCategories();
         createTestPosts();
+        createTestComments();
     }
 
     private void createTestCategories() {
@@ -81,6 +89,31 @@ public class PublicTest {
                     .updatedAt(LocalDateTime.now().minusDays(15 - i))
                     .build();
             posts.add(postRepository.insert(post));
+        }
+    }
+
+    private void createTestComments() {
+        for (int i = 0; i < 5; i++) {
+            Post post = posts.get(i);
+
+            for (int j = 0; j < 3; j++) {
+                Comment comment = Comment.builder()
+                        .post(post)
+                        .authorName("Commenter " + (j + 1))
+                        .content("This is comment " + (j + 1) + " for post " + (i + 1))
+                        .build();
+                comments.add(commentRepository.insert(comment));
+            }
+        }
+
+        for (int i = 10; i < 15; i++) {
+            Post post = posts.get(i);
+            Comment comment = Comment.builder()
+                    .post(post)
+                    .authorName("Single Commenter")
+                    .content("This is the only comment for post " + (i + 1))
+                    .build();
+            comments.add(commentRepository.insert(comment));
         }
     }
 
@@ -151,9 +184,9 @@ public class PublicTest {
         mockMvc.perform(get("/posts")
                         .param("category", String.valueOf(nonExistentCategoryId))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk()) // The API doesn't return an error for non-existent categories
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.data.content", hasSize(0))); // But it should return an empty list
+                .andExpect(jsonPath("$.data.content", hasSize(0)));
     }
 
     @Test
@@ -186,6 +219,69 @@ public class PublicTest {
         int invalidPostId = 0;
 
         mockMvc.perform(get("/posts/{postId}", invalidPostId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("게시글 ID는 1 이상이어야 합니다")));
+    }
+
+    @Test
+    public void testGetCommentsByPostIdWithMultipleComments() throws Exception {
+        int postId = posts.get(0).getId();
+
+        mockMvc.perform(get("/comments/{postId}", postId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data", hasSize(3)))
+                .andExpect(jsonPath("$.data[0].authorName", startsWith("Commenter")))
+                .andExpect(jsonPath("$.data[0].content", containsString("comment")))
+                .andExpect(jsonPath("$.data[0].createdAt", notNullValue()));
+    }
+
+    @Test
+    public void testGetCommentsByPostIdWithNoComments() throws Exception {
+        int postId = posts.get(5).getId();
+
+        mockMvc.perform(get("/comments/{postId}", postId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data", hasSize(0)));
+    }
+
+    @Test
+    public void testGetCommentsByPostIdWithSingleComment() throws Exception {
+        int postId = posts.get(10).getId();
+
+        mockMvc.perform(get("/comments/{postId}", postId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data", hasSize(1)))
+                .andExpect(jsonPath("$.data[0].authorName", is("Single Commenter")))
+                .andExpect(jsonPath("$.data[0].content", containsString("only comment")))
+                .andExpect(jsonPath("$.data[0].createdAt", notNullValue()));
+    }
+
+    @Test
+    public void testGetCommentsByPostIdNotFound() throws Exception {
+        int nonExistentPostId = 9999;
+
+        mockMvc.perform(get("/comments/{postId}", nonExistentPostId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(404)))
+                .andExpect(jsonPath("$.error.message", containsString("Post not found")));
+    }
+
+    @Test
+    public void testGetCommentsByPostIdInvalid() throws Exception {
+        int invalidPostId = 0;
+
+        mockMvc.perform(get("/comments/{postId}", invalidPostId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
