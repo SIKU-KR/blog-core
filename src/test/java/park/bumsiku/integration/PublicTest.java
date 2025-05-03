@@ -46,9 +46,9 @@ public class PublicTest {
     @Autowired
     private CommentRepository commentRepository;
 
-    private List<Category> categories = new ArrayList<>();
-    private List<Post> posts = new ArrayList<>();
-    private List<Comment> comments = new ArrayList<>();
+    private final List<Category> categories = new ArrayList<>();
+    private final List<Post> posts = new ArrayList<>();
+    private final List<Comment> comments = new ArrayList<>();
 
     @BeforeEach
     public void setup() {
