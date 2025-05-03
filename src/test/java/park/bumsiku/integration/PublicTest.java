@@ -66,11 +66,11 @@ public class PublicTest {
     private void createTestCategories() {
         Category category1 = Category.builder()
                 .name("Technology")
-                .orderNum(1)
+                .ordernum(1)
                 .build();
         Category category2 = Category.builder()
                 .name("Travel")
-                .orderNum(2)
+                .ordernum(2)
                 .build();
 
         categories.add(categoryRepository.insert(category1));

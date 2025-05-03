@@ -41,7 +41,7 @@ public class CategoryRepository {
                 "UPDATE Category c SET c.name = :newName, c.orderNum = :newOrderNum WHERE c.id = :id"
         );
         query.setParameter("newName", category.getName());
-        query.setParameter("newOrderNum", category.getOrderNum());
+        query.setParameter("newOrderNum", category.getOrdernum());
         query.setParameter("id", category.getId());
         return query.executeUpdate();
     }

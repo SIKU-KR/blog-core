@@ -43,7 +43,7 @@ public class PublicServiceTest {
     private Post postMockData() {
         Category mockCategory = Category.builder()
                 .name("Technology")
-                .orderNum(1)
+                .ordernum(1)
                 .build();
         return Post.builder()
                 .id(1)
@@ -228,8 +228,8 @@ public class PublicServiceTest {
     public void getCategoriesShouldReturnOrderedListOfCategoryResponse() {
         // given
         LocalDateTime now = LocalDateTime.now();
-        Category category1 = Category.builder().id(1).name("Tech").orderNum(1).createdAt(now).build();
-        Category category2 = Category.builder().id(2).name("Life").orderNum(2).createdAt(now).build();
+        Category category1 = Category.builder().id(1).name("Tech").ordernum(1).createdAt(now).build();
+        Category category2 = Category.builder().id(2).name("Life").ordernum(2).createdAt(now).build();
         List<Category> mockCategories = List.of(category1, category2);
 
         when(categoryRepository.findAll()).thenReturn(mockCategories);
@@ -241,10 +241,10 @@ public class PublicServiceTest {
         assertThat(result).isNotNull();
         assertThat(result).hasSize(2);
         assertThat(result)
-                .extracting("id", "name", "orderNum")
+                .extracting("id", "name", "order")
                 .containsExactly(
-                        tuple(category1.getId(), category1.getName(), category1.getOrderNum()),
-                        tuple(category2.getId(), category2.getName(), category2.getOrderNum())
+                        tuple(category1.getId(), category1.getName(), category1.getOrdernum()),
+                        tuple(category2.getId(), category2.getName(), category2.getOrdernum())
                 );
     }
 }
