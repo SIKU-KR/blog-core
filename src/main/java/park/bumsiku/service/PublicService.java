@@ -8,12 +8,12 @@ import park.bumsiku.domain.dto.response.*;
 import park.bumsiku.domain.entity.Category;
 import park.bumsiku.domain.entity.Comment;
 import park.bumsiku.domain.entity.Post;
-import park.bumsiku.exception.PostNotFoundException;
 import park.bumsiku.repository.CategoryRepository;
 import park.bumsiku.repository.CommentRepository;
 import park.bumsiku.repository.PostRepository;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Service
@@ -105,7 +105,7 @@ public class PublicService {
     private Post requirePostById(int id) {
         Post post = postRepository.findById(id);
         if (post == null) {
-            throw new PostNotFoundException("Post not found");
+            throw new NoSuchElementException("Post not found");
         }
         return post;
     }

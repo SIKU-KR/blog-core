@@ -17,11 +17,11 @@ import park.bumsiku.domain.dto.request.UpdatePostRequest;
 import park.bumsiku.domain.dto.response.CategoryResponse;
 import park.bumsiku.domain.dto.response.PostResponse;
 import park.bumsiku.domain.dto.response.UploadImageResponse;
-import park.bumsiku.exception.PostNotFoundException;
 import park.bumsiku.service.PrivateService;
 import park.bumsiku.validator.ArgumentValidator;
 
 import java.time.LocalDateTime;
+import java.util.NoSuchElementException;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
@@ -205,7 +205,7 @@ public class AdminControllerTest {
 
         // Mock service to throw exception
         when(privateService.updatePost(eq(999), any(UpdatePostRequest.class)))
-                .thenThrow(new PostNotFoundException("게시글을 찾을 수 없습니다"));
+                .thenThrow(new NoSuchElementException("게시글을 찾을 수 없습니다"));
 
         // Perform request and verify
         mockMvc.perform(put("/admin/posts/999")
@@ -360,7 +360,7 @@ public class AdminControllerTest {
     @WithMockUser(username = "admin", roles = {"ADMIN"})
     public void testDeleteComment_NotFound() throws Exception {
         // Mock service to throw exception
-        doThrow(new PostNotFoundException("댓글을 찾을 수 없습니다"))
+        doThrow(new NoSuchElementException("댓글을 찾을 수 없습니다"))
                 .when(privateService).deleteComment("999");
 
         // Perform request and verify
@@ -375,7 +375,7 @@ public class AdminControllerTest {
     @WithMockUser(username = "admin", roles = {"ADMIN"})
     public void testDeletePost_NotFound() throws Exception {
         // Mock service to throw exception
-        doThrow(new PostNotFoundException("게시글을 찾을 수 없습니다"))
+        doThrow(new NoSuchElementException("게시글을 찾을 수 없습니다"))
                 .when(privateService).deletePost(999);
 
         // Perform request and verify

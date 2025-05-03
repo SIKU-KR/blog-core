@@ -13,7 +13,6 @@ import park.bumsiku.domain.dto.response.UploadImageResponse;
 import park.bumsiku.domain.entity.Category;
 import park.bumsiku.domain.entity.Comment;
 import park.bumsiku.domain.entity.Post;
-import park.bumsiku.exception.PostNotFoundException;
 import park.bumsiku.repository.CategoryRepository;
 import park.bumsiku.repository.CommentRepository;
 import park.bumsiku.repository.PostRepository;
@@ -112,7 +111,7 @@ public class PrivateService {
         Post post = postRepository.findById(postId);
 
         if (post == null) {
-            throw new PostNotFoundException("Post not found with id: " + postId);
+            throw new NoSuchElementException("Post not found with id: " + postId);
         }
 
         // Delete all comments associated with the post
@@ -152,7 +151,7 @@ public class PrivateService {
         Post post = postRepository.findById(postId);
 
         if (post == null) {
-            throw new PostNotFoundException("Post not found with id: " + postId);
+            throw new NoSuchElementException("Post not found with id: " + postId);
         }
 
         // Find the category by name

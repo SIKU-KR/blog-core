@@ -11,7 +11,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import park.bumsiku.config.SecurityConfig;
 import park.bumsiku.domain.dto.request.CommentRequest;
 import park.bumsiku.domain.dto.response.*;
-import park.bumsiku.exception.PostNotFoundException;
 import park.bumsiku.service.PublicService;
 import park.bumsiku.validator.ArgumentValidator;
 
@@ -19,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -167,7 +167,7 @@ public class PublicControllerTest {
     @Test
     public void testGetPostById_NotFound() throws Exception {
         // Mock service to throw exception
-        when(publicService.getPostById(999)).thenThrow(new PostNotFoundException("게시글을 찾을 수 없습니다"));
+        when(publicService.getPostById(999)).thenThrow(new NoSuchElementException("게시글을 찾을 수 없습니다"));
 
         // Perform request and verify
         mockMvc.perform(get("/posts/999"))
@@ -327,7 +327,7 @@ public class PublicControllerTest {
     public void testGetCommentsByPostId_NotFound() throws Exception {
         // Mock service to throw exception
         when(publicService.getCommentsById(eq(999)))
-                .thenThrow(new PostNotFoundException("게시글을 찾을 수 없습니다"));
+                .thenThrow(new NoSuchElementException("게시글을 찾을 수 없습니다"));
 
         // Perform request and verify
         mockMvc.perform(get("/comments/999"))
@@ -347,7 +347,7 @@ public class PublicControllerTest {
 
         // Mock service to throw exception
         when(publicService.createComment(eq(999), any(CommentRequest.class)))
-                .thenThrow(new PostNotFoundException("게시글을 찾을 수 없습니다"));
+                .thenThrow(new NoSuchElementException("게시글을 찾을 수 없습니다"));
 
         // Perform request and verify
         mockMvc.perform(post("/comments/999")

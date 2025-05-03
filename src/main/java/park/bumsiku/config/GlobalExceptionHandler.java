@@ -1,4 +1,4 @@
-package park.bumsiku.exception;
+package park.bumsiku.config;
 
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
@@ -34,15 +34,6 @@ public class GlobalExceptionHandler {
                 "Invalid request body"
         );
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(PostNotFoundException.class)
-    public ResponseEntity<Response<Void>> handlePostNotFoundException(PostNotFoundException e) {
-        Response<Void> response = Response.error(
-                404,
-                e.getMessage() != null ? e.getMessage() : "Post not found"
-        );
-        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
