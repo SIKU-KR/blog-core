@@ -17,6 +17,7 @@ public class PostRepository {
 
     public Post insert(Post post) {
         entityManager.persist(post);
+        entityManager.flush();
         return post;
     }
 

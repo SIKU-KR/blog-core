@@ -81,7 +81,10 @@ public class PrivateService {
 
     public PostResponse createPost(CreatePostRequest request) {
         // Find the category by name
-        Category category = findCategoryByName(request.getCategory());
+        Category category = categoryRepository.findById(request.getCategory());
+        if (category == null) {
+            throw new IllegalArgumentException("Category not found with id: " + request.getCategory());
+        }
 
         // Create a new post
         Post post = Post.builder()

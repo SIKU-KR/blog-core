@@ -242,7 +242,7 @@ public class PrivateServiceTest {
     @DisplayName("createPost should save post and return response when request is valid")
     void createPost_validRequest_shouldSavePostAndReturnResponse() {
         // given
-        CreatePostRequest request = new CreatePostRequest("New Post", "Content", "Summary", "Tech");
+        CreatePostRequest request = new CreatePostRequest("New Post", "Content", "Summary", 1);
 
         Post expectedPost = Post.builder()
                 .id(1)
@@ -257,6 +257,7 @@ public class PrivateServiceTest {
 
         // Mock repository behavior
         when(postRepository.insert(any(Post.class))).thenReturn(expectedPost);
+        when(categoryRepository.findById(techCategory.getId())).thenReturn(techCategory);
 
         // when
         PostResponse result = privateService.createPost(request);

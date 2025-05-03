@@ -36,6 +36,7 @@ public class CommentRepository {
 
     public Comment insert(Comment comment) {
         entityManager.persist(comment);
+        entityManager.flush();
         return comment;
     }
 }
