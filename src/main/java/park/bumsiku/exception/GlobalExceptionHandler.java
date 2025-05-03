@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import park.bumsiku.domain.dto.response.Response;
 
 import java.util.NoSuchElementException;
@@ -54,6 +55,31 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(NoSuchElementException.class)
+    public ResponseEntity<Response<Void>> handleNoSuchArgumentException(NoSuchElementException e) {
+        Response<Void> response = Response.error(
+                404,
+                e.getMessage() != null ? e.getMessage() : "Argument not found"
+        );
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Response<Void>> handleTypeMismatchException(MethodArgumentTypeMismatchException e) {
+        // 잘못 전달된 파라미터 이름, 타입, 값 정보를 조합해서 메시지를 구성
+        String param = e.getName();
+        String expectedType = e.getRequiredType() != null
+                ? e.getRequiredType().getSimpleName()
+                : "unknown";
+        Object value = e.getValue();
+        String detail = String.format("Parameter '%s' must be of type '%s' but value '%s' is invalid",
+                param, expectedType, value);
+
+        Response<Void> response = Response.error(400, detail);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Response<Void>> handleUnhandledException(Exception e) {
         log.error("Unhandled exception occurred:", e);
@@ -62,14 +88,5 @@ public class GlobalExceptionHandler {
                 "Internal Server Error"
         );
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<Response<Void>> handleNoSuchArgumentException(NoSuchElementException e) {
-        Response<Void> response = Response.error(
-                404,
-                e.getMessage() != null ? e.getMessage() : "Argument not found"
-        );
-        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 }
