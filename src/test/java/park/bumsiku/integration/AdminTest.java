@@ -421,4 +421,79 @@ public class AdminTest {
         mockMvc.perform(delete("/admin/comments/" + commentId))
                 .andExpect(status().isUnauthorized());
     }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testDeletePost_Success() throws Exception {
+        // Get a valid post ID
+        int postId = posts.get(0).getId();
+
+        // Perform request and verify
+        mockMvc.perform(delete("/admin/posts/" + postId))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data.message", is("Post deleted successfully")));
+
+        // Verify the post was actually deleted
+        Post deletedPost = postRepository.findById(postId);
+        assert deletedPost == null;
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testDeletePost_InvalidId_Zero() throws Exception {
+        // Perform request with zero ID and verify
+        mockMvc.perform(delete("/admin/posts/0"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("게시글 ID는 1 이상이어야 합니다")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testDeletePost_InvalidId_Negative() throws Exception {
+        // Perform request with negative ID and verify
+        mockMvc.perform(delete("/admin/posts/-1"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("게시글 ID는 1 이상이어야 합니다")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testDeletePost_InvalidId_NonNumeric() throws Exception {
+        // Perform request with non-numeric ID and verify
+        mockMvc.perform(delete("/admin/posts/abc"))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testDeletePost_NonExistentId() throws Exception {
+        // Use a non-existent post ID (assuming IDs are sequential)
+        int nonExistentId = posts.get(posts.size() - 1).getId() + 1000;
+
+        // Perform request and verify
+        mockMvc.perform(delete("/admin/posts/" + nonExistentId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(404)))
+                .andExpect(jsonPath("$.error.message", containsString("Post not found")));
+    }
+
+    @Test
+    public void testDeletePost_Unauthorized() throws Exception {
+        // Get a valid post ID
+        int postId = posts.get(0).getId();
+
+        // Perform request without authentication and verify
+        mockMvc.perform(delete("/admin/posts/" + postId))
+                .andExpect(status().isUnauthorized());
+    }
 }
