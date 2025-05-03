@@ -16,10 +16,10 @@ jobs:
         run: echo "✅ PR has been merged!"
 
   build:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up JDK 17
         uses: actions/setup-java@v3
@@ -38,11 +38,11 @@ jobs:
         run: ./gradlew test
 
   build-and-push:
+    if: github.event.pull_request.merged == true
     needs: build
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -84,9 +84,9 @@ jobs:
           cache-to: type=gha,mode=max
 
   deploy:
+    if: github.event.pull_request.merged == true
     needs: build-and-push
     runs-on: ubuntu-latest
-
     steps:
       - name: Convert repository name to lowercase for deployment
         run: |
