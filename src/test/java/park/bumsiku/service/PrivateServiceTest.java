@@ -14,7 +14,6 @@ import park.bumsiku.domain.dto.response.PostResponse;
 import park.bumsiku.domain.entity.Category;
 import park.bumsiku.domain.entity.Comment;
 import park.bumsiku.domain.entity.Post;
-import park.bumsiku.exception.PostNotFoundException;
 import park.bumsiku.repository.CategoryRepository;
 import park.bumsiku.repository.CommentRepository;
 import park.bumsiku.repository.PostRepository;
@@ -324,7 +323,7 @@ public class PrivateServiceTest {
 
         // when & then
         assertThatThrownBy(() -> privateService.deletePost(nonExistentPostId))
-                .isInstanceOf(PostNotFoundException.class);
+                .isInstanceOf(NoSuchElementException.class);
 
         // Verify the mock was called
         verify(postRepository).findById(nonExistentPostId);
@@ -408,7 +407,7 @@ public class PrivateServiceTest {
 
         // when & then
         assertThatThrownBy(() -> privateService.updatePost(nonExistentPostId, request))
-                .isInstanceOf(PostNotFoundException.class);
+                .isInstanceOf(NoSuchElementException.class);
 
         // Verify the mock was called
         verify(postRepository).findById(nonExistentPostId);

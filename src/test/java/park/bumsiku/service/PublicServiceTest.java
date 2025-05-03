@@ -13,13 +13,13 @@ import park.bumsiku.domain.dto.response.PostSummaryResponse;
 import park.bumsiku.domain.entity.Category;
 import park.bumsiku.domain.entity.Comment;
 import park.bumsiku.domain.entity.Post;
-import park.bumsiku.exception.PostNotFoundException;
 import park.bumsiku.repository.CategoryRepository;
 import park.bumsiku.repository.CommentRepository;
 import park.bumsiku.repository.PostRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -144,7 +144,7 @@ public class PublicServiceTest {
 
         // then
         assertThatThrownBy(() -> publicService.getPostById(postId))
-                .isInstanceOf(PostNotFoundException.class);
+                .isInstanceOf(NoSuchElementException.class);
     }
 
     @Test
@@ -179,7 +179,7 @@ public class PublicServiceTest {
 
         // then
         assertThatThrownBy(() -> publicService.getCommentsById(postId))
-                .isInstanceOf(PostNotFoundException.class);
+                .isInstanceOf(NoSuchElementException.class);
     }
 
     @Test
@@ -221,7 +221,7 @@ public class PublicServiceTest {
 
         // then
         assertThatThrownBy(() -> publicService.createComment(postId, commentRequest))
-                .isInstanceOf(PostNotFoundException.class);
+                .isInstanceOf(NoSuchElementException.class);
     }
 
     @Test

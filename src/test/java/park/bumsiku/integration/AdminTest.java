@@ -12,6 +12,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import park.bumsiku.domain.dto.request.CreatePostRequest;
+import park.bumsiku.domain.dto.request.UpdatePostRequest;
 import park.bumsiku.domain.entity.Category;
 import park.bumsiku.domain.entity.Comment;
 import park.bumsiku.domain.entity.Post;
@@ -24,8 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -494,6 +494,360 @@ public class AdminTest {
 
         // Perform request without authentication and verify
         mockMvc.perform(delete("/admin/posts/" + postId))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testUpdatePost_Success() throws Exception {
+        // Get a valid post ID
+        int postId = posts.get(0).getId();
+
+        // Prepare test data
+        UpdatePostRequest request = UpdatePostRequest.builder()
+                .title("Updated Test Post")
+                .content("This is updated content for the test post")
+                .summary("Updated summary of the test post")
+                .category(categories.get(1).getName())
+                .build();
+
+        // Perform request and verify
+        mockMvc.perform(put("/admin/posts/" + postId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data.id", is(postId)))
+                .andExpect(jsonPath("$.data.title", is("Updated Test Post")))
+                .andExpect(jsonPath("$.data.content", is("This is updated content for the test post")))
+                .andExpect(jsonPath("$.data.createdAt", notNullValue()))
+                .andExpect(jsonPath("$.data.updatedAt", notNullValue()));
+
+        // Verify the post was actually updated
+        Post updatedPost = postRepository.findById(postId);
+        assert updatedPost != null;
+        assert updatedPost.getTitle().equals("Updated Test Post");
+        assert updatedPost.getContent().equals("This is updated content for the test post");
+        assert updatedPost.getSummary().equals("Updated summary of the test post");
+        assert updatedPost.getCategory().getName().equals(categories.get(1).getName());
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testUpdatePost_EmptyTitle() throws Exception {
+        // Get a valid post ID
+        int postId = posts.get(0).getId();
+
+        // Prepare test data with empty title
+        UpdatePostRequest request = UpdatePostRequest.builder()
+                .title("")
+                .content("This is updated content for the test post")
+                .summary("Updated summary of the test post")
+                .category(categories.get(0).getName())
+                .build();
+
+        // Perform request and verify
+        mockMvc.perform(put("/admin/posts/" + postId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("제목을 입력해주세요")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testUpdatePost_TitleTooLong() throws Exception {
+        // Get a valid post ID
+        int postId = posts.get(0).getId();
+
+        // Create a title longer than 100 characters
+        StringBuilder titleBuilder = new StringBuilder();
+        for (int i = 0; i < 11; i++) {
+            titleBuilder.append("0123456789");
+        }
+        String longTitle = titleBuilder.toString(); // 110 characters
+
+        // Prepare test data with too long title
+        UpdatePostRequest request = UpdatePostRequest.builder()
+                .title(longTitle)
+                .content("This is updated content for the test post")
+                .summary("Updated summary of the test post")
+                .category(categories.get(0).getName())
+                .build();
+
+        // Perform request and verify
+        mockMvc.perform(put("/admin/posts/" + postId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("제목은 1자 이상 100자 이하로 입력해주세요")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testUpdatePost_EmptyContent() throws Exception {
+        // Get a valid post ID
+        int postId = posts.get(0).getId();
+
+        // Prepare test data with empty content
+        UpdatePostRequest request = UpdatePostRequest.builder()
+                .title("Updated Test Post")
+                .content("")
+                .summary("Updated summary of the test post")
+                .category(categories.get(0).getName())
+                .build();
+
+        // Perform request and verify
+        mockMvc.perform(put("/admin/posts/" + postId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("내용을 입력해주세요")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testUpdatePost_ContentTooLong() throws Exception {
+        // Get a valid post ID
+        int postId = posts.get(0).getId();
+
+        // Create content longer than 10000 characters
+        StringBuilder contentBuilder = new StringBuilder();
+        for (int i = 0; i < 1001; i++) {
+            contentBuilder.append("0123456789");
+        }
+        String longContent = contentBuilder.toString(); // 10010 characters
+
+        // Prepare test data with too long content
+        UpdatePostRequest request = UpdatePostRequest.builder()
+                .title("Updated Test Post")
+                .content(longContent)
+                .summary("Updated summary of the test post")
+                .category(categories.get(0).getName())
+                .build();
+
+        // Perform request and verify
+        mockMvc.perform(put("/admin/posts/" + postId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("내용은 1자 이상 10000자 이하로 입력해주세요")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testUpdatePost_EmptySummary() throws Exception {
+        // Get a valid post ID
+        int postId = posts.get(0).getId();
+
+        // Prepare test data with empty summary
+        UpdatePostRequest request = UpdatePostRequest.builder()
+                .title("Updated Test Post")
+                .content("This is updated content for the test post")
+                .summary("")
+                .category(categories.get(0).getName())
+                .build();
+
+        // Perform request and verify
+        mockMvc.perform(put("/admin/posts/" + postId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("요약을 입력해주세요")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testUpdatePost_SummaryTooLong() throws Exception {
+        // Get a valid post ID
+        int postId = posts.get(0).getId();
+
+        // Create summary longer than 200 characters
+        StringBuilder summaryBuilder = new StringBuilder();
+        for (int i = 0; i < 21; i++) {
+            summaryBuilder.append("0123456789");
+        }
+        String longSummary = summaryBuilder.toString(); // 210 characters
+
+        // Prepare test data with too long summary
+        UpdatePostRequest request = UpdatePostRequest.builder()
+                .title("Updated Test Post")
+                .content("This is updated content for the test post")
+                .summary(longSummary)
+                .category(categories.get(0).getName())
+                .build();
+
+        // Perform request and verify
+        mockMvc.perform(put("/admin/posts/" + postId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("요약은 1자 이상 200자 이하로 입력해주세요")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testUpdatePost_EmptyCategory() throws Exception {
+        // Get a valid post ID
+        int postId = posts.get(0).getId();
+
+        // Prepare test data with empty category
+        UpdatePostRequest request = UpdatePostRequest.builder()
+                .title("Updated Test Post")
+                .content("This is updated content for the test post")
+                .summary("Updated summary of the test post")
+                .category("")
+                .build();
+
+        // Perform request and verify
+        mockMvc.perform(put("/admin/posts/" + postId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("카테고리를 선택해주세요")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testUpdatePost_InvalidCategory() throws Exception {
+        // Get a valid post ID
+        int postId = posts.get(0).getId();
+
+        // Prepare test data with invalid category
+        UpdatePostRequest request = UpdatePostRequest.builder()
+                .title("Updated Test Post")
+                .content("This is updated content for the test post")
+                .summary("Updated summary of the test post")
+                .category("NonExistentCategory")
+                .build();
+
+        // Perform request and verify - this should still work because the service defaults to category ID 1
+        mockMvc.perform(put("/admin/posts/" + postId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testUpdatePost_InvalidId_Zero() throws Exception {
+        // Prepare test data
+        UpdatePostRequest request = UpdatePostRequest.builder()
+                .title("Updated Test Post")
+                .content("This is updated content for the test post")
+                .summary("Updated summary of the test post")
+                .category(categories.get(0).getName())
+                .build();
+
+        // Perform request with zero ID and verify
+        mockMvc.perform(put("/admin/posts/0")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("게시글 ID는 1 이상이어야 합니다")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testUpdatePost_InvalidId_Negative() throws Exception {
+        // Prepare test data
+        UpdatePostRequest request = UpdatePostRequest.builder()
+                .title("Updated Test Post")
+                .content("This is updated content for the test post")
+                .summary("Updated summary of the test post")
+                .category(categories.get(0).getName())
+                .build();
+
+        // Perform request with negative ID and verify
+        mockMvc.perform(put("/admin/posts/-1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("게시글 ID는 1 이상이어야 합니다")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testUpdatePost_InvalidId_NonNumeric() throws Exception {
+        // Prepare test data
+        UpdatePostRequest request = UpdatePostRequest.builder()
+                .title("Updated Test Post")
+                .content("This is updated content for the test post")
+                .summary("Updated summary of the test post")
+                .category(categories.get(0).getName())
+                .build();
+
+        // Perform request with non-numeric ID and verify
+        mockMvc.perform(put("/admin/posts/abc")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testUpdatePost_NonExistentId() throws Exception {
+        // Use a non-existent post ID (assuming IDs are sequential)
+        int nonExistentId = posts.get(posts.size() - 1).getId() + 1000;
+
+        // Prepare test data
+        UpdatePostRequest request = UpdatePostRequest.builder()
+                .title("Updated Test Post")
+                .content("This is updated content for the test post")
+                .summary("Updated summary of the test post")
+                .category(categories.get(0).getName())
+                .build();
+
+        // Perform request and verify
+        mockMvc.perform(put("/admin/posts/" + nonExistentId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(404)))
+                .andExpect(jsonPath("$.error.message", containsString("Post not found")));
+    }
+
+    @Test
+    public void testUpdatePost_Unauthorized() throws Exception {
+        // Get a valid post ID
+        int postId = posts.get(0).getId();
+
+        // Prepare test data
+        UpdatePostRequest request = UpdatePostRequest.builder()
+                .title("Updated Test Post")
+                .content("This is updated content for the test post")
+                .summary("Updated summary of the test post")
+                .category(categories.get(0).getName())
+                .build();
+
+        // Perform request without authentication and verify
+        mockMvc.perform(put("/admin/posts/" + postId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isUnauthorized());
     }
 }
