@@ -24,7 +24,7 @@ public class PublicController implements PublicAPI {
     @Override
     @GetMapping("/")
     public RedirectView redirectToSwagger() {
-        return new RedirectView("/swagger-ui.html");
+        return new RedirectView("/swagger-ui/index.html");
     }
 
     @Override
