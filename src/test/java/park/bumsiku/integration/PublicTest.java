@@ -23,6 +23,7 @@ import java.util.List;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -464,5 +465,25 @@ public class PublicTest {
         mockMvc.perform(post("/comments/{postId}", postId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void testGetCategoriesSuccess() throws Exception {
+        mockMvc.perform(get("/categories")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data", hasSize(2)))
+                .andExpect(jsonPath("$.data[0].id", is(categories.get(0).getId())))
+                .andExpect(jsonPath("$.data[0].name", is("Technology")))
+                .andExpect(jsonPath("$.data[0].order", is(1)))
+                .andExpect(jsonPath("$.data[0].createdAt", notNullValue()))
+                .andExpect(jsonPath("$.data[0].postCount", is(8)))
+                .andExpect(jsonPath("$.data[1].id", is(categories.get(1).getId())))
+                .andExpect(jsonPath("$.data[1].name", is("Travel")))
+                .andExpect(jsonPath("$.data[1].order", is(2)))
+                .andExpect(jsonPath("$.data[1].createdAt", notNullValue()))
+                .andExpect(jsonPath("$.data[1].postCount", is(7)));
     }
 }
