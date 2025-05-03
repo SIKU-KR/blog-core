@@ -33,7 +33,7 @@ public class PublicService {
         List<PostSummaryResponse> postSummaryList = postRepository.findAll(page, size);
         return PostListResponse.builder()
                 .content(postSummaryList)
-                .totalElements(postSummaryList.size())
+                .totalElements(postRepository.countAll())
                 .pageNumber(page)
                 .pageSize(size)
                 .build();
@@ -43,7 +43,7 @@ public class PublicService {
         List<PostSummaryResponse> postSummaryList = postRepository.findAllByCategoryId(categoryId, page, size);
         return PostListResponse.builder()
                 .content(postSummaryList)
-                .totalElements(postSummaryList.size())
+                .totalElements(postRepository.countByCategoryId(categoryId))
                 .pageNumber(page)
                 .pageSize(size)
                 .build();

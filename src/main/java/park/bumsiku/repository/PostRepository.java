@@ -56,6 +56,19 @@ public class PostRepository {
         return query.getResultList();
     }
 
+    public int countAll() {
+        String jpql = "SELECT COUNT(p) FROM Post p";
+        TypedQuery<Long> query = entityManager.createQuery(jpql, Long.class);
+        return query.getSingleResult().intValue();
+    }
+
+    public int countByCategoryId(int categoryId) {
+        String jpql = "SELECT COUNT(p) FROM Post p WHERE p.category.id = :categoryId";
+        TypedQuery<Long> query = entityManager.createQuery(jpql, Long.class);
+        query.setParameter("categoryId", categoryId);
+        return query.getSingleResult().intValue();
+    }
+
     private String buildPostSummarySelectClause() {
         return "SELECT new park.bumsiku.domain.dto.response.PostSummaryResponse(" +
                 "p.id, p.title, p.summary, p.createdAt, p.updatedAt) ";
