@@ -22,6 +22,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -287,5 +288,181 @@ public class PublicTest {
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.error.code", is(400)))
                 .andExpect(jsonPath("$.error.message", containsString("게시글 ID는 1 이상이어야 합니다")));
+    }
+
+    @Test
+    public void testPostCommentSuccess() throws Exception {
+        int postId = posts.get(0).getId();
+        String content = "This is a new test comment";
+        String author = "Test Author";
+
+        mockMvc.perform(post("/comments/{postId}", postId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                park.bumsiku.domain.dto.request.CommentRequest.builder()
+                                        .content(content)
+                                        .author(author)
+                                        .build()
+                        )))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data.authorName", is(author)))
+                .andExpect(jsonPath("$.data.content", is(content)))
+                .andExpect(jsonPath("$.data.id", greaterThan(0)))
+                .andExpect(jsonPath("$.data.createdAt", notNullValue()));
+    }
+
+    @Test
+    public void testPostCommentInvalidPostId() throws Exception {
+        int invalidPostId = 0;
+        String content = "This is a test comment";
+        String author = "Test Author";
+
+        mockMvc.perform(post("/comments/{postId}", invalidPostId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                park.bumsiku.domain.dto.request.CommentRequest.builder()
+                                        .content(content)
+                                        .author(author)
+                                        .build()
+                        )))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("게시글 ID는 1 이상이어야 합니다")));
+    }
+
+    @Test
+    public void testPostCommentNonExistentPostId() throws Exception {
+        int nonExistentPostId = 9999;
+        String content = "This is a test comment";
+        String author = "Test Author";
+
+        mockMvc.perform(post("/comments/{postId}", nonExistentPostId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                park.bumsiku.domain.dto.request.CommentRequest.builder()
+                                        .content(content)
+                                        .author(author)
+                                        .build()
+                        )))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(404)))
+                .andExpect(jsonPath("$.error.message", containsString("Post not found")));
+    }
+
+    @Test
+    public void testPostCommentEmptyContent() throws Exception {
+        int postId = posts.get(0).getId();
+        String content = "";
+        String author = "Test Author";
+
+        mockMvc.perform(post("/comments/{postId}", postId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                park.bumsiku.domain.dto.request.CommentRequest.builder()
+                                        .content(content)
+                                        .author(author)
+                                        .build()
+                        )))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("댓글 내용을 입력해주세요")));
+    }
+
+    @Test
+    public void testPostCommentContentTooLong() throws Exception {
+        int postId = posts.get(0).getId();
+        // Create a string longer than 500 characters
+        StringBuilder contentBuilder = new StringBuilder();
+        for (int i = 0; i < 51; i++) {
+            contentBuilder.append("0123456789");
+        }
+        String content = contentBuilder.toString(); // 510 characters
+        String author = "Test Author";
+
+        mockMvc.perform(post("/comments/{postId}", postId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                park.bumsiku.domain.dto.request.CommentRequest.builder()
+                                        .content(content)
+                                        .author(author)
+                                        .build()
+                        )))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("댓글은 1자 이상 500자 이하로 입력해주세요")));
+    }
+
+    @Test
+    public void testPostCommentEmptyAuthor() throws Exception {
+        int postId = posts.get(0).getId();
+        String content = "This is a test comment";
+        String author = "";
+
+        mockMvc.perform(post("/comments/{postId}", postId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                park.bumsiku.domain.dto.request.CommentRequest.builder()
+                                        .content(content)
+                                        .author(author)
+                                        .build()
+                        )))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("작성자 이름을 입력해주세요")));
+    }
+
+    @Test
+    public void testPostCommentAuthorTooShort() throws Exception {
+        int postId = posts.get(0).getId();
+        String content = "This is a test comment";
+        String author = "A"; // Only 1 character, minimum is 2
+
+        mockMvc.perform(post("/comments/{postId}", postId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                park.bumsiku.domain.dto.request.CommentRequest.builder()
+                                        .content(content)
+                                        .author(author)
+                                        .build()
+                        )))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("작성자 이름은 2자 이상 20자 이하로 입력해주세요")));
+    }
+
+    @Test
+    public void testPostCommentAuthorTooLong() throws Exception {
+        int postId = posts.get(0).getId();
+        String content = "This is a test comment";
+        String author = "ThisAuthorNameIsTooLongForTheSystem"; // More than 20 characters
+
+        mockMvc.perform(post("/comments/{postId}", postId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                park.bumsiku.domain.dto.request.CommentRequest.builder()
+                                        .content(content)
+                                        .author(author)
+                                        .build()
+                        )))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("작성자 이름은 2자 이상 20자 이하로 입력해주세요")));
+    }
+
+    @Test
+    public void testPostCommentNullRequest() throws Exception {
+        int postId = posts.get(0).getId();
+
+        mockMvc.perform(post("/comments/{postId}", postId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
     }
 }
