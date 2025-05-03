@@ -49,7 +49,7 @@ public class PublicControllerTest {
     public void testRedirectToSwagger() throws Exception {
         mockMvc.perform(get("/"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/swagger-ui.html"));
+                .andExpect(redirectedUrl("/swagger-ui/index.html"));
     }
 
     @Test
