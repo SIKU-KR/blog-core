@@ -8,11 +8,11 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import park.bumsiku.common.ArgumentValidator;
 import park.bumsiku.config.SecurityConfig;
 import park.bumsiku.domain.dto.request.CommentRequest;
 import park.bumsiku.domain.dto.response.*;
 import park.bumsiku.service.PublicService;
-import park.bumsiku.common.ArgumentValidator;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
