@@ -1,4 +1,4 @@
-package park.bumsiku.validator;
+package park.bumsiku.common;
 
 import org.springframework.stereotype.Component;
 import park.bumsiku.domain.dto.request.*;

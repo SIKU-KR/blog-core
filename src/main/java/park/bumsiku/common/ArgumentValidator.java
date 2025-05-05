@@ -1,4 +1,4 @@
-package park.bumsiku.validator;
+package park.bumsiku.common;
 
 import park.bumsiku.domain.dto.request.*;
 
