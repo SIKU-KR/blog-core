@@ -1,5 +1,7 @@
 package park.bumsiku.service;
 
+import com.sksamuel.scrimage.ImmutableImage;
+import com.sksamuel.scrimage.webp.WebpWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,11 +18,15 @@ import park.bumsiku.domain.entity.Comment;
 import park.bumsiku.domain.entity.Post;
 import park.bumsiku.repository.CategoryRepository;
 import park.bumsiku.repository.CommentRepository;
+import park.bumsiku.repository.ImageRepository;
 import park.bumsiku.repository.PostRepository;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -35,8 +41,8 @@ public class PrivateService {
     @Autowired
     private PostRepository postRepository;
 
-//    @Autowired
-//    private PostImageRepository imageRepository;
+    @Autowired
+    private ImageRepository imageRepository;
 
     public CategoryResponse createCategory(CreateCategoryRequest request) {
         Category category = new Category();
@@ -88,8 +94,23 @@ public class PrivateService {
     }
 
     public UploadImageResponse uploadImage(MultipartFile image) {
-        // TODO: business logic 구현
-        throw new UnsupportedOperationException("Not implemented");
+        String filename = UUID.randomUUID() + ".webp";
+
+        try (InputStream in = image.getInputStream()) {
+            byte[] webpBytes = ImmutableImage.loader()
+                    .fromStream(in)
+                    .bytes(WebpWriter.DEFAULT);
+
+            String url = imageRepository.insert(filename, webpBytes);
+
+            return UploadImageResponse.builder()
+                    .size(webpBytes.length)
+                    .url(url)
+                    .build();
+
+        } catch (IOException e) {
+            throw new RuntimeException("이미지 변환 및 저장 실패: " + e.getMessage(), e);
+        }
     }
 
     public PostResponse createPost(CreatePostRequest request) {
