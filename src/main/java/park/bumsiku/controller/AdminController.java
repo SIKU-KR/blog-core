@@ -13,7 +13,7 @@ import park.bumsiku.domain.dto.response.PostResponse;
 import park.bumsiku.domain.dto.response.Response;
 import park.bumsiku.domain.dto.response.UploadImageResponse;
 import park.bumsiku.service.PrivateService;
-import park.bumsiku.validator.ArgumentValidator;
+import park.bumsiku.common.ArgumentValidator;
 
 import java.util.Map;
 

@@ -12,7 +12,7 @@ import park.bumsiku.config.SecurityConfig;
 import park.bumsiku.domain.dto.request.CommentRequest;
 import park.bumsiku.domain.dto.response.*;
 import park.bumsiku.service.PublicService;
-import park.bumsiku.validator.ArgumentValidator;
+import park.bumsiku.common.ArgumentValidator;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;

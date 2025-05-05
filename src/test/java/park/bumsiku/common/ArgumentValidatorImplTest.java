@@ -1,4 +1,4 @@
-package park.bumsiku.validator;
+package park.bumsiku.common;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

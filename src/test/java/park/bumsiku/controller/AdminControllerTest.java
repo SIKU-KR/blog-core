@@ -19,7 +19,7 @@ import park.bumsiku.domain.dto.response.CategoryResponse;
 import park.bumsiku.domain.dto.response.PostResponse;
 import park.bumsiku.domain.dto.response.UploadImageResponse;
 import park.bumsiku.service.PrivateService;
-import park.bumsiku.validator.ArgumentValidator;
+import park.bumsiku.common.ArgumentValidator;
 
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
