@@ -23,7 +23,7 @@ import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig {
+public class Security {
 
     @Value("${admin.password}")
     private String adminPassword;
