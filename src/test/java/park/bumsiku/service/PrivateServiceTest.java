@@ -7,17 +7,22 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 import park.bumsiku.domain.dto.request.CreatePostRequest;
 import park.bumsiku.domain.dto.request.UpdateCategoryRequest;
 import park.bumsiku.domain.dto.request.UpdatePostRequest;
 import park.bumsiku.domain.dto.response.PostResponse;
+import park.bumsiku.domain.dto.response.UploadImageResponse;
 import park.bumsiku.domain.entity.Category;
 import park.bumsiku.domain.entity.Comment;
 import park.bumsiku.domain.entity.Post;
 import park.bumsiku.repository.CategoryRepository;
 import park.bumsiku.repository.CommentRepository;
+import park.bumsiku.repository.ImageRepository;
 import park.bumsiku.repository.PostRepository;
 
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +46,9 @@ public class PrivateServiceTest {
     @Mock
     private PostRepository postRepository;
 
+    @Mock
+    private ImageRepository imageRepository;
+
     @InjectMocks
     private PrivateService privateService;
 
@@ -59,9 +67,6 @@ public class PrivateServiceTest {
         categories.add(techCategory);
         categories.add(lifeCategory);
     }
-
-//    @Captor
-//    private ArgumentCaptor<PostImage> postImageCaptor;
 
     // Helper methods for creating test data
     private Category createCategory(Integer id, String name, Integer orderNum) {
@@ -231,6 +236,38 @@ public class PrivateServiceTest {
 //        PostImage capturedImage = postImageCaptor.getValue();
 //        Assertions.assertEquals(filename, capturedImage.getFilename());
 //    }
+
+
+    @Test
+    @DisplayName("uploadImage: 유효한 MultipartFile 을 WebP 로 변환 후 저장하고 URL 반환")
+    void uploadImage_validImage_shouldConvertAndReturnUrl() throws Exception {
+        // given: 테스트 리소스 로드
+        try (InputStream in = getClass().getResourceAsStream("/images.jpeg")) {
+            assertThat(in).as("테스트용 이미지(images.jpeg)가 resources 루트에 있어야 합니다").isNotNull();
+            byte[] originalBytes = in.readAllBytes();
+            MultipartFile multipartFile = new MockMultipartFile(
+                    "image",
+                    "images.jpeg",
+                    "image/jpeg",
+                    originalBytes
+            );
+            when(imageRepository.insert(anyString(), any(byte[].class)))
+                    .thenReturn("test-url");
+
+            // when
+            UploadImageResponse response = privateService.uploadImage(multipartFile);
+
+            // then
+            assertThat(response).isNotNull();
+            assertThat(response.getUrl()).isEqualTo("test-url");
+            assertThat(response.getSize()).isGreaterThan(0);
+
+            verify(imageRepository, times(1)).insert(
+                    argThat(name -> name.toLowerCase().endsWith(".webp")),
+                    any(byte[].class)
+            );
+        }
+    }
 
     @Test
     @DisplayName("createPost should save post and return response when request is valid")

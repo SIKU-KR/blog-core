@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import park.bumsiku.common.ArgumentValidator;
 import park.bumsiku.domain.dto.request.CreateCategoryRequest;
 import park.bumsiku.domain.dto.request.CreatePostRequest;
 import park.bumsiku.domain.dto.request.UpdateCategoryRequest;
@@ -13,7 +14,6 @@ import park.bumsiku.domain.dto.response.PostResponse;
 import park.bumsiku.domain.dto.response.Response;
 import park.bumsiku.domain.dto.response.UploadImageResponse;
 import park.bumsiku.service.PrivateService;
-import park.bumsiku.validator.ArgumentValidator;
 
 import java.util.Map;
 
@@ -67,6 +67,7 @@ public class AdminController implements AdminAPI {
     public Response<UploadImageResponse> addImage(
             @RequestPart(value = "image", required = true) MultipartFile image
     ) {
+        validator.validateImage(image);
         UploadImageResponse response = service.uploadImage(image);
         return Response.success(response);
     }
