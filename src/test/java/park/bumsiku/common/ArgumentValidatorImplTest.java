@@ -2,8 +2,10 @@ package park.bumsiku.common;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import park.bumsiku.config.MethodValidationTestConfig;
 import park.bumsiku.domain.dto.request.*;
@@ -209,5 +211,74 @@ public class ArgumentValidatorImplTest {
         assertThrows(IllegalArgumentException.class, () -> validator.validatePostIdAndPostRequest(1, null));
 
         // Other invalid cases would be similar to the validatePostRequest test
+    }
+
+    @Test
+    void testValidateImage() {
+        // Valid image
+        MockMultipartFile validImage = new MockMultipartFile(
+                "image",
+                "test-image.jpg",
+                "image/jpeg",
+                new byte[1024] // 1KB
+        );
+        assertDoesNotThrow(() -> validator.validateImage(validImage));
+
+        // Valid image with different extension
+        MockMultipartFile validPngImage = new MockMultipartFile(
+                "image",
+                "test-image.png",
+                "image/png",
+                new byte[1024] // 1KB
+        );
+        assertDoesNotThrow(() -> validator.validateImage(validPngImage));
+
+        // Null image
+        assertThrows(IllegalArgumentException.class, () -> validator.validateImage(null));
+
+        // Empty image
+        MockMultipartFile emptyImage = new MockMultipartFile(
+                "image",
+                "test-image.jpg",
+                "image/jpeg",
+                new byte[0]
+        );
+        assertThrows(IllegalArgumentException.class, () -> validator.validateImage(emptyImage));
+
+        // Invalid extension
+        MockMultipartFile invalidExtensionImage = new MockMultipartFile(
+                "image",
+                "test-image.txt",
+                "text/plain",
+                new byte[1024]
+        );
+        assertThrows(IllegalArgumentException.class, () -> validator.validateImage(invalidExtensionImage));
+
+        // Too large image
+        MockMultipartFile tooLargeImage = Mockito.mock(MockMultipartFile.class);
+        Mockito.when(tooLargeImage.isEmpty()).thenReturn(false);
+        Mockito.when(tooLargeImage.getSize()).thenReturn(6 * 1024 * 1024L); // 6MB
+        Mockito.when(tooLargeImage.getOriginalFilename()).thenReturn("large-image.jpg");
+        assertThrows(IllegalArgumentException.class, () -> validator.validateImage(tooLargeImage));
+
+        // Invalid filename (too long)
+        StringBuilder longFilename = new StringBuilder();
+        for (int i = 0; i < 101; i++) {
+            longFilename.append("a");
+        }
+        longFilename.append(".jpg");
+
+        MockMultipartFile longFilenameImage = Mockito.mock(MockMultipartFile.class);
+        Mockito.when(longFilenameImage.isEmpty()).thenReturn(false);
+        Mockito.when(longFilenameImage.getSize()).thenReturn(1024L);
+        Mockito.when(longFilenameImage.getOriginalFilename()).thenReturn(longFilename.toString());
+        assertThrows(IllegalArgumentException.class, () -> validator.validateImage(longFilenameImage));
+
+        // Null filename
+        MockMultipartFile nullFilenameImage = Mockito.mock(MockMultipartFile.class);
+        Mockito.when(nullFilenameImage.isEmpty()).thenReturn(false);
+        Mockito.when(nullFilenameImage.getSize()).thenReturn(1024L);
+        Mockito.when(nullFilenameImage.getOriginalFilename()).thenReturn(null);
+        assertThrows(IllegalArgumentException.class, () -> validator.validateImage(nullFilenameImage));
     }
 }

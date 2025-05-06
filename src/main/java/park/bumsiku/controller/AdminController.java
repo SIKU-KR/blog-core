@@ -67,6 +67,7 @@ public class AdminController implements AdminAPI {
     public Response<UploadImageResponse> addImage(
             @RequestPart(value = "image", required = true) MultipartFile image
     ) {
+        validator.validateImage(image);
         UploadImageResponse response = service.uploadImage(image);
         return Response.success(response);
     }

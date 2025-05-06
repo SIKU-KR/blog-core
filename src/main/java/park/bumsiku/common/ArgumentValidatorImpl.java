@@ -1,10 +1,20 @@
 package park.bumsiku.common;
 
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 import park.bumsiku.domain.dto.request.*;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 @Component
 public class ArgumentValidatorImpl implements ArgumentValidator {
+
+    private static final Set<String> ALLOWED_IMAGE_EXTENSIONS = new HashSet<>(
+            Arrays.asList("jpg", "jpeg", "png", "gif", "webp"));
+
+    private static final long MAX_IMAGE_SIZE = 20 * 1024 * 1024; // 20MB
 
     private void validateTitle(String title) {
         if (title == null || title.isBlank()) {
@@ -169,5 +179,34 @@ public class ArgumentValidatorImpl implements ArgumentValidator {
     public void validatePostIdAndPostRequest(int postId, UpdatePostRequest request) {
         validatePostId(postId);
         validatePostRequest(request);
+    }
+
+    @Override
+    public void validateImage(MultipartFile image) {
+        if (image == null || image.isEmpty()) {
+            throw new IllegalArgumentException("이미지 파일을 업로드해주세요");
+        }
+        if (image.getSize() > MAX_IMAGE_SIZE) {
+            throw new IllegalArgumentException("이미지 크기는 20MB 이하여야 합니다");
+        }
+        String originalFilename = image.getOriginalFilename();
+        if (originalFilename == null || originalFilename.isBlank()) {
+            throw new IllegalArgumentException("파일 이름이 유효하지 않습니다");
+        }
+        if (originalFilename.length() > 100) {
+            throw new IllegalArgumentException("파일 이름은 100자 이하여야 합니다");
+        }
+        String extension = getFileExtension(originalFilename);
+        if (extension == null || !ALLOWED_IMAGE_EXTENSIONS.contains(extension.toLowerCase())) {
+            throw new IllegalArgumentException("지원하지 않는 이미지 형식입니다. 지원 형식: jpg, jpeg, png, gif, webp");
+        }
+    }
+
+    private String getFileExtension(String filename) {
+        int lastDotIndex = filename.lastIndexOf('.');
+        if (lastDotIndex == -1 || lastDotIndex == filename.length() - 1) {
+            return null;
+        }
+        return filename.substring(lastDotIndex + 1);
     }
 }
