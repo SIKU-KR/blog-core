@@ -1,12 +1,12 @@
 package park.bumsiku.repository;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
-@Component
+@Repository
 public class ImageRepository {
 
     private final S3Client s3;

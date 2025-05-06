@@ -1,10 +1,9 @@
 package park.bumsiku;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+import park.bumsiku.config.AbstractTestSupport;
 
-@SpringBootTest
-class ServerApplicationTests {
+class ServerApplicationTests extends AbstractTestSupport {
 
     @Test
     void contextLoads() {

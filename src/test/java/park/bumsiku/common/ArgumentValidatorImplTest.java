@@ -3,20 +3,17 @@ package park.bumsiku.common;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.ActiveProfiles;
+import park.bumsiku.config.AbstractTestSupport;
 import park.bumsiku.config.MethodValidationTestConfig;
 import park.bumsiku.domain.dto.request.*;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@SpringBootTest
 @Import(MethodValidationTestConfig.class)
-@ActiveProfiles("test")
-public class ArgumentValidatorImplTest {
+public class ArgumentValidatorImplTest extends AbstractTestSupport {
 
     private ArgumentValidator validator;
 
@@ -257,7 +254,7 @@ public class ArgumentValidatorImplTest {
         // Too large image
         MockMultipartFile tooLargeImage = Mockito.mock(MockMultipartFile.class);
         Mockito.when(tooLargeImage.isEmpty()).thenReturn(false);
-        Mockito.when(tooLargeImage.getSize()).thenReturn(6 * 1024 * 1024L); // 6MB
+        Mockito.when(tooLargeImage.getSize()).thenReturn(25 * 1024 * 1024L); // 6MB
         Mockito.when(tooLargeImage.getOriginalFilename()).thenReturn("large-image.jpg");
         assertThrows(IllegalArgumentException.class, () -> validator.validateImage(tooLargeImage));
 
