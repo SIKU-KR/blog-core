@@ -16,7 +16,7 @@ public class ImageRepository {
     public ImageRepository(
             S3Client s3Client,
             @Value("${aws.s3.bucket}") String bucket,
-            @Value("${aws.s3.base-url}") String baseUrl) {
+            @Value("${aws.s3.bucket.url}") String baseUrl) {
         this.s3 = s3Client;
         this.bucket = bucket;
         this.baseUrl = baseUrl;
