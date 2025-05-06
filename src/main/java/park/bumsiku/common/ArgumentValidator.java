@@ -1,5 +1,6 @@
 package park.bumsiku.common;
 
+import org.springframework.web.multipart.MultipartFile;
 import park.bumsiku.domain.dto.request.*;
 
 public interface ArgumentValidator {
@@ -23,4 +24,6 @@ public interface ArgumentValidator {
     void validatePostIdAndCommentRequest(int postId, CommentRequest request);
 
     void validatePostIdAndPostRequest(int postId, UpdatePostRequest request);
+
+    void validateImage(MultipartFile image);
 }
