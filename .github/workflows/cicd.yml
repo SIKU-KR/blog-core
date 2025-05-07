@@ -128,7 +128,7 @@ jobs:
               -e SPRINGDOC_API_INFO_VERSION=v1.0.0 \
               -e AWS_CREDENTIALS_ACCESS_KEY="${{ secrets.AWS_CREDENTIALS_ACCESS_KEY }}" \
               -e AWS_CREDENTIALS_SECRET_KEY="${{ secrets.AWS_CREDENTIALS_SECRET_KEY }}" \
-              -e AWS_REGION_STATIC=ap-northeast-2 \
+              -e AWS_REGION=ap-northeast-2 \
               -e AWS_STACK_AUTO=false \
               -e AWS_S3_BUCKET="${{ secrets.AWS_S3_BUCKET }}" \
               -e AWS_S3_BUCKET_URL="${{ secrets.AWS_S3_BUCKET_URL }}" \
