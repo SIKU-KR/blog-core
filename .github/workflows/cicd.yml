@@ -123,6 +123,7 @@ jobs:
               -e SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.MySQL8Dialect \
               -e ADMIN_PASSWORD="${{ secrets.ADMIN_PASSWORD }}" \
               -e SERVER_SERVLET_SESSION_TIMEOUT=1h \
+              -e SERVER_SERVLET_SESSION_COOKIE_SECURE=true \
               -e SPRINGDOC_PACKAGES_TO_SCAN=park.bumsiku.controller \
               -e SPRINGDOC_API_INFO_TITLE="Bumsiku Blog API" \
               -e SPRINGDOC_API_INFO_VERSION=v1.0.0 \
