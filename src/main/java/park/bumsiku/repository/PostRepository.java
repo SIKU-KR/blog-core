@@ -72,6 +72,6 @@ public class PostRepository {
 
     private String buildPostSummarySelectClause() {
         return "SELECT new park.bumsiku.domain.dto.response.PostSummaryResponse(" +
-                "p.id, p.title, p.summary, p.createdAt, p.updatedAt) ";
+                "p.id, p.title, p.summary, p.category.id, p.createdAt, p.updatedAt) ";
     }
 }
