@@ -22,7 +22,7 @@ public class Category {
     private String name;
 
     // 정렬 순서: 낮을수록 먼저
-    @Column(nullable = false)
+    @Column(name = "order_num", nullable = false)
     private Integer ordernum;
 
     @Column(nullable = false)
