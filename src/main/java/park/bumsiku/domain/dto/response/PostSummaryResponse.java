@@ -15,6 +15,7 @@ public class PostSummaryResponse {
     private int id;
     private String title;
     private String summary;
+    private int categoryId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
