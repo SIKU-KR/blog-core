@@ -10,10 +10,10 @@ public class Cors implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:3000") // 허용할 프론트엔드 오리진 (필요에 따라 수정)
+                .allowedOrigins("http://localhost:3000", "https://bumsiku.kr", "https://www.bumsiku.kr")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
-                .allowCredentials(true) // 쿠키/인증 정보 허용
+                .allowCredentials(true)
                 .maxAge(3600);
     }
 }
