@@ -43,6 +43,7 @@ public class Security {
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
                 )
+                .formLogin(AbstractHttpConfigurer::disable)
                 // 3) 세션 정책 · 동시성 제어 · 세션 고정 공격 방지
                 .sessionManagement(session -> session
                         // 세션 생성 정책
@@ -67,6 +68,7 @@ public class Security {
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")
                 );
+
 
         return http.build();
     }
