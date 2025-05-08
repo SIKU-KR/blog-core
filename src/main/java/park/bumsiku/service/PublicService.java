@@ -55,6 +55,7 @@ public class PublicService {
                 .id(post.getId())
                 .title(post.getTitle())
                 .content(post.getContent())
+                .categoryId(post.getCategory().getId())
                 .createdAt(post.getCreatedAt().toString())
                 .updatedAt(post.getUpdatedAt().toString())
                 .build();
