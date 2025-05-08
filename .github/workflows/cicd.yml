@@ -125,6 +125,8 @@ jobs:
               -e SERVER_SERVLET_SESSION_TIMEOUT=2h \
               -e SERVER_SERVLET_SESSION_COOKIE_SECURE=true \
               -e SERVER_SERVLET_SESSION_COOKIE_SAME_SITE=None \
+              -e SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE=20MB \
+              -e SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE=20MB \
               -e SPRINGDOC_PACKAGES_TO_SCAN=park.bumsiku.controller \
               -e SPRINGDOC_API_INFO_TITLE="Bumsiku Blog API" \
               -e SPRINGDOC_API_INFO_VERSION=v1.0.0 \
