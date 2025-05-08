@@ -42,6 +42,7 @@ public class PublicServiceTest {
 
     private Post postMockData() {
         Category mockCategory = Category.builder()
+                .id(1)
                 .name("Technology")
                 .ordernum(1)
                 .build();
