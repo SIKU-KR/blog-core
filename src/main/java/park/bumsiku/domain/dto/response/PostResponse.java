@@ -13,6 +13,7 @@ public class PostResponse {
     private int id;
     private String title;
     private String content;
+    private int categoryId;
     private String createdAt;
     private String updatedAt;
 }
