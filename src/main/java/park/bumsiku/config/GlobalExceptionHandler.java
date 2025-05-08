@@ -73,7 +73,16 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Response<Void>> handleUnhandledException(Exception e) {
-        log.error("Unhandled exception occurred:", e);
+        StackTraceElement[] stackTrace = e.getStackTrace();
+        int maxLines = Math.min(5, stackTrace.length);
+        StringBuilder partialTrace = new StringBuilder();
+
+        partialTrace.append(e).append("\n");
+        for (int i = 0; i < maxLines; i++) {
+            partialTrace.append("\tat ").append(stackTrace[i].toString()).append("\n");
+        }
+
+        log.error("Unhandled exception occurred:\n{}", partialTrace.toString());
         Response<Void> response = Response.error(
                 500,
                 "Internal Server Error"
