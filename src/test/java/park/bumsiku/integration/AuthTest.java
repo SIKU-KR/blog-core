@@ -11,6 +11,7 @@ import park.bumsiku.config.AbstractTestSupport;
 import park.bumsiku.domain.dto.request.LoginRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 public class AuthTest extends AbstractTestSupport {
@@ -53,6 +54,42 @@ public class AuthTest extends AbstractTestSupport {
         MvcResult result = mockMvc.perform(post("/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(loginRequest)))
+                .andReturn();
+
+        // Assert
+        assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+    }
+
+    @Test
+    public void testSessionValid() throws Exception {
+        // Arrange - First login to create a valid session
+        LoginRequest loginRequest = LoginRequest.builder()
+                .username("admin")
+                .password("password")
+                .build();
+
+        MvcResult loginResult = mockMvc.perform(post("/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginRequest)))
+                .andReturn();
+
+        // Get the session from the login request
+        Object securityContext = loginResult.getRequest().getSession().getAttribute(
+                HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
+
+        // Act - Check session using the same session
+        MvcResult sessionResult = mockMvc.perform(get("/session")
+                .sessionAttr(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, securityContext))
+                .andReturn();
+
+        // Assert
+        assertThat(sessionResult.getResponse().getStatus()).isEqualTo(HttpStatus.OK.value());
+    }
+
+    @Test
+    public void testSessionInvalid() throws Exception {
+        // Act - Check session without a valid session cookie
+        MvcResult result = mockMvc.perform(get("/session"))
                 .andReturn();
 
         // Assert

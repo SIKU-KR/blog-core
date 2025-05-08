@@ -16,6 +16,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -74,6 +75,27 @@ public class LoginController {
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             log.warn("Login failed for user: {}", loginRequest.getUsername(), e);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+
+    @Operation(
+            summary = "세션 상태 확인",
+            description = "현재 세션이 유효한지 확인합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "세션이 유효함"),
+                    @ApiResponse(responseCode = "401", description = "세션이 유효하지 않음", content = @Content)
+            }
+    )
+    @GetMapping("/session")
+    public ResponseEntity<Void> checkSession(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+
+        if (session != null && session.getAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY) != null) {
+            log.info("Session is valid with ID: {}", session.getId());
+            return ResponseEntity.ok().build();
+        } else {
+            log.info("Session is invalid or expired");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
