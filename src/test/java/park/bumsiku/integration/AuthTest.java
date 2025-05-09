@@ -1,6 +1,5 @@
 package park.bumsiku.integration;
 
-import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -24,8 +23,8 @@ public class AuthTest extends AbstractTestSupport {
                 .build();
 
         MvcResult result = mockMvc.perform(post("/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(loginRequest)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest)))
                 .andReturn();
 
         MockHttpServletResponse response = result.getResponse();
@@ -52,8 +51,8 @@ public class AuthTest extends AbstractTestSupport {
 
         // Act
         MvcResult result = mockMvc.perform(post("/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(loginRequest)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest)))
                 .andReturn();
 
         // Assert
@@ -69,8 +68,8 @@ public class AuthTest extends AbstractTestSupport {
                 .build();
 
         MvcResult loginResult = mockMvc.perform(post("/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(loginRequest)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest)))
                 .andReturn();
 
         // Get the session from the login request
@@ -79,7 +78,7 @@ public class AuthTest extends AbstractTestSupport {
 
         // Act - Check session using the same session
         MvcResult sessionResult = mockMvc.perform(get("/session")
-                .sessionAttr(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, securityContext))
+                        .sessionAttr(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, securityContext))
                 .andReturn();
 
         // Assert
