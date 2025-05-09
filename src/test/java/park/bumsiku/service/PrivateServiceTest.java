@@ -384,7 +384,7 @@ public class PrivateServiceTest {
                 "Updated Title",
                 "Updated Content",
                 "Updated Summary",
-                lifeCategory.getName()
+                lifeCategory.getId()
         );
 
         // Create updated post
@@ -431,7 +431,7 @@ public class PrivateServiceTest {
                 "Updated Title",
                 "Updated Content",
                 "Updated Summary",
-                "Life"
+                1
         );
 
         // Mock repository behavior

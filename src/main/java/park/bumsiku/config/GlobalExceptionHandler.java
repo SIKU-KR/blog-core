@@ -82,7 +82,7 @@ public class GlobalExceptionHandler {
             partialTrace.append("\tat ").append(stackTrace[i].toString()).append("\n");
         }
 
-        log.error("Unhandled exception occurred:\n{}", partialTrace.toString());
+        log.error("Unhandled exception occurred:\n{}", partialTrace);
         Response<Void> response = Response.error(
                 500,
                 "Internal Server Error"

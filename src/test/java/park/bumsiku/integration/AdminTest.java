@@ -499,7 +499,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Test Post")
                 .content("This is updated content for the test post")
                 .summary("Updated summary of the test post")
-                .category(categories.get(1).getName())
+                .category(categories.get(1).getId())
                 .build();
 
         // Perform request and verify
@@ -535,7 +535,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("")
                 .content("This is updated content for the test post")
                 .summary("Updated summary of the test post")
-                .category(categories.get(0).getName())
+                .category(categories.get(0).getId())
                 .build();
 
         // Perform request and verify
@@ -566,7 +566,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title(longTitle)
                 .content("This is updated content for the test post")
                 .summary("Updated summary of the test post")
-                .category(categories.get(0).getName())
+                .category(categories.get(0).getId())
                 .build();
 
         // Perform request and verify
@@ -590,7 +590,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Test Post")
                 .content("")
                 .summary("Updated summary of the test post")
-                .category(categories.get(0).getName())
+                .category(categories.get(0).getId())
                 .build();
 
         // Perform request and verify
@@ -621,7 +621,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Test Post")
                 .content(longContent)
                 .summary("Updated summary of the test post")
-                .category(categories.get(0).getName())
+                .category(categories.get(0).getId())
                 .build();
 
         // Perform request and verify
@@ -645,7 +645,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Test Post")
                 .content("This is updated content for the test post")
                 .summary("")
-                .category(categories.get(0).getName())
+                .category(categories.get(0).getId())
                 .build();
 
         // Perform request and verify
@@ -676,7 +676,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Test Post")
                 .content("This is updated content for the test post")
                 .summary(longSummary)
-                .category(categories.get(0).getName())
+                .category(categories.get(0).getId())
                 .build();
 
         // Perform request and verify
@@ -700,7 +700,6 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Test Post")
                 .content("This is updated content for the test post")
                 .summary("Updated summary of the test post")
-                .category("")
                 .build();
 
         // Perform request and verify
@@ -724,7 +723,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Test Post")
                 .content("This is updated content for the test post")
                 .summary("Updated summary of the test post")
-                .category("NonExistentCategory")
+                .category(-1)
                 .build();
 
         // Perform request and verify - this should still work because the service defaults to category ID 1
@@ -743,7 +742,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Test Post")
                 .content("This is updated content for the test post")
                 .summary("Updated summary of the test post")
-                .category(categories.get(0).getName())
+                .category(categories.get(0).getId())
                 .build();
 
         // Perform request with zero ID and verify
@@ -764,7 +763,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Test Post")
                 .content("This is updated content for the test post")
                 .summary("Updated summary of the test post")
-                .category(categories.get(0).getName())
+                .category(categories.get(0).getId())
                 .build();
 
         // Perform request with negative ID and verify
@@ -785,7 +784,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Test Post")
                 .content("This is updated content for the test post")
                 .summary("Updated summary of the test post")
-                .category(categories.get(0).getName())
+                .category(categories.get(0).getId())
                 .build();
 
         // Perform request with non-numeric ID and verify
@@ -809,7 +808,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Test Post")
                 .content("This is updated content for the test post")
                 .summary("Updated summary of the test post")
-                .category(categories.get(0).getName())
+                .category(categories.get(0).getId())
                 .build();
 
         // Perform request and verify
@@ -832,7 +831,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Test Post")
                 .content("This is updated content for the test post")
                 .summary("Updated summary of the test post")
-                .category(categories.get(0).getName())
+                .category(categories.get(0).getId())
                 .build();
 
         // Perform request without authentication and verify
