@@ -24,7 +24,6 @@ import park.bumsiku.repository.PostRepository;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
@@ -158,29 +157,6 @@ public class PrivateService {
         postRepository.delete(postId);
     }
 
-    /**
-     * Helper method to find a category by name
-     *
-     * @param categoryName the name of the category to find
-     * @return the found category or the default category (ID 1) if not found
-     */
-    private Category findCategoryByName(String categoryName) {
-        if (categoryName == null || categoryName.isEmpty()) {
-            return categoryRepository.findById(1); // Default to ID 1 if name is null or empty
-        }
-
-        // Find all categories and filter by name
-        List<Category> categories = categoryRepository.findAll();
-        for (Category category : categories) {
-            if (categoryName.equals(category.getName())) {
-                return category;
-            }
-        }
-
-        // Default to ID 1 if not found
-        return categoryRepository.findById(1);
-    }
-
     public PostResponse updatePost(int postId, UpdatePostRequest request) {
         // Find the post
         Post post = postRepository.findById(postId);
@@ -190,7 +166,7 @@ public class PrivateService {
         }
 
         // Find the category by name
-        Category category = findCategoryByName(request.getCategory());
+        Category category = categoryRepository.findById(request.getCategory());
 
         // Update the post
         post.setTitle(request.getTitle());

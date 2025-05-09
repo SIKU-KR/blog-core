@@ -198,7 +198,7 @@ public class AdminControllerTest {
                 .title("Updated Post")
                 .content("Updated Content")
                 .summary("Updated Summary")
-                .category("Updated Category")
+                .category(1)
                 .build();
 
         PostResponse response = PostResponse.builder()
@@ -230,7 +230,7 @@ public class AdminControllerTest {
                 .title("Updated Post")
                 .content("Updated Content")
                 .summary("Updated Summary")
-                .category("Updated Category")
+                .category(1)
                 .build();
 
         // Mock service to throw exception
@@ -367,7 +367,7 @@ public class AdminControllerTest {
                 .title("")  // Empty title is invalid
                 .content("Updated Content")
                 .summary("Updated Summary")
-                .category("Updated Category")
+                .category(1)
                 .build();
 
         // Mock service to throw exception
@@ -524,7 +524,7 @@ public class AdminControllerTest {
                 .title("Updated Post")
                 .content("Updated Content")
                 .summary("Updated Summary")
-                .category("Updated Category")
+                .category(1)
                 .build();
 
         // Mock service to throw runtime exception
