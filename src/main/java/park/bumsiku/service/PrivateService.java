@@ -24,7 +24,6 @@ import park.bumsiku.repository.PostRepository;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
