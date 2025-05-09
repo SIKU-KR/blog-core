@@ -122,7 +122,7 @@ public class ArgumentValidatorImplTest extends AbstractTestSupport {
                 .title("Valid Title")
                 .content("Valid content")
                 .summary("Valid summary")
-                .category("Technology")
+                .category(3)
                 .build();
         assertDoesNotThrow(() -> validator.validatePostRequest(validRequest));
 
@@ -197,7 +197,7 @@ public class ArgumentValidatorImplTest extends AbstractTestSupport {
                 .title("Valid Title")
                 .content("Valid content")
                 .summary("Valid summary")
-                .category("Technology")
+                .category(3)
                 .build();
         assertDoesNotThrow(() -> validator.validatePostIdAndPostRequest(1, validRequest));
 
