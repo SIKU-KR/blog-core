@@ -134,7 +134,7 @@ public class ArgumentValidatorImpl implements ArgumentValidator {
         validateTitle(request.getTitle());
         validateContent(request.getContent());
         validateSummary(request.getSummary());
-        validateCategory(request.getCategory());
+        validateCategoryId(request.getCategory());
     }
 
     private void validateCommentRequest(CommentRequest request) {
