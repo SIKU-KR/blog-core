@@ -1,48 +1,26 @@
-name: CI/CD
+name: CD - Build, Push and Deploy
 
 on:
+  push:
+    branches: [ main, master ] # main 또는 master 브랜치에 푸시될 때
   pull_request:
+    types: [ closed ] # PR이 닫힐 때 (아래 if 조건에서 merged 확인)
     branches: [ main, master ]
-    types: [ closed ]
 
 jobs:
-  run-on-merge:
-    if: github.event.pull_request.merged == true
+  build_and_push_docker:
+    name: Build Docker Image and Push to GHCR
+    # push 이벤트이거나, PR이 merge된 경우에만 실행
+    if: |
+      (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')) ||
+      (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
     runs-on: ubuntu-latest
+    permissions: # GHCR에 푸시하기 위한 권한
+      contents: read
+      packages: write
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
-      - name: Notify
-        run: echo "✅ PR has been merged!"
-
-  build:
-    if: github.event.pull_request.merged == true
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: gradle
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - name: Build with Gradle
-        run: ./gradlew build
-
-      - name: Run tests
-        run: ./gradlew test
-
-  build-and-push:
-    if: github.event.pull_request.merged == true
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -55,7 +33,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_PAT }}
+          password: ${{ secrets.GHCR_PAT }} # GitHub Secrets에 GHCR_PAT (Personal Access Token) 저장 필요
 
       - name: Convert repository name to lowercase
         id: repo_name
@@ -70,41 +48,45 @@ jobs:
             type=ref,event=branch
             type=ref,event=tag
             type=sha,format=short
-            type=raw,value=latest
+            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') || github.ref == format('refs/heads/{0}', 'master') }} # main/master 브랜치에만 latest 태그
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
           context: .
-          platforms: linux/arm64
+          platforms: linux/arm64 # 필요에 따라 플랫폼 변경
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  deploy:
-    if: github.event.pull_request.merged == true
-    needs: build-and-push
+  deploy_to_server:
+    name: Deploy to Server
+    needs: build_and_push_docker # Docker 이미지 빌드 및 푸시 완료 후 실행
+    # push 이벤트이거나, PR이 merge된 경우에만 실행 (build_and_push_docker와 동일한 조건)
+    if: |
+      (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')) ||
+      (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
     runs-on: ubuntu-latest
     steps:
       - name: Convert repository name to lowercase for deployment
         run: |
           echo "IMAGE=ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]'):latest" >> $GITHUB_ENV
 
-      - name: Deploy via SSH with GHCR login
-        uses: appleboy/ssh-action@v1
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3 # 버전 명시 권장
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
+          port: 22 # 기본값이지만 명시적으로 작성
           script: |
             echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
             docker pull ${{ env.IMAGE }}
-            docker stop blog-backend || true
-            docker rm blog-backend || true
+            docker stop blog-backend || true # 컨테이너가 없을 경우 에러 방지
+            docker rm blog-backend || true   # 컨테이너가 없을 경우 에러 방지
 
             docker run -d \
               --name blog-backend \
