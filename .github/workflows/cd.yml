@@ -4,8 +4,7 @@ on:
   push:
     branches: [ main, master ] # main 또는 master 브랜치에 푸시될 때
   pull_request:
-    types: [ closed ] # PR이 닫힐 때 (아래 if 조건에서 merged 확인)
-    branches: [ main, master ]
+    branches: [ main, master ] # PR 관련 이벤트 발생 시 (open, synchronize, closed 등)
 
 jobs:
   build_and_push_docker:
@@ -86,7 +85,7 @@ jobs:
 
             docker pull ${{ env.IMAGE }}
             docker stop blog-backend || true # 컨테이너가 없을 경우 에러 방지
-            docker rm blog-backend || true   # 컨테이너가 없을 경우 에러 방지
+            docker rm blog-backend || true    # 컨테이너가 없을 경우 에러 방지
 
             docker run -d \
               --name blog-backend \
