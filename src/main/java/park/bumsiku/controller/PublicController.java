@@ -39,7 +39,7 @@ public class PublicController implements PublicAPI {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt,desc") String sort) {
 
-        log.info("Fetching posts with categoryId: {}, page: {}, size: {}, sort: {}", 
+        log.info("Fetching posts with categoryId: {}, page: {}, size: {}, sort: {}",
                 categoryId, page, size, sort);
 
         validator.validatePagination(page, size);
