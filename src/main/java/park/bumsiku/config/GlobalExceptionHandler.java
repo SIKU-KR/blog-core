@@ -20,6 +20,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Response<Void>> handleConstraintViolationException(IllegalArgumentException e) {
+        log.warn("Invalid argument: {}", e.getMessage());
         Response<Void> response = Response.error(
                 400,
                 e.getMessage() != null ? e.getMessage() : "Invalid Argument"
@@ -29,6 +30,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Response<Void>> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
+        log.warn("Invalid request body: {}", e.getMessage());
         Response<Void> response = Response.error(
                 400,
                 "Invalid request body"
@@ -38,7 +40,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Response<Void>> handleConstraintViolationException(ConstraintViolationException e) {
-        log.error("Validation error: {}", e.getMessage());
+        log.warn("Validation error: {}", e.getMessage());
         Response<Void> response = Response.error(
                 400,
                 e.getMessage() != null ? e.getMessage() : "유효성 검증 오류"
@@ -48,13 +50,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<Response<Void>> handleNoSuchArgumentException(NoSuchElementException e) {
+        log.warn("Resource not found: {}", e.getMessage());
         Response<Void> response = Response.error(
                 404,
                 e.getMessage() != null ? e.getMessage() : "Argument not found"
         );
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
-
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<Response<Void>> handleTypeMismatchException(MethodArgumentTypeMismatchException e) {
@@ -67,6 +69,7 @@ public class GlobalExceptionHandler {
         String detail = String.format("Parameter '%s' must be of type '%s' but value '%s' is invalid",
                 param, expectedType, value);
 
+        log.warn("Type mismatch error: {}", detail);
         Response<Void> response = Response.error(400, detail);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
@@ -82,7 +85,7 @@ public class GlobalExceptionHandler {
             partialTrace.append("\tat ").append(stackTrace[i].toString()).append("\n");
         }
 
-        log.error("Unhandled exception occurred:\n{}", partialTrace);
+        log.error("Unhandled exception occurred: {}\n{}", e.getMessage(), partialTrace);
         Response<Void> response = Response.error(
                 500,
                 "Internal Server Error"
