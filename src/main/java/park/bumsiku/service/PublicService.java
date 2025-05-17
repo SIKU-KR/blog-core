@@ -1,5 +1,7 @@
 package park.bumsiku.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +22,8 @@ import java.util.stream.Collectors;
 @Transactional
 public class PublicService {
 
+    private static final Logger log = LoggerFactory.getLogger(PublicService.class);
+
     @Autowired
     private PostRepository postRepository;
 
@@ -30,27 +34,39 @@ public class PublicService {
     private CategoryRepository categoryRepository;
 
     public PostListResponse getPostList(int page, int size, String sort) {
+        log.info("Fetching all posts with page: {}, size: {}, sort: {}", page, size, sort);
         List<PostSummaryResponse> postSummaryList = postRepository.findAll(page, size);
+        int totalElements = postRepository.countAll();
+        log.info("Successfully fetched {} posts out of total {}", postSummaryList.size(), totalElements);
+
         return PostListResponse.builder()
                 .content(postSummaryList)
-                .totalElements(postRepository.countAll())
+                .totalElements(totalElements)
                 .pageNumber(page)
                 .pageSize(size)
                 .build();
     }
 
     public PostListResponse getPostList(int categoryId, int page, int size, String sort) {
+        log.info("Fetching posts for category: {} with page: {}, size: {}, sort: {}", categoryId, page, size, sort);
         List<PostSummaryResponse> postSummaryList = postRepository.findAllByCategoryId(categoryId, page, size);
+        int totalElements = postRepository.countByCategoryId(categoryId);
+        log.info("Successfully fetched {} posts out of total {} for category: {}",
+                postSummaryList.size(), totalElements, categoryId);
+
         return PostListResponse.builder()
                 .content(postSummaryList)
-                .totalElements(postRepository.countByCategoryId(categoryId))
+                .totalElements(totalElements)
                 .pageNumber(page)
                 .pageSize(size)
                 .build();
     }
 
     public PostResponse getPostById(int id) {
+        log.info("Fetching post with id: {}", id);
         Post post = requirePostById(id);
+        log.info("Successfully fetched post with title: {}", post.getTitle());
+
         return PostResponse.builder()
                 .id(post.getId())
                 .title(post.getTitle())
@@ -63,8 +79,11 @@ public class PublicService {
     }
 
     public List<CommentResponse> getCommentsById(int id) {
+        log.info("Fetching comments for post id: {}", id);
         Post post = requirePostById(id);
         List<Comment> commentList = commentRepository.findAllByPost(post);
+        log.info("Successfully fetched {} comments for post id: {}", commentList.size(), id);
+
         return commentList.stream()
                 .map(c -> CommentResponse.builder()
                         .id(c.getId().intValue())
@@ -76,6 +95,7 @@ public class PublicService {
     }
 
     public CommentResponse createComment(int id, CommentRequest commentRequest) {
+        log.info("Creating comment for post id: {} by author: {}", id, commentRequest.getAuthor());
         Post post = requirePostById(id);
         Comment comment = Comment.builder()
                 .post(post)
@@ -83,6 +103,8 @@ public class PublicService {
                 .content(commentRequest.getContent())
                 .build();
         Comment saved = commentRepository.insert(comment);
+        log.info("Successfully created comment with id: {} for post id: {}", saved.getId(), id);
+
         return CommentResponse.builder()
                 .id(saved.getId().intValue())
                 .authorName(saved.getAuthorName())
@@ -92,7 +114,10 @@ public class PublicService {
     }
 
     public List<CategoryResponse> getCategories() {
+        log.info("Fetching all categories");
         List<Category> categories = categoryRepository.findAll();
+        log.info("Successfully fetched {} categories", categories.size());
+
         return categories.stream()
                 .map(cat -> CategoryResponse.builder()
                         .id(cat.getId())
