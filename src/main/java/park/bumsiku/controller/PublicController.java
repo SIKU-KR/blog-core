@@ -1,6 +1,7 @@
 package park.bumsiku.controller;
 
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
@@ -15,6 +16,8 @@ import java.util.List;
 @RequestMapping("/")
 public class PublicController implements PublicAPI {
 
+    private static final Logger log = LoggerFactory.getLogger(PublicController.class);
+
     @Autowired
     private PublicService service;
 
@@ -24,6 +27,7 @@ public class PublicController implements PublicAPI {
     @Override
     @GetMapping("/")
     public RedirectView redirectToSwagger() {
+        log.info("Redirecting to Swagger UI");
         return new RedirectView("/swagger-ui/index.html");
     }
 
@@ -34,6 +38,9 @@ public class PublicController implements PublicAPI {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt,desc") String sort) {
+
+        log.info("Fetching posts with categoryId: {}, page: {}, size: {}, sort: {}",
+                categoryId, page, size, sort);
 
         validator.validatePagination(page, size);
         if (categoryId != null) {
@@ -46,6 +53,7 @@ public class PublicController implements PublicAPI {
         } else {
             result = service.getPostList(page, size, sort);
         }
+        log.info("Successfully fetched {} posts", result.getTotalElements());
         return Response.success(result);
     }
 
@@ -54,9 +62,11 @@ public class PublicController implements PublicAPI {
     public Response<PostResponse> getPostById(
             @PathVariable("postId") int postId) {
 
+        log.info("Fetching post with id: {}", postId);
         validator.validatePostId(postId);
 
         PostResponse result = service.getPostById(postId);
+        log.info("Successfully fetched post: {}", result);
         return Response.success(result);
     }
 
@@ -65,9 +75,11 @@ public class PublicController implements PublicAPI {
     public Response<List<CommentResponse>> getCommentsByPostId(
             @PathVariable("postId") int postId) {
 
+        log.info("Fetching comments for post id: {}", postId);
         validator.validatePostId(postId);
 
         List<CommentResponse> result = service.getCommentsById(postId);
+        log.info("Successfully fetched {} comments for post id: {}", result.size(), postId);
         return Response.success(result);
     }
 
@@ -77,16 +89,20 @@ public class PublicController implements PublicAPI {
             @PathVariable("postId") int postId,
             @RequestBody CommentRequest commentRequest) {
 
+        log.info("Creating comment for post id: {}, comment: {}", postId, commentRequest);
         validator.validatePostIdAndCommentRequest(postId, commentRequest);
 
         CommentResponse result = service.createComment(postId, commentRequest);
+        log.info("Successfully created comment: {}", result);
         return Response.success(result);
     }
 
     @Override
     @GetMapping("/categories")
     public Response<List<CategoryResponse>> getCategories() {
+        log.info("Fetching all categories");
         List<CategoryResponse> result = service.getCategories();
+        log.info("Successfully fetched {} categories", result.size());
         return Response.success(result);
     }
 }
