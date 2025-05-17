@@ -54,6 +54,7 @@ public class LoginController {
     public ResponseEntity<Void> login(@RequestBody LoginRequest loginRequest,
                                       HttpServletRequest request,
                                       HttpServletResponse response) {
+        log.info("Login attempt for user: {}", loginRequest.getUsername());
         try {
             var authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -65,16 +66,17 @@ public class LoginController {
 
             // Explicitly create a session to ensure a cookie is set
             HttpSession session = request.getSession(true);
-            log.info("Created session with ID: {}", session.getId());
+            log.info("Created session with ID: {} for user: {}", session.getId(), loginRequest.getUsername());
 
             session.setAttribute(
                     HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
                     SecurityContextHolder.getContext()
             );
 
+            log.info("Login successful for user: {}", loginRequest.getUsername());
             return ResponseEntity.ok().build();
         } catch (Exception e) {
-            log.warn("Login failed for user: {}", loginRequest.getUsername(), e);
+            log.warn("Login failed for user: {} - Reason: {}", loginRequest.getUsername(), e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
@@ -89,6 +91,7 @@ public class LoginController {
     )
     @GetMapping("/session")
     public ResponseEntity<Void> checkSession(HttpServletRequest request) {
+        log.info("Checking session status");
         HttpSession session = request.getSession(false);
 
         if (session != null && session.getAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY) != null) {
