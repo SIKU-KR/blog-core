@@ -1,4 +1,4 @@
-package park.bumsiku.config;
+package park.bumsiku.utils;
 
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;

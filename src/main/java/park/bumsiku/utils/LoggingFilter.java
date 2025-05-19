@@ -1,4 +1,4 @@
-package park.bumsiku.common;
+package park.bumsiku.utils;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;

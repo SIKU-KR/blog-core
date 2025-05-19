@@ -1,4 +1,4 @@
-package park.bumsiku.common;
+package park.bumsiku.utils;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
