@@ -119,5 +119,4 @@ jobs:
               -e AWS_S3_BUCKET="${{ secrets.AWS_S3_BUCKET }}" \
               -e AWS_S3_BUCKET_URL="${{ secrets.AWS_S3_BUCKET_URL }}" \
               -e MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=* \
-              -e DISCORD_URL="${{ secrets.DISCORD }}" \
               ${{ env.IMAGE }}
