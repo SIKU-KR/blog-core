@@ -16,6 +16,7 @@ import park.bumsiku.domain.entity.Post;
 import park.bumsiku.repository.CategoryRepository;
 import park.bumsiku.repository.CommentRepository;
 import park.bumsiku.repository.PostRepository;
+import park.bumsiku.utils.DiscordWebhookCreator;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -39,6 +40,9 @@ public class PublicServiceTest {
 
     @Mock
     private CategoryRepository categoryRepository;
+
+    @Mock
+    private DiscordWebhookCreator discord;
 
     private Post postMockData() {
         Category mockCategory = Category.builder()
