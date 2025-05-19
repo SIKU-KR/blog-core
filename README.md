@@ -1,9 +1,7 @@
 # 개인 Blog 서버
 
-## 소개
-
-### 동기
-이 프로젝트는 개인 블로그용 백엔드 서버를 구축하며, **실무에서 요구되는 소프트웨어 개발 전체 과정을 경험하기 위해** 시작되었습니다.
+### 소개
+이 프로젝트는 [개인 기술블로그](bumsiku.kr)용 백엔드 서버를 구축하며, **실무에서 요구되는 소프트웨어 개발 전체 과정을 경험하기 위해** 시작되었습니다.
 
 - **RESTful API** 설계를 통한 깔끔한 인터페이스 구성
 - **TDD** (테스트 주도 개발) 로 안정적인 코드 작성
@@ -19,21 +17,21 @@
 - **사용자 인증**: 관리자 로그인 및 인증 시스템
 - **API 문서화**: Swagger를 통한 자동 API 문서 생성
 
-## 구현
-
 ### Architecture
-![](./docs/architecture.png)
+![](./docs/architecture.jpg)
 
 ### 기술 스택
 - **언어**: Java 17
 - **프레임워크**
-  - Spring Boot 3.4.5
+  - Spring Boot 3.4
   - Spring Security
   - Spring Data JPA
 - **데이터베이스**: MySQL(real), H2 Database(test)
 - **이미지 저장**: AWS S3
 - **API 문서화**: SpringDoc OpenAPI (Swagger)
-- **빌드 도구**: Gradle, Docker
+- **빌드 도구**: Gradle, Docker, Github Actions
 
 ### In the future...
+
+- 스트레스 테스트: 일정 개수 이상의 게시글이 저장되었을 때
 - 성능 최적화 및 캐싱 구현
