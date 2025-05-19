@@ -6,11 +6,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
 import java.util.Map;
+
 
 @Component
 public class DiscordWebhookCreator {
@@ -26,6 +28,7 @@ public class DiscordWebhookCreator {
         this.restTemplate = restTemplate;
     }
 
+    @Async
     public void sendMessage(String message) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -37,11 +40,9 @@ public class DiscordWebhookCreator {
 
         try {
             restTemplate.postForEntity(apiUrl, entity, String.class);
-            log.info("Message sent to discord: " + message);
+            log.info("Message sending initiated to discord: " + message);
         } catch (Exception e) {
-            log.error(e.getMessage());
-            throw new RuntimeException(e);
+            log.error("Error sending message to discord: " + e.getMessage(), e);
         }
     }
-
 }
