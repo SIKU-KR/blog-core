@@ -13,6 +13,7 @@ import park.bumsiku.domain.entity.Post;
 import park.bumsiku.repository.CategoryRepository;
 import park.bumsiku.repository.CommentRepository;
 import park.bumsiku.repository.PostRepository;
+import park.bumsiku.utils.DiscordWebhookCreator;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -28,6 +29,8 @@ public class PublicService {
     private PostRepository postRepository;
     private CommentRepository commentRepository;
     private CategoryRepository categoryRepository;
+
+    private DiscordWebhookCreator discord;
 
     public PostListResponse getPostList(int page, int size, String sort) {
         log.info("Fetching all posts with page: {}, size: {}, sort: {}", page, size, sort);
@@ -100,7 +103,7 @@ public class PublicService {
                 .build();
         Comment saved = commentRepository.insert(comment);
         log.info("Successfully created comment with id: {} for post id: {}", saved.getId(), id);
-
+        discord.sendMessage(String.format("💬 게시글 ID: %d에 '%s'님이 댓글을 작성했습니다.\n내용: %s", id, commentRequest.getAuthor(), saved.getContent()));
         return CommentResponse.builder()
                 .id(saved.getId().intValue())
                 .authorName(saved.getAuthorName())
