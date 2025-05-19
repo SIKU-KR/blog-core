@@ -3,7 +3,6 @@ package park.bumsiku.service;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import park.bumsiku.domain.dto.request.CommentRequest;
@@ -105,7 +104,6 @@ public class PublicService {
         Comment saved = commentRepository.insert(comment);
         log.info("Successfully created comment with id: {} for post id: {}", saved.getId(), id);
         discord.sendMessage(String.format("💬 게시글 ID: %d에 '%s'님이 댓글을 작성했습니다.\n내용: %s", id, commentRequest.getAuthor(), saved.getContent()));
-
         return CommentResponse.builder()
                 .id(saved.getId().intValue())
                 .authorName(saved.getAuthorName())
