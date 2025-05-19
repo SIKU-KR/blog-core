@@ -3,11 +3,9 @@ package park.bumsiku.controller;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import park.bumsiku.utils.ArgumentValidator;
 import park.bumsiku.domain.dto.request.CreateCategoryRequest;
 import park.bumsiku.domain.dto.request.CreatePostRequest;
 import park.bumsiku.domain.dto.request.UpdateCategoryRequest;
@@ -17,6 +15,7 @@ import park.bumsiku.domain.dto.response.PostResponse;
 import park.bumsiku.domain.dto.response.Response;
 import park.bumsiku.domain.dto.response.UploadImageResponse;
 import park.bumsiku.service.PrivateService;
+import park.bumsiku.utils.ArgumentValidator;
 
 import java.util.Map;
 

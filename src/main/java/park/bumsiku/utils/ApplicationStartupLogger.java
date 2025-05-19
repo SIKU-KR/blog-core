@@ -11,7 +11,7 @@ import java.util.Arrays;
 
 @Component
 public class ApplicationStartupLogger implements ApplicationListener<ApplicationStartedEvent> {
-    
+
     private static final Logger log = LoggerFactory.getLogger(ApplicationStartupLogger.class);
 
     private final Environment environment;
