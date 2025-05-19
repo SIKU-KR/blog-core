@@ -21,6 +21,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import park.bumsiku.domain.dto.request.LoginRequest;
+import park.bumsiku.utils.DiscordWebhookCreator;
+
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Tag(name = "Authentication", description = "인증 관련 API")
 @RestController
@@ -29,9 +34,11 @@ public class LoginController {
     private static final Logger log = LoggerFactory.getLogger(LoginController.class);
 
     private final AuthenticationManager authenticationManager;
+    private final DiscordWebhookCreator discordWebhookCreator;
 
-    public LoginController(AuthenticationManager authenticationManager) {
+    public LoginController(AuthenticationManager authenticationManager, DiscordWebhookCreator discordWebhookCreator) {
         this.authenticationManager = authenticationManager;
+        this.discordWebhookCreator = discordWebhookCreator;
     }
 
     @Operation(
@@ -74,6 +81,12 @@ public class LoginController {
             );
 
             log.info("Login successful for user: {}", loginRequest.getUsername());
+            ZonedDateTime now = ZonedDateTime.now(ZoneId.of("Asia/Seoul"));
+            discordWebhookCreator.sendMessage(String.format("🔑 사용자 '%s'이 %s %s에 로그인했습니다.",
+                    loginRequest.getUsername(),
+                    now.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")),
+                    now.format(DateTimeFormatter.ofPattern("HH시 mm분 ss초")))
+            );
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             log.warn("Login failed for user: {} - Reason: {}", loginRequest.getUsername(), e.getMessage());
@@ -103,3 +116,4 @@ public class LoginController {
         }
     }
 }
+
