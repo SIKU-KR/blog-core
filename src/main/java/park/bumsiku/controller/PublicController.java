@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
+import park.bumsiku.common.ArgumentValidator;
 import park.bumsiku.domain.dto.request.CommentRequest;
 import park.bumsiku.domain.dto.response.*;
 import park.bumsiku.service.PublicService;

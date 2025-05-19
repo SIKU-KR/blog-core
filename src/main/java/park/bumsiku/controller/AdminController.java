@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
 import park.bumsiku.domain.dto.request.CreateCategoryRequest;
 import park.bumsiku.domain.dto.request.CreatePostRequest;
 import park.bumsiku.domain.dto.request.UpdateCategoryRequest;

@@ -11,6 +11,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import park.bumsiku.utils.ArgumentValidator;
+
 import park.bumsiku.config.Security;
 import park.bumsiku.domain.dto.request.CreateCategoryRequest;
 import park.bumsiku.domain.dto.request.CreatePostRequest;
