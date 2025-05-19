@@ -1,5 +1,6 @@
 package park.bumsiku.service;
 
+import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,17 +21,13 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@AllArgsConstructor
 public class PublicService {
 
     private static final Logger log = LoggerFactory.getLogger(PublicService.class);
 
-    @Autowired
     private PostRepository postRepository;
-
-    @Autowired
     private CommentRepository commentRepository;
-
-    @Autowired
     private CategoryRepository categoryRepository;
 
     public PostListResponse getPostList(int page, int size, String sort) {

@@ -2,6 +2,7 @@ package park.bumsiku.service;
 
 import com.sksamuel.scrimage.ImmutableImage;
 import com.sksamuel.scrimage.webp.WebpWriter;
+import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,20 +33,14 @@ import java.util.UUID;
 
 @Service
 @Transactional
+@AllArgsConstructor
 public class PrivateService {
 
     private static final Logger log = LoggerFactory.getLogger(PrivateService.class);
 
-    @Autowired
     private CategoryRepository categoryRepository;
-
-    @Autowired
     private CommentRepository commentRepository;
-
-    @Autowired
     private PostRepository postRepository;
-
-    @Autowired
     private ImageRepository imageRepository;
 
     public CategoryResponse createCategory(CreateCategoryRequest request) {

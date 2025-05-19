@@ -1,5 +1,6 @@
 package park.bumsiku.controller;
 
+import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,14 +15,12 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/")
+@AllArgsConstructor
 public class PublicController implements PublicAPI {
 
     private static final Logger log = LoggerFactory.getLogger(PublicController.class);
 
-    @Autowired
     private PublicService service;
-
-    @Autowired
     private ArgumentValidator validator;
 
     @Override

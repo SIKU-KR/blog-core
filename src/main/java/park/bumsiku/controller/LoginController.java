@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -29,17 +30,13 @@ import java.time.format.DateTimeFormatter;
 
 @Tag(name = "Authentication", description = "인증 관련 API")
 @RestController
+@AllArgsConstructor
 public class LoginController {
 
     private static final Logger log = LoggerFactory.getLogger(LoginController.class);
 
     private final AuthenticationManager authenticationManager;
     private final DiscordWebhookCreator discordWebhookCreator;
-
-    public LoginController(AuthenticationManager authenticationManager, DiscordWebhookCreator discordWebhookCreator) {
-        this.authenticationManager = authenticationManager;
-        this.discordWebhookCreator = discordWebhookCreator;
-    }
 
     @Operation(
             summary = "로그인",
