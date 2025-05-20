@@ -1,14 +1,12 @@
 package park.bumsiku.domain.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString(exclude = "content")
 public class PostResponse {
     private int id;
     private String title;
