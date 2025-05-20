@@ -13,6 +13,7 @@ import park.bumsiku.config.Security;
 import park.bumsiku.domain.dto.request.CommentRequest;
 import park.bumsiku.domain.dto.response.*;
 import park.bumsiku.service.PublicService;
+import park.bumsiku.utils.DiscordWebhookCreator;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -41,6 +42,9 @@ public class PublicControllerTest {
 
     @MockitoBean
     private ArgumentValidator validator;
+
+    @MockitoBean
+    private DiscordWebhookCreator webhookCreator;
 
     @Autowired
     private ObjectMapper objectMapper;

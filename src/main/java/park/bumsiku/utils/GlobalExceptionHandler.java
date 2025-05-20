@@ -1,6 +1,7 @@
 package park.bumsiku.utils;
 
 import jakarta.validation.ConstraintViolationException;
+import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -14,9 +15,12 @@ import park.bumsiku.domain.dto.response.Response;
 import java.util.NoSuchElementException;
 
 @ControllerAdvice
+@AllArgsConstructor
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    private final DiscordWebhookCreator discord;
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Response<Void>> handleConstraintViolationException(IllegalArgumentException e) {
@@ -86,6 +90,7 @@ public class GlobalExceptionHandler {
         }
 
         log.error("Unhandled exception occurred: {}\n{}", e.getMessage(), partialTrace);
+        discord.sendMessage("Unhandled exception occurred: " + e.getMessage() + "\n" + partialTrace);
         Response<Void> response = Response.error(
                 500,
                 "Internal Server Error"
