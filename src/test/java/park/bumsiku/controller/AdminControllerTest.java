@@ -20,6 +20,7 @@ import park.bumsiku.domain.dto.response.CategoryResponse;
 import park.bumsiku.domain.dto.response.PostResponse;
 import park.bumsiku.domain.dto.response.UploadImageResponse;
 import park.bumsiku.service.PrivateService;
+import park.bumsiku.utils.DiscordWebhookCreator;
 
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
@@ -45,6 +46,9 @@ public class AdminControllerTest {
 
     @MockitoBean
     private ArgumentValidator validator;
+
+    @MockitoBean
+    private DiscordWebhookCreator webhookCreator;
 
     @Autowired
     private ObjectMapper objectMapper;

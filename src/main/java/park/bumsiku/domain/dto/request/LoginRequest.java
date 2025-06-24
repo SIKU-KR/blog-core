@@ -1,15 +1,13 @@
 package park.bumsiku.domain.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString(exclude = "password")
 @Schema(description = "로그인 요청 데이터")
 public class LoginRequest {
 

@@ -22,11 +22,11 @@ public class Post {
     private String title;
 
     @Lob
-    @Column(nullable = false, columnDefinition = "LONGTEXT")
+    @Column(nullable = false)
     private String content;
 
     @Lob
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(nullable = false)
     private String summary;
 
     @Column(nullable = false)
