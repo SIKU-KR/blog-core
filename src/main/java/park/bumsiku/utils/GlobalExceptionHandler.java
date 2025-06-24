@@ -27,56 +27,40 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Response<Void>> handleConstraintViolationException(IllegalArgumentException e) {
         log.warn("Invalid argument: {}", e.getMessage());
-        Response<Void> response = Response.error(
-                400,
-                e.getMessage() != null ? e.getMessage() : "Invalid Argument"
-        );
+        Response<Void> response = Response.error(HttpStatus.BAD_REQUEST.value(), e.getMessage() != null ? e.getMessage() : "Invalid Argument");
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Response<Void>> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
         log.warn("Invalid request body: {}", e.getMessage());
-        Response<Void> response = Response.error(
-                400,
-                "Invalid request body"
-        );
+        Response<Void> response = Response.error(HttpStatus.BAD_REQUEST.value(), "Invalid request body");
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Response<Void>> handleConstraintViolationException(ConstraintViolationException e) {
         log.warn("Validation error: {}", e.getMessage());
-        Response<Void> response = Response.error(
-                400,
-                e.getMessage() != null ? e.getMessage() : "유효성 검증 오류"
-        );
+        Response<Void> response = Response.error(HttpStatus.BAD_REQUEST.value(), e.getMessage() != null ? e.getMessage() : "유효성 검증 오류");
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<Response<Void>> handleNoSuchArgumentException(NoSuchElementException e) {
         log.warn("Resource not found: {}", e.getMessage());
-        Response<Void> response = Response.error(
-                404,
-                e.getMessage() != null ? e.getMessage() : "Argument not found"
-        );
+        Response<Void> response = Response.error(HttpStatus.NOT_FOUND.value(), e.getMessage() != null ? e.getMessage() : "Argument not found");
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<Response<Void>> handleTypeMismatchException(MethodArgumentTypeMismatchException e) {
-        // 잘못 전달된 파라미터 이름, 타입, 값 정보를 조합해서 메시지를 구성
         String param = e.getName();
-        String expectedType = e.getRequiredType() != null
-                ? e.getRequiredType().getSimpleName()
-                : "unknown";
+        String expectedType = e.getRequiredType() != null ? e.getRequiredType().getSimpleName() : "unknown";
         Object value = e.getValue();
-        String detail = String.format("Parameter '%s' must be of type '%s' but value '%s' is invalid",
-                param, expectedType, value);
+        String detail = String.format("Parameter '%s' must be of type '%s' but value '%s' is invalid", param, expectedType, value);
 
         log.warn("Type mismatch error: {}", detail);
-        Response<Void> response = Response.error(400, detail);
+        Response<Void> response = Response.error(HttpStatus.BAD_REQUEST.value(), detail);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
@@ -106,10 +90,7 @@ public class GlobalExceptionHandler {
         String requestTrace = "Request: " + Thread.currentThread().getName();
         log.error("Unhandled exception occurred: {}\n{}", e.getMessage(), partialTrace);
         discord.sendMessage("Unhandled exception occurred: " + e.getMessage() + "\n" + partialTrace + "\n" + requestTrace);
-        Response<Void> response = Response.error(
-                500,
-                "Internal Server Error"
-        );
+        Response<Void> response = Response.error(500, "Internal Server Error");
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
