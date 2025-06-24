@@ -7,9 +7,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import park.bumsiku.domain.dto.response.Response;
 
 import java.util.NoSuchElementException;
@@ -78,19 +80,32 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<Response<Void>> handleNoResourceFoundException(NoResourceFoundException e) {
+        log.warn("Resource not found: {}", e.getMessage());
+        Response<Void> response = Response.error(HttpStatus.NOT_FOUND.value(), e.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<Response<Void>> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {
+        log.warn("Http method not supported: {}", e.getMessage());
+        Response<Void> response = Response.error(HttpStatus.METHOD_NOT_ALLOWED.value(), e.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.METHOD_NOT_ALLOWED);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Response<Void>> handleUnhandledException(Exception e) {
         StackTraceElement[] stackTrace = e.getStackTrace();
-        int maxLines = Math.min(5, stackTrace.length);
+        int maxLines = Math.min(2, stackTrace.length); // Reduced to 2 lines max
         StringBuilder partialTrace = new StringBuilder();
-
         partialTrace.append(e).append("\n");
         for (int i = 0; i < maxLines; i++) {
             partialTrace.append("\tat ").append(stackTrace[i].toString()).append("\n");
         }
-
+        String requestTrace = "Request: " + Thread.currentThread().getName();
         log.error("Unhandled exception occurred: {}\n{}", e.getMessage(), partialTrace);
-        discord.sendMessage("Unhandled exception occurred: " + e.getMessage() + "\n" + partialTrace);
+        discord.sendMessage("Unhandled exception occurred: " + e.getMessage() + "\n" + partialTrace + "\n" + requestTrace);
         Response<Void> response = Response.error(
                 500,
                 "Internal Server Error"
