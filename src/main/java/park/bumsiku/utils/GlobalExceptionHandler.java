@@ -31,10 +31,10 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, status);
     }
 
-    private ResponseEntity<Response<Void>> handleErrorException(String logMessage, Exception e, String logDetails, HttpStatus status, String errorMessage) {
-        log.error(logMessage, e.getMessage(), logDetails);
-        Response<Void> response = Response.error(status.value(), errorMessage);
-        return new ResponseEntity<>(response, status);
+    private ResponseEntity<Response<Void>> handleErrorException(Exception e, String logDetails) {
+        log.error("Unhandled exception occurred: {}\n{}", e.getMessage(), logDetails);
+        Response<Void> response = Response.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error");
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
@@ -80,7 +80,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Response<Void>> handleUnhandledException(Exception e) {
         StackTraceElement[] stackTrace = e.getStackTrace();
-        int maxLines = Math.min(2, stackTrace.length); // Reduced to 2 lines max
+        int maxLines = Math.min(2, stackTrace.length);
         StringBuilder partialTrace = new StringBuilder();
         partialTrace.append(e).append("\n");
         for (int i = 0; i < maxLines; i++) {
@@ -90,6 +90,6 @@ public class GlobalExceptionHandler {
 
         discord.sendMessage("Unhandled exception occurred: " + e.getMessage() + "\n" + partialTrace + "\n" + requestTrace);
 
-        return handleErrorException("Unhandled exception occurred: {}\n{}", e, partialTrace.toString(), HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error");
+        return handleErrorException(e, partialTrace.toString());
     }
 }
