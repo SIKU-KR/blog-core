@@ -24,32 +24,37 @@ public class GlobalExceptionHandler {
 
     private final DiscordWebhookCreator discord;
 
+    private ResponseEntity<Response<Void>> handleException(String logMessage, Exception e, HttpStatus status, String errorMessage, String defaultMessage) {
+        log.warn(logMessage, e.getMessage());
+        String message = errorMessage != null ? errorMessage : (e.getMessage() != null ? e.getMessage() : defaultMessage);
+        Response<Void> response = Response.error(status.value(), message);
+        return new ResponseEntity<>(response, status);
+    }
+
+    private ResponseEntity<Response<Void>> handleErrorException(String logMessage, Exception e, String logDetails, HttpStatus status, String errorMessage) {
+        log.error(logMessage, e.getMessage(), logDetails);
+        Response<Void> response = Response.error(status.value(), errorMessage);
+        return new ResponseEntity<>(response, status);
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Response<Void>> handleConstraintViolationException(IllegalArgumentException e) {
-        log.warn("Invalid argument: {}", e.getMessage());
-        Response<Void> response = Response.error(HttpStatus.BAD_REQUEST.value(), e.getMessage() != null ? e.getMessage() : "Invalid Argument");
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        return handleException("Invalid argument: {}", e, HttpStatus.BAD_REQUEST, null, "Invalid Argument");
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Response<Void>> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
-        log.warn("Invalid request body: {}", e.getMessage());
-        Response<Void> response = Response.error(HttpStatus.BAD_REQUEST.value(), "Invalid request body");
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        return handleException("Invalid request body: {}", e, HttpStatus.BAD_REQUEST, "Invalid request body", null);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Response<Void>> handleConstraintViolationException(ConstraintViolationException e) {
-        log.warn("Validation error: {}", e.getMessage());
-        Response<Void> response = Response.error(HttpStatus.BAD_REQUEST.value(), e.getMessage() != null ? e.getMessage() : "유효성 검증 오류");
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        return handleException("Validation error: {}", e, HttpStatus.BAD_REQUEST, null, "유효성 검증 오류");
     }
 
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<Response<Void>> handleNoSuchArgumentException(NoSuchElementException e) {
-        log.warn("Resource not found: {}", e.getMessage());
-        Response<Void> response = Response.error(HttpStatus.NOT_FOUND.value(), e.getMessage() != null ? e.getMessage() : "Argument not found");
-        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        return handleException("Resource not found: {}", e, HttpStatus.NOT_FOUND, null, "Argument not found");
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
@@ -59,23 +64,17 @@ public class GlobalExceptionHandler {
         Object value = e.getValue();
         String detail = String.format("Parameter '%s' must be of type '%s' but value '%s' is invalid", param, expectedType, value);
 
-        log.warn("Type mismatch error: {}", detail);
-        Response<Void> response = Response.error(HttpStatus.BAD_REQUEST.value(), detail);
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        return handleException("Type mismatch error: {}", e, HttpStatus.BAD_REQUEST, detail, null);
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<Response<Void>> handleNoResourceFoundException(NoResourceFoundException e) {
-        log.warn("Resource not found: {}", e.getMessage());
-        Response<Void> response = Response.error(HttpStatus.NOT_FOUND.value(), e.getMessage());
-        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        return handleException("Resource not found: {}", e, HttpStatus.NOT_FOUND, e.getMessage(), null);
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<Response<Void>> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {
-        log.warn("Http method not supported: {}", e.getMessage());
-        Response<Void> response = Response.error(HttpStatus.METHOD_NOT_ALLOWED.value(), e.getMessage());
-        return new ResponseEntity<>(response, HttpStatus.METHOD_NOT_ALLOWED);
+        return handleException("Http method not supported: {}", e, HttpStatus.METHOD_NOT_ALLOWED, e.getMessage(), null);
     }
 
     @ExceptionHandler(Exception.class)
@@ -88,9 +87,9 @@ public class GlobalExceptionHandler {
             partialTrace.append("\tat ").append(stackTrace[i].toString()).append("\n");
         }
         String requestTrace = "Request: " + Thread.currentThread().getName();
-        log.error("Unhandled exception occurred: {}\n{}", e.getMessage(), partialTrace);
+
         discord.sendMessage("Unhandled exception occurred: " + e.getMessage() + "\n" + partialTrace + "\n" + requestTrace);
-        Response<Void> response = Response.error(500, "Internal Server Error");
-        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+
+        return handleErrorException("Unhandled exception occurred: {}\n{}", e, partialTrace.toString(), HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error");
     }
 }
