@@ -204,6 +204,8 @@ httptest
 
 .cursor/rules/default.mdc
 *.env
+package-lock.json
+node_modules/
 
 !gradlew
 !gradlew.bat
