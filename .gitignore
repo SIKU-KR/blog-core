@@ -203,6 +203,7 @@ replay_pid*
 httptest
 
 .cursor/rules/default.mdc
+*.env
 
 !gradlew
 !gradlew.bat
