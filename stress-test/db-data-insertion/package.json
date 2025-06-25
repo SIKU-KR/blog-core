@@ -1,0 +1,33 @@
+{
+  "name": "blog-data-seeder",
+  "version": "1.0.0",
+  "description": "대량 모킹 데이터 생성 및 삽입 도구",
+  "main": "seed-data.js",
+  "scripts": {
+    "seed": "node seed-data.js",
+    "seed:categories": "node seed-categories.js",
+    "seed:posts": "node seed-posts.js",
+    "seed:comments": "node seed-comments.js",
+    "seed:all": "npm run seed:categories && npm run seed:posts && npm run seed:comments",
+    "clean": "node clean-data.js"
+  },
+  "dependencies": {
+    "@faker-js/faker": "^8.3.1",
+    "mysql2": "^3.6.5",
+    "dotenv": "^16.3.1",
+    "cli-progress": "^3.12.0",
+    "colors": "^1.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0"
+  },
+  "keywords": [
+    "faker",
+    "seeding",
+    "mock-data",
+    "mysql",
+    "stress-test"
+  ],
+  "author": "blog-backend",
+  "license": "MIT"
+} 
