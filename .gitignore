@@ -202,6 +202,8 @@ replay_pid*
 *.ear
 httptest
 
+.cursor/rules/default.mdc
+
 !gradlew
 !gradlew.bat
 !gradle/wrapper/gradle-wrapper.jar
