@@ -79,7 +79,7 @@ class CategoryGenerator {
       () => faker.color.human() + ' ' + faker.animal.type(),
       () => faker.music.genre(),
       () => faker.vehicle.type() + ' 리뷰',
-      () => faker.food.adjective() + ' ' + faker.food.dish(),
+      () => faker.word.adjective() + ' ' + faker.commerce.product(),
       () => `${faker.number.int({min: 2020, max: 2024})} ${faker.lorem.word()}`
     ];
     
