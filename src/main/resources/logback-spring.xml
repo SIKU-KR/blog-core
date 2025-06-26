@@ -9,7 +9,7 @@
 
     <!-- 원격 Logstash로 TCP 전송을 위한 appender -->
     <appender name="LOGSTASH_TCP" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
-        <destination>${logstash.host:-localhost}:${logstash.port:-5000}</destination>
+        <destination>${ELK_HOST}:${ELK_PORT}</destination>
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
             <includeMdc>true</includeMdc>
             <includeContext>true</includeContext>
