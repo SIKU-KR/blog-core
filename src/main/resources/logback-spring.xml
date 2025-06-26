@@ -7,35 +7,47 @@
         </encoder>
     </appender>
 
-    <!-- JSON 파일 로깅을 위한 appender -->
-    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/application.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>logs/application-%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>30</maxHistory>
-        </rollingPolicy>
+    <!-- 원격 Logstash로 TCP 전송을 위한 appender -->
+    <appender name="LOGSTASH_TCP" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>${logstash.host:-localhost}:${logstash.port:-5000}</destination>
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
             <includeMdc>true</includeMdc>
-            <includeContext>false</includeContext>
-            <customFields>{"application":"blog-server"}</customFields>
+            <includeContext>true</includeContext>
+            <customFields>
+                {"application":"blog-server","environment":"${spring.profiles.active:-local}","server":"${server.address:-localhost}"}
+            </customFields>
             <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSS</timestampPattern>
         </encoder>
+        <!-- 연결 실패 시 재시도 설정 -->
+        <reconnectionDelay>10 seconds</reconnectionDelay>
+        <writeTimeout>10 seconds</writeTimeout>
+        <!-- 연결 실패 시에도 애플리케이션이 중단되지 않도록 -->
+        <includeCallerData>false</includeCallerData>
+    </appender>
+
+    <!-- 비동기 처리를 위한 async appender (성능 향상) -->
+    <appender name="ASYNC_LOGSTASH" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="LOGSTASH_TCP"/>
+        <queueSize>1024</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <includeCallerData>false</includeCallerData>
+        <neverBlock>true</neverBlock>
     </appender>
 
     <!-- HTTP 요청 관련 로거 설정 -->
     <logger name="park.bumsiku.controller" level="INFO" additivity="false">
         <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="FILE"/>
+        <appender-ref ref="ASYNC_LOGSTASH"/>
     </logger>
 
-    <logger name="park.bumsiku.utils.LoggingFilter" level="INFO" additivity="false">
+    <logger name="park.bumsiku.utils.log.LoggingFilter" level="INFO" additivity="false">
         <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="FILE"/>
+        <appender-ref ref="ASYNC_LOGSTASH"/>
     </logger>
 
-    <!-- 모든 로그는 콘솔에는 텍스트로, 파일에는 JSON으로 -->
+    <!-- 모든 로그는 콘솔과 원격 ELK Stack으로 -->
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="FILE"/>
+        <appender-ref ref="ASYNC_LOGSTASH"/>
     </root>
 </configuration>
