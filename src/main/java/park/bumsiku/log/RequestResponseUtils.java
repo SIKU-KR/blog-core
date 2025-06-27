@@ -1,4 +1,4 @@
-package park.bumsiku.utils.log;
+package park.bumsiku.log;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

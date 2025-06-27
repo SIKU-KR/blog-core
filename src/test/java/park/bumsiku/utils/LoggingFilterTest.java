@@ -14,7 +14,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
-import park.bumsiku.utils.log.LoggingFilter;
+import park.bumsiku.log.LoggingFilter;
 
 import java.io.IOException;
 import java.time.Clock;
@@ -25,8 +25,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
-import static park.bumsiku.utils.log.LoggingConstants.HEADER_REQUEST_ID;
-import static park.bumsiku.utils.log.LoggingConstants.SLOW_REQUEST_THRESHOLD_MS;
+import static park.bumsiku.log.LoggingConstants.HEADER_REQUEST_ID;
+import static park.bumsiku.log.LoggingConstants.SLOW_REQUEST_THRESHOLD_MS;
 
 @ExtendWith(MockitoExtension.class)
 class LoggingFilterTest {

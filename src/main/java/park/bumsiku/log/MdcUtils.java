@@ -1,4 +1,4 @@
-package park.bumsiku.utils.log;
+package park.bumsiku.log;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.MDC;
@@ -9,7 +9,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.UUID;
 
-import static park.bumsiku.utils.log.LoggingConstants.*;
+import static park.bumsiku.log.LoggingConstants.*;
 
 /**
  * Utility class for managing MDC (Mapped Diagnostic Context) operations.

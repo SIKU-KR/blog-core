@@ -1,4 +1,4 @@
-package park.bumsiku.utils.log;
+package park.bumsiku.log;
 
 
 public class MdcCloseable implements AutoCloseable {

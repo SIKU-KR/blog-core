@@ -1,4 +1,4 @@
-package park.bumsiku.utils.log;
+package park.bumsiku.log;
 
 /**
  * Constants used for logging configuration.

@@ -1,12 +1,15 @@
 package park.bumsiku.service;
 
 import lombok.AllArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import park.bumsiku.domain.dto.request.CommentRequest;
-import park.bumsiku.domain.dto.response.*;
+import park.bumsiku.domain.dto.response.CategoryResponse;
+import park.bumsiku.domain.dto.response.CommentResponse;
+import park.bumsiku.domain.dto.response.PostListResponse;
+import park.bumsiku.domain.dto.response.PostResponse;
+import park.bumsiku.domain.dto.response.PostSummaryResponse;
 import park.bumsiku.domain.entity.Category;
 import park.bumsiku.domain.entity.Comment;
 import park.bumsiku.domain.entity.Post;
@@ -14,17 +17,17 @@ import park.bumsiku.repository.CategoryRepository;
 import park.bumsiku.repository.CommentRepository;
 import park.bumsiku.repository.PostRepository;
 import park.bumsiku.utils.DiscordWebhookCreator;
+import park.bumsiku.log.aop.LogExecutionTime;
 
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @Transactional
 @AllArgsConstructor
 public class PublicService {
-
-    private static final Logger log = LoggerFactory.getLogger(PublicService.class);
 
     private PostRepository postRepository;
     private CommentRepository commentRepository;
@@ -32,11 +35,10 @@ public class PublicService {
 
     private DiscordWebhookCreator discord;
 
+    @LogExecutionTime
     public PostListResponse getPostList(int page, int size, String sort) {
-        log.info("Fetching all posts with page: {}, size: {}, sort: {}", page, size, sort);
         List<PostSummaryResponse> postSummaryList = postRepository.findAll(page, size);
         int totalElements = postRepository.countAll();
-        log.info("Successfully fetched {} posts out of total {}", postSummaryList.size(), totalElements);
 
         return PostListResponse.builder()
                 .content(postSummaryList)
@@ -46,12 +48,10 @@ public class PublicService {
                 .build();
     }
 
+    @LogExecutionTime
     public PostListResponse getPostList(int categoryId, int page, int size, String sort) {
-        log.info("Fetching posts for category: {} with page: {}, size: {}, sort: {}", categoryId, page, size, sort);
         List<PostSummaryResponse> postSummaryList = postRepository.findAllByCategoryId(categoryId, page, size);
         int totalElements = postRepository.countByCategoryId(categoryId);
-        log.info("Successfully fetched {} posts out of total {} for category: {}",
-                postSummaryList.size(), totalElements, categoryId);
 
         return PostListResponse.builder()
                 .content(postSummaryList)
@@ -61,10 +61,9 @@ public class PublicService {
                 .build();
     }
 
+    @LogExecutionTime
     public PostResponse getPostById(int id) {
-        log.info("Fetching post with id: {}", id);
         Post post = requirePostById(id);
-        log.info("Successfully fetched post with title: {}", post.getTitle());
 
         return PostResponse.builder()
                 .id(post.getId())
@@ -77,11 +76,10 @@ public class PublicService {
                 .build();
     }
 
+    @LogExecutionTime
     public List<CommentResponse> getCommentsById(int id) {
-        log.info("Fetching comments for post id: {}", id);
         Post post = requirePostById(id);
         List<Comment> commentList = commentRepository.findAllByPost(post);
-        log.info("Successfully fetched {} comments for post id: {}", commentList.size(), id);
 
         return commentList.stream()
                 .map(c -> CommentResponse.builder()
@@ -93,8 +91,8 @@ public class PublicService {
                 .collect(Collectors.toList());
     }
 
+    @LogExecutionTime
     public CommentResponse createComment(int id, CommentRequest commentRequest) {
-        log.info("Creating comment for post id: {} by author: {}", id, commentRequest.getAuthor());
         Post post = requirePostById(id);
         Comment comment = Comment.builder()
                 .post(post)
@@ -102,8 +100,9 @@ public class PublicService {
                 .content(commentRequest.getContent())
                 .build();
         Comment saved = commentRepository.insert(comment);
-        log.info("Successfully created comment with id: {} for post id: {}", saved.getId(), id);
+        
         discord.sendMessage(String.format("💬 게시글 ID: %d에 '%s'님이 댓글을 작성했습니다.\n내용: %s", id, commentRequest.getAuthor(), saved.getContent()));
+        
         return CommentResponse.builder()
                 .id(saved.getId().intValue())
                 .authorName(saved.getAuthorName())
@@ -112,25 +111,28 @@ public class PublicService {
                 .build();
     }
 
+    @LogExecutionTime
     public List<CategoryResponse> getCategories() {
-        log.info("Fetching all categories");
         List<Category> categories = categoryRepository.findAll();
-        log.info("Successfully fetched {} categories", categories.size());
 
         return categories.stream()
-                .map(cat -> CategoryResponse.builder()
-                        .id(cat.getId())
-                        .name(cat.getName())
-                        .order(cat.getOrdernum())
-                        .createdAt(cat.getCreatedAt())
-                        .postCount(postRepository.countByCategoryId(cat.getId()))
-                        .build())
+                .map(cat -> {
+                    int postCount = postRepository.countByCategoryId(cat.getId());
+                    return CategoryResponse.builder()
+                            .id(cat.getId())
+                            .name(cat.getName())
+                            .order(cat.getOrdernum())
+                            .createdAt(cat.getCreatedAt())
+                            .postCount(postCount)
+                            .build();
+                })
                 .collect(Collectors.toList());
     }
 
     private Post requirePostById(int id) {
         Post post = postRepository.findById(id);
         if (post == null) {
+            log.warn("Post with id {} not found", id);
             throw new NoSuchElementException("Post not found");
         }
         return post;

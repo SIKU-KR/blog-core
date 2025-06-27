@@ -40,7 +40,7 @@
         <appender-ref ref="ASYNC_LOGSTASH"/>
     </logger>
 
-    <logger name="park.bumsiku.utils.log.LoggingFilter" level="INFO" additivity="false">
+    <logger name="park.bumsiku.log.LoggingFilter" level="INFO" additivity="false">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="ASYNC_LOGSTASH"/>
     </logger>

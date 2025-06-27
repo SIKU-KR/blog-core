@@ -1,4 +1,4 @@
-package park.bumsiku.utils.log;
+package park.bumsiku.log;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

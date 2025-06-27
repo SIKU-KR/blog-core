@@ -1,4 +1,4 @@
-package park.bumsiku.utils.log;
+package park.bumsiku.log;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -15,8 +15,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.time.Clock;
 
-import static park.bumsiku.utils.log.LoggingConstants.HEADER_USER_AGENT;
-import static park.bumsiku.utils.log.LoggingConstants.SLOW_REQUEST_THRESHOLD_MS;
+import static park.bumsiku.log.LoggingConstants.HEADER_USER_AGENT;
+import static park.bumsiku.log.LoggingConstants.SLOW_REQUEST_THRESHOLD_MS;
 
 @Component
 @AllArgsConstructor
