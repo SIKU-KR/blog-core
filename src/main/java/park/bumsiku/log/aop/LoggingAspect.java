@@ -16,25 +16,23 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class LoggingAspect {
 
+    private static final long WARN_EXECUTION_TIME_MS = 500;
+
     @Around("@annotation(park.bumsiku.log.aop.LogExecutionTime)")
     public Object logExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
-        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-        String className = joinPoint.getTarget().getClass().getSimpleName();
-        String methodName = signature.getMethod().getName();
-        String requestId = MDC.get(MdcUtils.KEY_REQUEST_ID);
-
-        log.info("AOP START - RequestId: {}, {}.{}", requestId, className, methodName);
-
         long startTime = System.nanoTime();
         Object result = joinPoint.proceed();
         long endTime = System.nanoTime();
-
         long duration = TimeUnit.NANOSECONDS.toMillis(endTime - startTime);
 
-        if (duration > 500) {
-            log.warn("AOP END - RequestId: {}, {}.{} finished in {} ms (SLOW)", requestId, className, methodName, duration);
-        } else {
-            log.info("AOP END - RequestId: {}, {}.{} finished in {} ms", requestId, className, methodName, duration);
+        if (duration > WARN_EXECUTION_TIME_MS) {
+            MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+            String className = joinPoint.getTarget().getClass().getSimpleName();
+            String methodName = signature.getMethod().getName();
+            String requestId = MDC.get(MdcUtils.KEY_REQUEST_ID);
+
+            log.warn("Slow method execution detected - RequestId: {}, {}.{} finished in {} ms",
+                    requestId, className, methodName, duration);
         }
 
         return result;

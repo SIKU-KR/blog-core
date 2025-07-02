@@ -1,13 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <!-- 콘솔 텍스트 로깅을 위한 appender -->
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+
+    <!-- Appenders -->
+    <appender name="CONSOLE_TEXT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [ReqId:%X{requestId}] - %msg%n</pattern>
         </encoder>
     </appender>
 
-    <!-- 원격 Logstash로 TCP 전송을 위한 appender -->
+    <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeMdc>true</includeMdc>
+            <includeContext>true</includeContext>
+            <customFields>
+                {"application":"blog-server","environment":"${spring.profiles.active:-local}","server":"${server.address:-localhost}"}
+            </customFields>
+            <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSS</timestampPattern>
+        </encoder>
+    </appender>
+
     <appender name="LOGSTASH_TCP" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
         <destination>${ELK_HOST}:${ELK_PORT}</destination>
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
@@ -18,14 +29,11 @@
             </customFields>
             <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSS</timestampPattern>
         </encoder>
-        <!-- 연결 실패 시 재시도 설정 -->
         <reconnectionDelay>10 seconds</reconnectionDelay>
         <writeTimeout>10 seconds</writeTimeout>
-        <!-- 연결 실패 시에도 애플리케이션이 중단되지 않도록 -->
         <includeCallerData>false</includeCallerData>
     </appender>
 
-    <!-- 비동기 처리를 위한 async appender (성능 향상) -->
     <appender name="ASYNC_LOGSTASH" class="ch.qos.logback.classic.AsyncAppender">
         <appender-ref ref="LOGSTASH_TCP"/>
         <queueSize>1024</queueSize>
@@ -34,20 +42,19 @@
         <neverBlock>true</neverBlock>
     </appender>
 
-    <!-- HTTP 요청 관련 로거 설정 -->
-    <logger name="park.bumsiku.controller" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="ASYNC_LOGSTASH"/>
-    </logger>
+    <!-- Profiles -->
+    <springProfile name="local,dev">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE_TEXT"/>
+            <appender-ref ref="ASYNC_LOGSTASH"/>
+        </root>
+    </springProfile>
 
-    <logger name="park.bumsiku.log.LoggingFilter" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="ASYNC_LOGSTASH"/>
-    </logger>
+    <springProfile name="!local & !dev">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE_JSON"/>
+            <appender-ref ref="ASYNC_LOGSTASH"/>
+        </root>
+    </springProfile>
 
-    <!-- 모든 로그는 콘솔과 원격 ELK Stack으로 -->
-    <root level="INFO">
-        <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="ASYNC_LOGSTASH"/>
-    </root>
 </configuration>

@@ -16,22 +16,24 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class RepositoryLoggingAspect {
 
+    private static final long WARN_EXECUTION_TIME_MS = 100; // 100ms for DB queries
+
     @Around("execution(* park.bumsiku.repository..*.*(..))")
     public Object logRepositoryExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
-        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-        String className = joinPoint.getTarget().getClass().getSimpleName();
-        String methodName = signature.getMethod().getName();
-        String requestId = MDC.get(MdcUtils.KEY_REQUEST_ID);
-
         long startTime = System.nanoTime();
         Object result = joinPoint.proceed();
         long endTime = System.nanoTime();
-
         long duration = TimeUnit.NANOSECONDS.toMillis(endTime - startTime);
 
-        // 결과가 너무 길 경우를 대비하여 간단히 타입만 로깅
-        String resultType = (result != null) ? result.getClass().getSimpleName() : "null";
-        log.info("AOP DB - RequestId: {}, {}.{} finished in {} ms. Result type: {}", requestId, className, methodName, duration, resultType);
+        if (duration > WARN_EXECUTION_TIME_MS) {
+            MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+            String className = joinPoint.getTarget().getClass().getSimpleName();
+            String methodName = signature.getMethod().getName();
+            String requestId = MDC.get(MdcUtils.KEY_REQUEST_ID);
+
+            log.warn("Slow DB query detected - RequestId: {}, {}.{} finished in {} ms",
+                    requestId, className, methodName, duration);
+        }
 
         return result;
     }
