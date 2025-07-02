@@ -31,7 +31,11 @@ public class LoggingAspect {
 
         long duration = TimeUnit.NANOSECONDS.toMillis(endTime - startTime);
 
-        log.info("AOP END - RequestId: {}, {}.{} finished in {} ms", requestId, className, methodName, duration);
+        if (duration > 500) {
+            log.warn("AOP END - RequestId: {}, {}.{} finished in {} ms (SLOW)", requestId, className, methodName, duration);
+        } else {
+            log.info("AOP END - RequestId: {}, {}.{} finished in {} ms", requestId, className, methodName, duration);
+        }
 
         return result;
     }
