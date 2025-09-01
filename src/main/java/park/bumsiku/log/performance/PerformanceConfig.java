@@ -21,10 +21,6 @@ public class PerformanceConfig {
         return thresholds.getOrDefault(operation, 500L);
     }
 
-    public Map<String, Long> getThresholds() {
-        return thresholds;
-    }
-
     public void setThresholds(Map<String, Long> thresholds) {
         this.thresholds = thresholds;
     }
