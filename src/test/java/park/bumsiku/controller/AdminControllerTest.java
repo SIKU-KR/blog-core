@@ -12,7 +12,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import park.bumsiku.config.ClockConfig;
 import park.bumsiku.config.LoggingConfig;
-import park.bumsiku.config.Security;
+import park.bumsiku.config.SecurityConfig;
 import park.bumsiku.domain.dto.request.CreateCategoryRequest;
 import park.bumsiku.domain.dto.request.CreatePostRequest;
 import park.bumsiku.domain.dto.request.UpdateCategoryRequest;
@@ -37,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AdminController.class)
-@Import({Security.class, ClockConfig.class, LoggingConfig.class})
+@Import({SecurityConfig.class, ClockConfig.class, LoggingConfig.class})
 public class AdminControllerTest {
 
     @Autowired
