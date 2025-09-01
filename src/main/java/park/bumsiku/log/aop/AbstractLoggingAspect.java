@@ -1,32 +1,31 @@
 package park.bumsiku.log.aop;
 
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import park.bumsiku.log.performance.PerformanceConfig;
-import park.bumsiku.log.performance.PerformanceMonitor;
+import org.slf4j.MDC;
+import park.bumsiku.log.MdcUtils;
 
+import java.util.concurrent.TimeUnit;
+
+@Slf4j
 public abstract class AbstractLoggingAspect {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractLoggingAspect.class);
-    protected final PerformanceMonitor performanceMonitor;
-
-    protected AbstractLoggingAspect(PerformanceConfig config) {
-        this.performanceMonitor = new PerformanceMonitor(logger, config);
-    }
-
-    protected Object logExecutionTime(ProceedingJoinPoint joinPoint, String operation) throws Throwable {
+    protected Object logExecutionTime(ProceedingJoinPoint joinPoint, String operation, long thresholdMs) throws Throwable {
         long startTime = System.nanoTime();
         Object result = joinPoint.proceed();
         long endTime = System.nanoTime();
-        long duration = endTime - startTime;
+        long durationMs = TimeUnit.NANOSECONDS.toMillis(endTime - startTime);
 
-        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-        String className = joinPoint.getTarget().getClass().getSimpleName();
-        String methodName = signature.getMethod().getName();
+        if (durationMs > thresholdMs) {
+            MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+            String className = joinPoint.getTarget().getClass().getSimpleName();
+            String methodName = signature.getMethod().getName();
+            String requestId = MDC.get(MdcUtils.KEY_REQUEST_ID);
 
-        performanceMonitor.logIfSlow(duration, className, methodName, operation);
+            log.warn("Slow {} detected - RequestId: {}, {}.{} finished in {} ms",
+                    operation, requestId, className, methodName, durationMs);
+        }
 
         return result;
     }

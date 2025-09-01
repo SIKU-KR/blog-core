@@ -4,27 +4,18 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.AllArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.event.Level;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import park.bumsiku.log.client.ClientInfoExtractor;
-import park.bumsiku.log.performance.PerformanceConfig;
 
 import java.io.IOException;
-import java.time.Clock;
 
+@Slf4j
 @Component
-@AllArgsConstructor
 public class LoggingFilter extends OncePerRequestFilter {
 
-    private static final Logger logger = LoggerFactory.getLogger(LoggingFilter.class);
-    private final Clock clock;
-    private final ClientInfoExtractor clientInfoExtractor;
-    private final PerformanceConfig performanceConfig;
+    private static final long SLOW_REQUEST_THRESHOLD_MS = 500;
 
     @Override
     protected void doFilterInternal(
@@ -37,41 +28,25 @@ public class LoggingFilter extends OncePerRequestFilter {
             return;
         }
 
-        long startTime = clock.millis();
-        HttpServletRequest wrappedRequest = RequestResponseUtils.wrapRequest(request);
-        HttpServletResponse wrappedResponse = RequestResponseUtils.wrapResponse(response);
+        long startTime = System.currentTimeMillis();
 
         try (MdcCloseable ignored = MdcCloseable.create()) {
-            MdcUtils.setupMdc(wrappedRequest, clock, clientInfoExtractor);
-            filterChain.doFilter(wrappedRequest, wrappedResponse);
-        } catch (Exception e) {
-            MdcUtils.putExceptionInfo(e);
-            // Re-throw the exception to be handled by the global exception handler
-            throw e;
+            MdcUtils.setupMdc(request);
+            filterChain.doFilter(request, response);
         } finally {
-            long duration = clock.millis() - startTime;
-            int status = wrappedResponse.getStatus();
-            MdcUtils.putResponseInfo(status, duration);
+            long duration = System.currentTimeMillis() - startTime;
+            int status = response.getStatus();
 
-            Level level = determineLogLevel(status, duration);
-
-            // Centralized, structured logging at the end of the request
-            logger.atLevel(level)
-                    .setMessage("HTTP Request Completed")
-                    .log();
-
-            RequestResponseUtils.copyBodyToResponse(wrappedResponse);
-        }
-    }
-
-    private Level determineLogLevel(int status, long duration) {
-        long threshold = performanceConfig.getThreshold(LoggingConstants.Operations.HTTP_REQUEST);
-        if (status >= 500) {
-            return Level.ERROR;
-        } else if (duration > threshold || status >= 400) {
-            return Level.WARN;
-        } else {
-            return Level.INFO;
+            if (status >= 500) {
+                log.error("HTTP Request Failed - {} {} - Status: {} - Duration: {}ms",
+                        request.getMethod(), request.getRequestURI(), status, duration);
+            } else if (duration > SLOW_REQUEST_THRESHOLD_MS || status >= 400) {
+                log.warn("HTTP Request Slow/Warning - {} {} - Status: {} - Duration: {}ms",
+                        request.getMethod(), request.getRequestURI(), status, duration);
+            } else {
+                log.info("HTTP Request Completed - {} {} - Status: {} - Duration: {}ms",
+                        request.getMethod(), request.getRequestURI(), status, duration);
+            }
         }
     }
 }

@@ -1,24 +1,12 @@
 package park.bumsiku.config;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import park.bumsiku.log.client.ClientInfoExtractor;
-import park.bumsiku.log.client.DefaultClientInfoExtractor;
-import park.bumsiku.log.performance.PerformanceConfig;
 
+/**
+ * Simple logging configuration - AOP aspects are auto-detected by @Component
+ * No additional beans needed - everything is simplified to use constants
+ */
 @Configuration
 public class LoggingConfig {
-
-    @Bean
-    @ConditionalOnMissingBean(ClientInfoExtractor.class)
-    public ClientInfoExtractor clientInfoExtractor() {
-        return new DefaultClientInfoExtractor();
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(PerformanceConfig.class)
-    public PerformanceConfig performanceConfig() {
-        return new PerformanceConfig();
-    }
+    // No beans needed - simplified to use direct constants in aspects
 }

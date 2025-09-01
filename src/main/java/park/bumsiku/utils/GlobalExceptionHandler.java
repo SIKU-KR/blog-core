@@ -16,7 +16,6 @@ import park.bumsiku.domain.dto.response.Response;
 
 import java.util.NoSuchElementException;
 
-import static park.bumsiku.log.LoggingConstants.Values.UNKNOWN;
 
 @ControllerAdvice
 @AllArgsConstructor
@@ -62,7 +61,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<Response<Void>> handleTypeMismatchException(MethodArgumentTypeMismatchException e) {
         String param = e.getName();
-        String expectedType = e.getRequiredType() != null ? e.getRequiredType().getSimpleName() : UNKNOWN;
+        String expectedType = e.getRequiredType() != null ? e.getRequiredType().getSimpleName() : "unknown";
         Object value = e.getValue();
         String detail = String.format("Parameter '%s' must be of type '%s' but value '%s' is invalid", param, expectedType, value);
 

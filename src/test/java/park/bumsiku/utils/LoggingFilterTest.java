@@ -7,24 +7,17 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.web.util.ContentCachingRequestWrapper;
-import org.springframework.web.util.ContentCachingResponseWrapper;
 import park.bumsiku.log.LoggingConstants;
 import park.bumsiku.log.LoggingFilter;
-import park.bumsiku.log.client.DefaultClientInfoExtractor;
-import park.bumsiku.log.performance.PerformanceConfig;
 
 import java.io.IOException;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -40,18 +33,10 @@ class LoggingFilterTest {
     private MockHttpServletRequest request;
     private MockHttpServletResponse response;
 
-    // Fixed clock for testing
-    private Clock fixedClock;
-
     @BeforeEach
     void setUp() {
-        // Create a fixed clock for testing
-        fixedClock = Clock.fixed(Instant.parse("2023-01-01T12:00:00Z"), ZoneId.systemDefault());
-
-        // Create the filter with the fixed clock
-        DefaultClientInfoExtractor clientInfoExtractor = new DefaultClientInfoExtractor();
-        PerformanceConfig performanceConfig = new PerformanceConfig();
-        loggingFilter = new LoggingFilter(fixedClock, clientInfoExtractor, performanceConfig);
+        // Create the simplified filter
+        loggingFilter = new LoggingFilter();
 
         // Create mock request and response
         request = new MockHttpServletRequest();
@@ -60,22 +45,15 @@ class LoggingFilterTest {
         // Set up request with test data
         request.setMethod("GET");
         request.setRequestURI("/test");
-        request.addHeader("User-Agent", "Test User Agent");
     }
 
     @Test
-    void shouldWrapRequestAndResponse() throws ServletException, IOException {
+    void shouldProcessRequest() throws ServletException, IOException {
         // When
         loggingFilter.doFilter(request, response, filterChain);
 
         // Then
-        ArgumentCaptor<HttpServletRequest> requestCaptor = ArgumentCaptor.forClass(HttpServletRequest.class);
-        ArgumentCaptor<HttpServletResponse> responseCaptor = ArgumentCaptor.forClass(HttpServletResponse.class);
-
-        verify(filterChain).doFilter(requestCaptor.capture(), responseCaptor.capture());
-
-        assertInstanceOf(ContentCachingRequestWrapper.class, requestCaptor.getValue());
-        assertInstanceOf(ContentCachingResponseWrapper.class, responseCaptor.getValue());
+        verify(filterChain).doFilter(any(HttpServletRequest.class), any(HttpServletResponse.class));
     }
 
     @Test
@@ -93,23 +71,6 @@ class LoggingFilterTest {
     }
 
     @Test
-    void shouldLogSlowRequestsWithWarnLevel() throws ServletException, IOException {
-        // Given
-        // Create a clock that advances by more than the slow threshold
-        Clock advancingClock = new AdvancingClock(fixedClock, 600); // 600ms > default 500ms threshold
-        DefaultClientInfoExtractor clientInfoExtractor = new DefaultClientInfoExtractor();
-        PerformanceConfig performanceConfig = new PerformanceConfig();
-        loggingFilter = new LoggingFilter(advancingClock, clientInfoExtractor, performanceConfig);
-
-        // When
-        loggingFilter.doFilter(request, response, filterChain);
-
-        // Then
-        verify(filterChain).doFilter(any(), any());
-        // We can't easily verify log levels directly in a test, but we can check that the filter completed successfully
-    }
-
-    @Test
     void shouldHandleExceptions() throws ServletException, IOException {
         // Given
         Exception expectedException = new RuntimeException("Test exception");
@@ -121,44 +82,5 @@ class LoggingFilterTest {
         });
 
         assertEquals(expectedException, thrownException);
-    }
-
-    /**
-     * Custom Clock implementation that advances time between now() calls
-     */
-    private static class AdvancingClock extends Clock {
-        private final Clock baseClock;
-        private final long advanceMillis;
-        private long callCount = 0;
-
-        public AdvancingClock(Clock baseClock, long advanceMillis) {
-            this.baseClock = baseClock;
-            this.advanceMillis = advanceMillis;
-        }
-
-        @Override
-        public ZoneId getZone() {
-            return baseClock.getZone();
-        }
-
-        @Override
-        public Clock withZone(ZoneId zone) {
-            return new AdvancingClock(baseClock.withZone(zone), advanceMillis);
-        }
-
-        @Override
-        public Instant instant() {
-            // First call returns the base time, subsequent calls advance by advanceMillis
-            if (callCount++ == 0) {
-                return baseClock.instant();
-            } else {
-                return baseClock.instant().plusMillis(advanceMillis);
-            }
-        }
-
-        @Override
-        public long millis() {
-            return instant().toEpochMilli();
-        }
     }
 }
