@@ -1,10 +1,9 @@
-package park.bumsiku.log.aop;
+package park.bumsiku.utils.monitoring;
 
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.MDC;
-import park.bumsiku.log.LoggingFilter;
 
 import java.util.concurrent.TimeUnit;
 

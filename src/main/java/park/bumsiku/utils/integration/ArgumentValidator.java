@@ -1,4 +1,4 @@
-package park.bumsiku.utils;
+package park.bumsiku.utils.integration;
 
 import org.springframework.web.multipart.MultipartFile;
 import park.bumsiku.domain.dto.request.*;

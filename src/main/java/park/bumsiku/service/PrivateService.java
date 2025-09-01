@@ -17,7 +17,7 @@ import park.bumsiku.domain.dto.response.UploadImageResponse;
 import park.bumsiku.domain.entity.Category;
 import park.bumsiku.domain.entity.Comment;
 import park.bumsiku.domain.entity.Post;
-import park.bumsiku.log.aop.LogExecutionTime;
+import park.bumsiku.utils.monitoring.LogExecutionTime;
 import park.bumsiku.repository.CategoryRepository;
 import park.bumsiku.repository.CommentRepository;
 import park.bumsiku.repository.ImageRepository;

@@ -13,9 +13,9 @@ import park.bumsiku.domain.dto.response.CategoryResponse;
 import park.bumsiku.domain.dto.response.PostResponse;
 import park.bumsiku.domain.dto.response.Response;
 import park.bumsiku.domain.dto.response.UploadImageResponse;
-import park.bumsiku.log.aop.LogExecutionTime;
+import park.bumsiku.utils.monitoring.LogExecutionTime;
 import park.bumsiku.service.PrivateService;
-import park.bumsiku.utils.ArgumentValidator;
+import park.bumsiku.utils.integration.ArgumentValidator;
 
 import java.util.Map;
 

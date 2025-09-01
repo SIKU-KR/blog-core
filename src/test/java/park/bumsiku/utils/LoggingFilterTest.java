@@ -11,7 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-import park.bumsiku.log.LoggingFilter;
+import park.bumsiku.utils.monitoring.LoggingFilter;
 
 import java.io.IOException;
 

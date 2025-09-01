@@ -1,4 +1,4 @@
-package park.bumsiku.log;
+package park.bumsiku.utils.monitoring;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

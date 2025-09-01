@@ -9,11 +9,11 @@ import park.bumsiku.domain.dto.response.*;
 import park.bumsiku.domain.entity.Category;
 import park.bumsiku.domain.entity.Comment;
 import park.bumsiku.domain.entity.Post;
-import park.bumsiku.log.aop.LogExecutionTime;
+import park.bumsiku.utils.monitoring.LogExecutionTime;
 import park.bumsiku.repository.CategoryRepository;
 import park.bumsiku.repository.CommentRepository;
 import park.bumsiku.repository.PostRepository;
-import park.bumsiku.utils.DiscordWebhookCreator;
+import park.bumsiku.utils.validation.DiscordWebhookCreator;
 
 import java.util.List;
 import java.util.NoSuchElementException;

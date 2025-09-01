@@ -1,4 +1,4 @@
-package park.bumsiku.utils;
+package park.bumsiku.utils.validation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

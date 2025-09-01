@@ -1,4 +1,4 @@
-package park.bumsiku.log.aop;
+package park.bumsiku.utils.monitoring;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

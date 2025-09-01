@@ -1,4 +1,4 @@
-package park.bumsiku.log.aop;
+package park.bumsiku.utils.monitoring;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
