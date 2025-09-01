@@ -5,11 +5,13 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.UUID;
 
 @Slf4j
 @Component
@@ -47,6 +49,38 @@ public class LoggingFilter extends OncePerRequestFilter {
                 log.info("HTTP Request Completed - {} {} - Status: {} - Duration: {}ms",
                         request.getMethod(), request.getRequestURI(), status, duration);
             }
+        }
+    }
+
+    /**
+     * Simple MDC utility for request tracking
+     */
+    public static class MdcUtils {
+        public static final String KEY_REQUEST_ID = "requestId";
+
+        static String setupMdc() {
+            String requestId = UUID.randomUUID().toString();
+            MDC.put(KEY_REQUEST_ID, requestId);
+            return requestId;
+        }
+
+        static void clear() {
+            MDC.clear();
+        }
+    }
+
+    /**
+     * Auto-closeable for automatic MDC cleanup
+     */
+    private static class MdcCloseable implements AutoCloseable {
+        
+        static MdcCloseable create() {
+            return new MdcCloseable();
+        }
+
+        @Override
+        public void close() {
+            MdcUtils.clear();
         }
     }
 }

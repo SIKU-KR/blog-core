@@ -62,7 +62,7 @@ class LoggingFilterTest {
 
         // Then
         verify(filterChain).doFilter(any(), any());
-        // Each request gets a unique UUID - no external dependencies
+        // Each request gets a unique UUID - inner class handles MDC
     }
 
     @Test

@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.MDC;
-import park.bumsiku.log.MdcUtils;
+import park.bumsiku.log.LoggingFilter;
 
 import java.util.concurrent.TimeUnit;
 
@@ -21,7 +21,7 @@ public abstract class AbstractLoggingAspect {
             MethodSignature signature = (MethodSignature) joinPoint.getSignature();
             String className = joinPoint.getTarget().getClass().getSimpleName();
             String methodName = signature.getMethod().getName();
-            String requestId = MDC.get(MdcUtils.KEY_REQUEST_ID);
+            String requestId = MDC.get(LoggingFilter.MdcUtils.KEY_REQUEST_ID);
 
             log.warn("Slow {} detected - RequestId: {}, {}.{} finished in {} ms",
                     operation, requestId, className, methodName, durationMs);
