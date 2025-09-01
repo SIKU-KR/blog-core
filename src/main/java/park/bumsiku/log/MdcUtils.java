@@ -2,6 +2,7 @@ package park.bumsiku.log;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.MDC;
+import park.bumsiku.log.client.ClientInfoExtractor;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -9,7 +10,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.UUID;
 
-import static park.bumsiku.log.LoggingConstants.*;
+import static park.bumsiku.log.LoggingConstants.Headers;
+import static park.bumsiku.log.LoggingConstants.Values;
 
 /**
  * Utility class for managing MDC (Mapped Diagnostic Context) operations.
@@ -40,11 +42,12 @@ public class MdcUtils {
     /**
      * Initialize MDC with request information
      *
-     * @param request The HTTP request
-     * @param clock   Clock for timestamp generation (for testability)
+     * @param request             The HTTP request
+     * @param clock               Clock for timestamp generation (for testability)
+     * @param clientInfoExtractor Strategy for extracting client information
      * @return The request ID used (either from X-Request-ID header or generated)
      */
-    public static String setupMdc(HttpServletRequest request, Clock clock) {
+    public static String setupMdc(HttpServletRequest request, Clock clock, ClientInfoExtractor clientInfoExtractor) {
         // Get or generate request ID
         String requestId = getOrGenerateRequestId(request);
 
@@ -60,10 +63,10 @@ public class MdcUtils {
         MDC.put(KEY_PROTOCOL, request.getProtocol());
 
         // Client info
-        String clientIp = getClientIpAddress(request);
+        String clientIp = clientInfoExtractor.extractClientIp(request);
         MDC.put(KEY_CLIENT_IP, clientIp);
-        MDC.put(KEY_USER_AGENT, request.getHeader(HEADER_USER_AGENT));
-        MDC.put(KEY_REFERER, request.getHeader(HEADER_REFERER));
+        MDC.put(KEY_USER_AGENT, request.getHeader(Headers.USER_AGENT));
+        MDC.put(KEY_REFERER, request.getHeader(Headers.REFERER));
         MDC.put(KEY_CONTENT_TYPE, request.getContentType());
         MDC.put(KEY_CONTENT_LENGTH, String.valueOf(request.getContentLengthLong()));
 
@@ -73,12 +76,12 @@ public class MdcUtils {
         }
 
         // Custom headers
-        String xForwardedFor = request.getHeader(HEADER_FORWARDED_FOR);
+        String xForwardedFor = request.getHeader(Headers.FORWARDED_FOR);
         if (xForwardedFor != null) {
             MDC.put(KEY_X_FORWARDED_FOR, xForwardedFor);
         }
 
-        String xRealIp = request.getHeader(HEADER_REAL_IP);
+        String xRealIp = request.getHeader(Headers.REAL_IP);
         if (xRealIp != null) {
             MDC.put(KEY_X_REAL_IP, xRealIp);
         }
@@ -93,7 +96,7 @@ public class MdcUtils {
      * @return The request ID
      */
     public static String getOrGenerateRequestId(HttpServletRequest request) {
-        return Optional.ofNullable(request.getHeader(HEADER_REQUEST_ID))
+        return Optional.ofNullable(request.getHeader(Headers.REQUEST_ID))
                 .orElse(UUID.randomUUID().toString());
     }
 
@@ -125,23 +128,4 @@ public class MdcUtils {
         MDC.clear();
     }
 
-    /**
-     * Get client IP address from request headers or remote address
-     *
-     * @param request The HTTP request
-     * @return The client IP address
-     */
-    public static String getClientIpAddress(HttpServletRequest request) {
-        String xForwardedFor = request.getHeader(HEADER_FORWARDED_FOR);
-        if (xForwardedFor != null && !xForwardedFor.isEmpty() && !UNKNOWN.equalsIgnoreCase(xForwardedFor)) {
-            return xForwardedFor.split(",")[0].trim();
-        }
-
-        String xRealIp = request.getHeader(HEADER_REAL_IP);
-        if (xRealIp != null && !xRealIp.isEmpty() && !UNKNOWN.equalsIgnoreCase(xRealIp)) {
-            return xRealIp;
-        }
-
-        return request.getRemoteAddr();
-    }
 }

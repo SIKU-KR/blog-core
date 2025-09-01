@@ -11,11 +11,11 @@ import org.slf4j.event.Level;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import park.bumsiku.log.client.ClientInfoExtractor;
+import park.bumsiku.log.performance.PerformanceConfig;
 
 import java.io.IOException;
 import java.time.Clock;
-
-import static park.bumsiku.log.LoggingConstants.SLOW_REQUEST_THRESHOLD_MS;
 
 @Component
 @AllArgsConstructor
@@ -23,6 +23,8 @@ public class LoggingFilter extends OncePerRequestFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(LoggingFilter.class);
     private final Clock clock;
+    private final ClientInfoExtractor clientInfoExtractor;
+    private final PerformanceConfig performanceConfig;
 
     @Override
     protected void doFilterInternal(
@@ -40,7 +42,7 @@ public class LoggingFilter extends OncePerRequestFilter {
         HttpServletResponse wrappedResponse = RequestResponseUtils.wrapResponse(response);
 
         try (MdcCloseable ignored = MdcCloseable.create()) {
-            MdcUtils.setupMdc(wrappedRequest, clock);
+            MdcUtils.setupMdc(wrappedRequest, clock, clientInfoExtractor);
             filterChain.doFilter(wrappedRequest, wrappedResponse);
         } catch (Exception e) {
             MdcUtils.putExceptionInfo(e);
@@ -63,9 +65,10 @@ public class LoggingFilter extends OncePerRequestFilter {
     }
 
     private Level determineLogLevel(int status, long duration) {
+        long threshold = performanceConfig.getThreshold(LoggingConstants.Operations.HTTP_REQUEST);
         if (status >= 500) {
             return Level.ERROR;
-        } else if (duration > SLOW_REQUEST_THRESHOLD_MS || status >= 400) {
+        } else if (duration > threshold || status >= 400) {
             return Level.WARN;
         } else {
             return Level.INFO;

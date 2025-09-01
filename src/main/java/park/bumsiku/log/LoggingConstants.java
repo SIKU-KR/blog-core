@@ -3,45 +3,35 @@ package park.bumsiku.log;
 /**
  * Constants used for logging configuration.
  */
-public class LoggingConstants {
+public final class LoggingConstants {
 
-    /**
-     * Threshold in milliseconds for considering a request as slow.
-     * Requests taking longer than this will be logged at WARN level.
-     */
-    public static final long SLOW_REQUEST_THRESHOLD_MS = 500;
+    public static final class Headers {
+        public static final String REQUEST_ID = "X-Request-ID";
+        public static final String FORWARDED_FOR = "X-Forwarded-For";
+        public static final String REAL_IP = "X-Real-IP";
+        public static final String USER_AGENT = "User-Agent";
+        public static final String REFERER = "Referer";
 
-    /**
-     * Header name for request ID.
-     */
-    public static final String HEADER_REQUEST_ID = "X-Request-ID";
+        private Headers() {
+        }
+    }
 
-    /**
-     * Header name for forwarded IP.
-     */
-    public static final String HEADER_FORWARDED_FOR = "X-Forwarded-For";
+    public static final class Values {
+        public static final String UNKNOWN = "unknown";
 
-    /**
-     * Header name for real IP.
-     */
-    public static final String HEADER_REAL_IP = "X-Real-IP";
+        private Values() {
+        }
+    }
 
-    /**
-     * Header name for user agent.
-     */
-    public static final String HEADER_USER_AGENT = "User-Agent";
+    public static final class Operations {
+        public static final String METHOD_EXECUTION = "method";
+        public static final String DB_QUERY = "repository";
+        public static final String HTTP_REQUEST = "request";
 
-    /**
-     * Header name for referer.
-     */
-    public static final String HEADER_REFERER = "Referer";
+        private Operations() {
+        }
+    }
 
-    /**
-     * Value for unknown header values.
-     */
-    public static final String UNKNOWN = "unknown";
-
-    // Private constructor to prevent instantiation
     private LoggingConstants() {
     }
 }
