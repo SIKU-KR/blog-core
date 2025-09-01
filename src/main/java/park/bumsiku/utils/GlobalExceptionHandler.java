@@ -16,7 +16,7 @@ import park.bumsiku.domain.dto.response.Response;
 
 import java.util.NoSuchElementException;
 
-import static park.bumsiku.log.LoggingConstants.UNKNOWN;
+import static park.bumsiku.log.LoggingConstants.Values.UNKNOWN;
 
 @ControllerAdvice
 @AllArgsConstructor

@@ -44,7 +44,7 @@ public class RequestResponseUtils {
             try {
                 wrapper.copyBodyToResponse();
             } catch (Exception e) {
-                throw new RuntimeException("Failed to copy response body", e);
+                throw new IllegalStateException("Failed to copy response body", e);
             }
         }
     }

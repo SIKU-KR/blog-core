@@ -1,7 +1,7 @@
 package park.bumsiku.log;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.env.Environment;
@@ -9,16 +9,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 
+@Slf4j
 @Component
+@RequiredArgsConstructor
 public class ApplicationStartupLogger implements ApplicationListener<ApplicationStartedEvent> {
 
-    private static final Logger log = LoggerFactory.getLogger(ApplicationStartupLogger.class);
-
     private final Environment environment;
-
-    public ApplicationStartupLogger(Environment environment) {
-        this.environment = environment;
-    }
 
     @Override
     public void onApplicationEvent(ApplicationStartedEvent event) {
