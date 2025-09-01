@@ -1,4 +1,4 @@
-package park.bumsiku.utils.integration;
+package park.bumsiku.utils.validation;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;

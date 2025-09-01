@@ -8,7 +8,7 @@ import park.bumsiku.domain.dto.request.CommentRequest;
 import park.bumsiku.domain.dto.response.*;
 import park.bumsiku.utils.monitoring.LogExecutionTime;
 import park.bumsiku.service.PublicService;
-import park.bumsiku.utils.integration.ArgumentValidator;
+import park.bumsiku.utils.validation.ArgumentValidator;
 
 import java.util.List;
 

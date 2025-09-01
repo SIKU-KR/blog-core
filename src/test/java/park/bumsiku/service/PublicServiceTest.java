@@ -16,7 +16,7 @@ import park.bumsiku.domain.entity.Post;
 import park.bumsiku.repository.CategoryRepository;
 import park.bumsiku.repository.CommentRepository;
 import park.bumsiku.repository.PostRepository;
-import park.bumsiku.utils.validation.DiscordWebhookCreator;
+import park.bumsiku.utils.integration.DiscordWebhookCreator;
 
 import java.time.LocalDateTime;
 import java.util.List;

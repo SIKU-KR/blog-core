@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import park.bumsiku.domain.dto.request.LoginRequest;
-import park.bumsiku.utils.validation.DiscordWebhookCreator;
+import park.bumsiku.utils.integration.DiscordWebhookCreator;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;

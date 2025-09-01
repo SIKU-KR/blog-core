@@ -8,8 +8,8 @@ import org.springframework.mock.web.MockMultipartFile;
 import park.bumsiku.config.AbstractTestSupport;
 import park.bumsiku.config.MethodValidationTestConfig;
 import park.bumsiku.domain.dto.request.*;
-import park.bumsiku.utils.integration.ArgumentValidator;
-import park.bumsiku.utils.integration.ArgumentValidatorImpl;
+import park.bumsiku.utils.validation.ArgumentValidator;
+import park.bumsiku.utils.validation.ArgumentValidatorImpl;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
