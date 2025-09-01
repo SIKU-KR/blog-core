@@ -14,7 +14,10 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
+import park.bumsiku.log.LoggingConstants;
 import park.bumsiku.log.LoggingFilter;
+import park.bumsiku.log.client.DefaultClientInfoExtractor;
+import park.bumsiku.log.performance.PerformanceConfig;
 
 import java.io.IOException;
 import java.time.Clock;
@@ -25,8 +28,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
-import static park.bumsiku.log.LoggingConstants.HEADER_REQUEST_ID;
-import static park.bumsiku.log.LoggingConstants.SLOW_REQUEST_THRESHOLD_MS;
 
 @ExtendWith(MockitoExtension.class)
 class LoggingFilterTest {
@@ -48,7 +49,9 @@ class LoggingFilterTest {
         fixedClock = Clock.fixed(Instant.parse("2023-01-01T12:00:00Z"), ZoneId.systemDefault());
 
         // Create the filter with the fixed clock
-        loggingFilter = new LoggingFilter(fixedClock);
+        DefaultClientInfoExtractor clientInfoExtractor = new DefaultClientInfoExtractor();
+        PerformanceConfig performanceConfig = new PerformanceConfig();
+        loggingFilter = new LoggingFilter(fixedClock, clientInfoExtractor, performanceConfig);
 
         // Create mock request and response
         request = new MockHttpServletRequest();
@@ -71,15 +74,15 @@ class LoggingFilterTest {
 
         verify(filterChain).doFilter(requestCaptor.capture(), responseCaptor.capture());
 
-        assertTrue(requestCaptor.getValue() instanceof ContentCachingRequestWrapper);
-        assertTrue(responseCaptor.getValue() instanceof ContentCachingResponseWrapper);
+        assertInstanceOf(ContentCachingRequestWrapper.class, requestCaptor.getValue());
+        assertInstanceOf(ContentCachingResponseWrapper.class, responseCaptor.getValue());
     }
 
     @Test
     void shouldUseExistingRequestId() throws ServletException, IOException {
         // Given
         String expectedRequestId = "test-request-id";
-        request.addHeader(HEADER_REQUEST_ID, expectedRequestId);
+        request.addHeader(LoggingConstants.Headers.REQUEST_ID, expectedRequestId);
 
         // When
         loggingFilter.doFilter(request, response, filterChain);
@@ -93,8 +96,10 @@ class LoggingFilterTest {
     void shouldLogSlowRequestsWithWarnLevel() throws ServletException, IOException {
         // Given
         // Create a clock that advances by more than the slow threshold
-        Clock advancingClock = new AdvancingClock(fixedClock, SLOW_REQUEST_THRESHOLD_MS + 100);
-        loggingFilter = new LoggingFilter(advancingClock);
+        Clock advancingClock = new AdvancingClock(fixedClock, 600); // 600ms > default 500ms threshold
+        DefaultClientInfoExtractor clientInfoExtractor = new DefaultClientInfoExtractor();
+        PerformanceConfig performanceConfig = new PerformanceConfig();
+        loggingFilter = new LoggingFilter(advancingClock, clientInfoExtractor, performanceConfig);
 
         // When
         loggingFilter.doFilter(request, response, filterChain);

@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(PublicController.class)
-@Import({Security.class, ClockConfig.class})
+@Import({Security.class, ClockConfig.class, park.bumsiku.log.config.LoggingConfig.class})
 public class PublicControllerTest {
 
     @Autowired
