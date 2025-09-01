@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 @Aspect
 @Component
-public class LoggingAspect extends AbstractLoggingAspect {
+public class MethodLoggingAspect extends AbstractLoggingAspect {
 
     private static final long SLOW_METHOD_THRESHOLD_MS = 500;
 
