@@ -31,7 +31,7 @@ public class LoggingFilter extends OncePerRequestFilter {
         long startTime = System.currentTimeMillis();
 
         try (MdcCloseable ignored = MdcCloseable.create()) {
-            MdcUtils.setupMdc(request);
+            MdcUtils.setupMdc();
             filterChain.doFilter(request, response);
         } finally {
             long duration = System.currentTimeMillis() - startTime;

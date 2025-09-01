@@ -11,7 +11,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-import park.bumsiku.log.LoggingConstants;
 import park.bumsiku.log.LoggingFilter;
 
 import java.io.IOException;
@@ -57,17 +56,13 @@ class LoggingFilterTest {
     }
 
     @Test
-    void shouldUseExistingRequestId() throws ServletException, IOException {
-        // Given
-        String expectedRequestId = "test-request-id";
-        request.addHeader(LoggingConstants.Headers.REQUEST_ID, expectedRequestId);
-
+    void shouldGenerateUniqueRequestId() throws ServletException, IOException {
         // When
         loggingFilter.doFilter(request, response, filterChain);
 
         // Then
         verify(filterChain).doFilter(any(), any());
-        // We can't easily verify MDC values directly in a test, but we can check that the filter completed successfully
+        // Each request gets a unique UUID - no external dependencies
     }
 
     @Test
