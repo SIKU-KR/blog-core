@@ -7,16 +7,8 @@ import park.bumsiku.log.client.ClientInfoExtractor;
 import park.bumsiku.log.client.DefaultClientInfoExtractor;
 import park.bumsiku.log.performance.PerformanceConfig;
 
-import java.time.Clock;
-
 @Configuration
 public class LoggingConfig {
-
-    @Bean
-    @ConditionalOnMissingBean(Clock.class)
-    public Clock clock() {
-        return Clock.systemDefaultZone();
-    }
 
     @Bean
     @ConditionalOnMissingBean(ClientInfoExtractor.class)

@@ -1,8 +1,5 @@
 package park.bumsiku.log;
 
-/**
- * Constants used for logging configuration.
- */
 public final class LoggingConstants {
 
     public static final class Headers {

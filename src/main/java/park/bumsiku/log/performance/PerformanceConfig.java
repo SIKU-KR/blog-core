@@ -1,11 +1,13 @@
 package park.bumsiku.log.performance;
 
+import lombok.Getter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
 @Component
+@Getter
 @ConfigurationProperties(prefix = "logging.performance")
 public class PerformanceConfig {
 
