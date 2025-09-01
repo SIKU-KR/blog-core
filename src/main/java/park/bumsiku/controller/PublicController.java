@@ -5,14 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 import park.bumsiku.domain.dto.request.CommentRequest;
-import park.bumsiku.domain.dto.response.CategoryResponse;
-import park.bumsiku.domain.dto.response.CommentResponse;
-import park.bumsiku.domain.dto.response.PostListResponse;
-import park.bumsiku.domain.dto.response.PostResponse;
-import park.bumsiku.domain.dto.response.Response;
+import park.bumsiku.domain.dto.response.*;
+import park.bumsiku.log.aop.LogExecutionTime;
 import park.bumsiku.service.PublicService;
 import park.bumsiku.utils.ArgumentValidator;
-import park.bumsiku.log.aop.LogExecutionTime;
 
 import java.util.List;
 
@@ -60,7 +56,7 @@ public class PublicController implements PublicAPI {
             @PathVariable("postId") int postId) {
 
         validator.validatePostId(postId);
-        
+
         PostResponse result = service.getPostById(postId);
 
         return Response.success(result);
@@ -97,9 +93,9 @@ public class PublicController implements PublicAPI {
     @GetMapping("/categories")
     @LogExecutionTime
     public Response<List<CategoryResponse>> getCategories() {
-        
+
         List<CategoryResponse> result = service.getCategories();
-        
+
         return Response.success(result);
     }
 }
