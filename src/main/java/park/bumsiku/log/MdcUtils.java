@@ -11,7 +11,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static park.bumsiku.log.LoggingConstants.Headers;
-import static park.bumsiku.log.LoggingConstants.Values;
 
 /**
  * Utility class for managing MDC (Mapped Diagnostic Context) operations.
