@@ -19,38 +19,39 @@
         </encoder>
     </appender>
 
-    <appender name="LOGSTASH_TCP" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
-        <destination>${ELK_HOST}:${ELK_PORT}</destination>
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <includeMdc>true</includeMdc>
-            <includeContext>true</includeContext>
-            <customFields>
-                {"application":"blog-server","environment":"${spring.profiles.active:-local}","server":"${server.address:-localhost}"}
-            </customFields>
-            <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSS</timestampPattern>
-        </encoder>
-        <reconnectionDelay>10 seconds</reconnectionDelay>
-        <writeTimeout>10 seconds</writeTimeout>
-        <includeCallerData>false</includeCallerData>
-    </appender>
+    <springProfile name="prod">
+        <appender name="LOGSTASH_TCP" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+            <destination>${ELK_HOST}:${ELK_PORT}</destination>
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <includeMdc>true</includeMdc>
+                <includeContext>true</includeContext>
+                <customFields>
+                    {"application":"blog-server","environment":"${spring.profiles.active:-local}","server":"${server.address:-localhost}"}
+                </customFields>
+                <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSS</timestampPattern>
+            </encoder>
+            <reconnectionDelay>10 seconds</reconnectionDelay>
+            <writeTimeout>10 seconds</writeTimeout>
+            <includeCallerData>false</includeCallerData>
+        </appender>
 
-    <appender name="ASYNC_LOGSTASH" class="ch.qos.logback.classic.AsyncAppender">
-        <appender-ref ref="LOGSTASH_TCP"/>
-        <queueSize>1024</queueSize>
-        <discardingThreshold>0</discardingThreshold>
-        <includeCallerData>false</includeCallerData>
-        <neverBlock>true</neverBlock>
-    </appender>
+        <appender name="ASYNC_LOGSTASH" class="ch.qos.logback.classic.AsyncAppender">
+            <appender-ref ref="LOGSTASH_TCP"/>
+            <queueSize>1024</queueSize>
+            <discardingThreshold>0</discardingThreshold>
+            <includeCallerData>false</includeCallerData>
+            <neverBlock>true</neverBlock>
+        </appender>
+    </springProfile>
 
     <!-- Profiles -->
     <springProfile name="local,dev">
         <root level="INFO">
             <appender-ref ref="CONSOLE_TEXT"/>
-            <appender-ref ref="ASYNC_LOGSTASH"/>
         </root>
     </springProfile>
 
-    <springProfile name="!local & !dev">
+    <springProfile name="prod">
         <root level="INFO">
             <appender-ref ref="CONSOLE_JSON"/>
             <appender-ref ref="ASYNC_LOGSTASH"/>
