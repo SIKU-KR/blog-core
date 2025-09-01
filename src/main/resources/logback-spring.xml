@@ -45,7 +45,7 @@
     </springProfile>
 
     <!-- Profiles -->
-    <springProfile name="local,dev">
+    <springProfile name="!prod">
         <root level="INFO">
             <appender-ref ref="CONSOLE_TEXT"/>
         </root>
