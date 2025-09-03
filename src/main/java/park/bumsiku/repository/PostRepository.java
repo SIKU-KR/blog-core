@@ -87,15 +87,15 @@ public class PostRepository {
         if (sort == null || sort.trim().isEmpty()) {
             return "ORDER BY p.createdAt DESC";
         }
-        
+
         String[] parts = sort.split(",");
         String field = parts[0].trim().toLowerCase();
         String direction = parts.length > 1 ? parts[1].trim().toUpperCase() : "DESC";
-        
+
         if (!"ASC".equals(direction) && !"DESC".equals(direction)) {
             direction = "DESC";
         }
-        
+
         switch (field) {
             case "views":
                 return "ORDER BY p.views " + direction;

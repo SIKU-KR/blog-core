@@ -603,7 +603,7 @@ public class PublicTest extends AbstractTestSupport {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
-;
+        ;
     }
 
     @Test
