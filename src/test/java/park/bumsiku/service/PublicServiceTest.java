@@ -9,7 +9,6 @@ import park.bumsiku.domain.dto.request.CommentRequest;
 import park.bumsiku.domain.dto.response.CategoryResponse;
 import park.bumsiku.domain.dto.response.CommentResponse;
 import park.bumsiku.domain.dto.response.PostResponse;
-import park.bumsiku.domain.dto.response.PostSummaryResponse;
 import park.bumsiku.domain.entity.Category;
 import park.bumsiku.domain.entity.Comment;
 import park.bumsiku.domain.entity.Post;

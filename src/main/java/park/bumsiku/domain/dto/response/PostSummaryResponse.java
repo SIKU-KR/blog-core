@@ -34,8 +34,8 @@ public class PostSummaryResponse {
     }
 
     // JPQL Constructor Expression을 위한 생성자 (Repository에서만 사용)
-    public PostSummaryResponse(Integer id, String title, String summary, Integer categoryId, 
-                              LocalDateTime createdAt, LocalDateTime updatedAt, Long views) {
+    public PostSummaryResponse(Integer id, String title, String summary, Integer categoryId,
+                               LocalDateTime createdAt, LocalDateTime updatedAt, Long views) {
         this.id = id;
         this.title = title;
         this.summary = summary;
