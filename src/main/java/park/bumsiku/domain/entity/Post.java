@@ -42,6 +42,10 @@ public class Post {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
+    @Builder.Default
+    @Column(nullable = false)
+    private Long views = 0L;
+
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();

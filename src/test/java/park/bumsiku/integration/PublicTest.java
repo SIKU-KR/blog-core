@@ -17,9 +17,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -70,6 +70,8 @@ public class PublicTest extends AbstractTestSupport {
     private void createTestPosts() {
         for (int i = 0; i < 15; i++) {
             Category category = categories.get(i % 2);
+            // 조회수를 다양하게 설정 (인덱스가 높을수록 조회수도 높게)
+            Long views = (long) ((i + 1) * 10);
             Post post = Post.builder()
                     .title("Test Post " + (i + 1))
                     .content("This is test content for post " + (i + 1))
@@ -78,6 +80,7 @@ public class PublicTest extends AbstractTestSupport {
                     .category(category)
                     .createdAt(LocalDateTime.now().minusDays(15 - i))
                     .updatedAt(LocalDateTime.now().minusDays(15 - i))
+                    .views(views)
                     .build();
             posts.add(postRepository.insert(post));
         }
@@ -474,5 +477,156 @@ public class PublicTest extends AbstractTestSupport {
                 .andExpect(jsonPath("$.data[1].order", is(2)))
                 .andExpect(jsonPath("$.data[1].createdAt", notNullValue()))
                 .andExpect(jsonPath("$.data[1].postCount", is(7)));
+    }
+
+    @Test
+    public void testIncrementPostViewsSuccess() throws Exception {
+        int postId = posts.get(0).getId();
+        Post initialPost = postRepository.findById(postId);
+        Long initialViews = initialPost.getViews();
+
+        mockMvc.perform(patch("/posts/{postId}/views", postId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data").doesNotExist());
+
+        Post updatedPost = postRepository.findById(postId);
+        assertThat(updatedPost.getViews()).isEqualTo(initialViews + 1);
+    }
+
+    @Test
+    public void testIncrementPostViewsNotFound() throws Exception {
+        int nonExistentPostId = 9999;
+
+        mockMvc.perform(patch("/posts/{postId}/views", nonExistentPostId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(404)))
+                .andExpect(jsonPath("$.error.message", containsString("Post not found")));
+    }
+
+    @Test
+    public void testIncrementPostViewsInvalidId() throws Exception {
+        int invalidPostId = 0;
+
+        mockMvc.perform(patch("/posts/{postId}/views", invalidPostId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("게시글 ID는 1 이상이어야 합니다")));
+    }
+
+    @Test
+    public void testIncrementPostViewsMultipleTimes() throws Exception {
+        int postId = posts.get(1).getId();
+        Post initialPost = postRepository.findById(postId);
+        Long initialViews = initialPost.getViews();
+        int incrementCount = 5;
+
+        for (int i = 0; i < incrementCount; i++) {
+            mockMvc.perform(patch("/posts/{postId}/views", postId)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success", is(true)));
+        }
+
+        Post updatedPost = postRepository.findById(postId);
+        assertThat(updatedPost.getViews()).isEqualTo(initialViews + incrementCount);
+    }
+
+    @Test
+    public void testGetPostsSortedByViewsDesc() throws Exception {
+        mockMvc.perform(get("/posts")
+                        .param("sort", "views,desc")
+                        .param("size", "5")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data.content", hasSize(5)))
+                .andExpect(jsonPath("$.data.content[0].views", is(150))) // 15 * 10
+                .andExpect(jsonPath("$.data.content[1].views", is(140))) // 14 * 10
+                .andExpect(jsonPath("$.data.content[4].views", is(110))); // 11 * 10
+    }
+
+    @Test
+    public void testGetPostsSortedByViewsAsc() throws Exception {
+        mockMvc.perform(get("/posts")
+                        .param("sort", "views,asc")
+                        .param("size", "5")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data.content", hasSize(5)))
+                .andExpect(jsonPath("$.data.content[0].views", is(10))) // 1 * 10
+                .andExpect(jsonPath("$.data.content[1].views", is(20))) // 2 * 10
+                .andExpect(jsonPath("$.data.content[4].views", is(50))); // 5 * 10
+    }
+
+    @Test
+    public void testGetPostsSortedByCreatedAtAsc() throws Exception {
+        mockMvc.perform(get("/posts")
+                        .param("sort", "createdAt,asc")
+                        .param("size", "3")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data.content", hasSize(3)))
+                .andExpect(jsonPath("$.data.content[0].title", is("Test Post 1"))) // 가장 오래된 게시글
+                .andExpect(jsonPath("$.data.content[1].title", is("Test Post 2")))
+                .andExpect(jsonPath("$.data.content[2].title", is("Test Post 3")));
+    }
+
+    @Test
+    public void testGetPostsSortedByCreatedAtDesc() throws Exception {
+        mockMvc.perform(get("/posts")
+                        .param("sort", "createdAt,desc")
+                        .param("size", "3")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data.content", hasSize(3)))
+                .andExpect(jsonPath("$.data.content[0].title", is("Test Post 15"))) // 가장 최근 게시글
+                .andExpect(jsonPath("$.data.content[1].title", is("Test Post 14")))
+                .andExpect(jsonPath("$.data.content[2].title", is("Test Post 13")));
+    }
+
+    @Test
+    public void testGetPostsByCategoryWithViewsSort() throws Exception {
+        Integer categoryId = categories.get(0).getId();
+        mockMvc.perform(get("/posts")
+                        .param("category", categoryId.toString())
+                        .param("sort", "views,desc")
+                        .param("size", "3")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+        ;
+    }
+
+    @Test
+    public void testGetPostsWithInvalidSort() throws Exception {
+        mockMvc.perform(get("/posts")
+                        .param("sort", "invalidField,desc")
+                        .param("size", "5")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data.content", hasSize(5)))
+                .andExpect(jsonPath("$.data.content[0].title", is("Test Post 15"))); // 기본값 createdAt,desc
+    }
+
+    @Test
+    public void testGetPostsWithInvalidDirection() throws Exception {
+        mockMvc.perform(get("/posts")
+                        .param("sort", "views,invalid")
+                        .param("size", "5")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data.content", hasSize(5)))
+                .andExpect(jsonPath("$.data.content[0].views", is(150))); // DESC가 기본값이므로 가장 높은 조회수
     }
 }

@@ -9,11 +9,13 @@ import park.bumsiku.domain.dto.response.*;
 import park.bumsiku.domain.entity.Category;
 import park.bumsiku.domain.entity.Comment;
 import park.bumsiku.domain.entity.Post;
-import park.bumsiku.utils.monitoring.LogExecutionTime;
 import park.bumsiku.repository.CategoryRepository;
 import park.bumsiku.repository.CommentRepository;
 import park.bumsiku.repository.PostRepository;
 import park.bumsiku.utils.integration.DiscordWebhookCreator;
+import park.bumsiku.utils.monitoring.LogExecutionTime;
+import park.bumsiku.utils.sorting.PostSortBuilder;
+import park.bumsiku.utils.sorting.SortCriteria;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -28,33 +30,26 @@ public class PublicService {
     private PostRepository postRepository;
     private CommentRepository commentRepository;
     private CategoryRepository categoryRepository;
+    private PostSortBuilder postSortBuilder;
 
     private DiscordWebhookCreator discord;
 
     @LogExecutionTime
     public PostListResponse getPostList(int page, int size, String sort) {
-        List<PostSummaryResponse> postSummaryList = postRepository.findAll(page, size);
+        SortCriteria sortCriteria = postSortBuilder.buildSortCriteria(sort);
+        List<Post> posts = postRepository.findAll(page, size, sortCriteria.jpqlOrderClause());
         int totalElements = postRepository.countAll();
 
-        return PostListResponse.builder()
-                .content(postSummaryList)
-                .totalElements(totalElements)
-                .pageNumber(page)
-                .pageSize(size)
-                .build();
+        return buildPostListResponse(posts, totalElements, page, size);
     }
 
     @LogExecutionTime
     public PostListResponse getPostList(int categoryId, int page, int size, String sort) {
-        List<PostSummaryResponse> postSummaryList = postRepository.findAllByCategoryId(categoryId, page, size);
+        SortCriteria sortCriteria = postSortBuilder.buildSortCriteria(sort);
+        List<Post> posts = postRepository.findAllByCategoryId(categoryId, page, size, sortCriteria.jpqlOrderClause());
         int totalElements = postRepository.countByCategoryId(categoryId);
 
-        return PostListResponse.builder()
-                .content(postSummaryList)
-                .totalElements(totalElements)
-                .pageNumber(page)
-                .pageSize(size)
-                .build();
+        return buildPostListResponse(posts, totalElements, page, size);
     }
 
     @LogExecutionTime
@@ -78,12 +73,7 @@ public class PublicService {
         List<Comment> commentList = commentRepository.findAllByPost(post);
 
         return commentList.stream()
-                .map(c -> CommentResponse.builder()
-                        .id(c.getId().intValue())
-                        .authorName(c.getAuthorName())
-                        .content(c.getContent())
-                        .createdAt(c.getCreatedAt().toString())
-                        .build())
+                .map(this::buildCommentResponse)
                 .collect(Collectors.toList());
     }
 
@@ -99,12 +89,7 @@ public class PublicService {
 
         discord.sendMessage(String.format("💬 게시글 ID: %d에 '%s'님이 댓글을 작성했습니다.\n내용: %s", id, commentRequest.getAuthor(), saved.getContent()));
 
-        return CommentResponse.builder()
-                .id(saved.getId().intValue())
-                .authorName(saved.getAuthorName())
-                .content(saved.getContent())
-                .createdAt(saved.getCreatedAt().toString())
-                .build();
+        return buildCommentResponse(saved);
     }
 
     @LogExecutionTime
@@ -125,6 +110,13 @@ public class PublicService {
                 .collect(Collectors.toList());
     }
 
+    @LogExecutionTime
+    public void incrementPostViews(int id) {
+        Post post = requirePostById(id);
+        post.setViews(post.getViews() + 1);
+        postRepository.update(post);
+    }
+
     private Post requirePostById(int id) {
         Post post = postRepository.findById(id);
         if (post == null) {
@@ -132,5 +124,27 @@ public class PublicService {
             throw new NoSuchElementException("Post not found");
         }
         return post;
+    }
+
+    private PostListResponse buildPostListResponse(List<Post> posts, int totalElements, int page, int size) {
+        List<PostSummaryResponse> postSummaryList = posts.stream()
+                .map(PostSummaryResponse::from)
+                .collect(Collectors.toList());
+
+        return PostListResponse.builder()
+                .content(postSummaryList)
+                .totalElements(totalElements)
+                .pageNumber(page)
+                .pageSize(size)
+                .build();
+    }
+
+    private CommentResponse buildCommentResponse(Comment comment) {
+        return CommentResponse.builder()
+                .id(comment.getId().intValue())
+                .authorName(comment.getAuthorName())
+                .content(comment.getContent())
+                .createdAt(comment.getCreatedAt().toString())
+                .build();
     }
 }

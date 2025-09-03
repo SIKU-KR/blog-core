@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 import park.bumsiku.domain.dto.request.CommentRequest;
 import park.bumsiku.domain.dto.response.*;
-import park.bumsiku.utils.monitoring.LogExecutionTime;
 import park.bumsiku.service.PublicService;
+import park.bumsiku.utils.monitoring.LogExecutionTime;
 import park.bumsiku.utils.validation.ArgumentValidator;
 
 import java.util.List;
@@ -97,5 +97,18 @@ public class PublicController implements PublicAPI {
         List<CategoryResponse> result = service.getCategories();
 
         return Response.success(result);
+    }
+
+    @Override
+    @PatchMapping("/posts/{postId}/views")
+    @LogExecutionTime
+    public Response<Void> incrementPostViews(
+            @PathVariable("postId") int postId) {
+
+        validator.validatePostId(postId);
+
+        service.incrementPostViews(postId);
+
+        return Response.success(null);
     }
 }

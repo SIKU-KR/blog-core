@@ -9,7 +9,6 @@ import park.bumsiku.domain.dto.request.CommentRequest;
 import park.bumsiku.domain.dto.response.CategoryResponse;
 import park.bumsiku.domain.dto.response.CommentResponse;
 import park.bumsiku.domain.dto.response.PostResponse;
-import park.bumsiku.domain.dto.response.PostSummaryResponse;
 import park.bumsiku.domain.entity.Category;
 import park.bumsiku.domain.entity.Comment;
 import park.bumsiku.domain.entity.Post;
@@ -17,6 +16,7 @@ import park.bumsiku.repository.CategoryRepository;
 import park.bumsiku.repository.CommentRepository;
 import park.bumsiku.repository.PostRepository;
 import park.bumsiku.utils.integration.DiscordWebhookCreator;
+import park.bumsiku.utils.sorting.SortCriteria;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,7 +24,7 @@ import java.util.NoSuchElementException;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class PublicServiceTest {
@@ -44,6 +44,9 @@ public class PublicServiceTest {
     @Mock
     private DiscordWebhookCreator discord;
 
+    @Mock
+    private park.bumsiku.utils.sorting.PostSortBuilder postSortBuilder;
+
     private Post postMockData() {
         Category mockCategory = Category.builder()
                 .id(1)
@@ -59,27 +62,10 @@ public class PublicServiceTest {
                 .category(mockCategory)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
+                .views(5L)
                 .build();
     }
 
-    private List<PostSummaryResponse> postSummaryMockData() {
-        return List.of(
-                PostSummaryResponse.builder()
-                        .id(1)
-                        .title("title1")
-                        .summary("summary1")
-                        .createdAt(LocalDateTime.now())
-                        .updatedAt(LocalDateTime.now())
-                        .build(),
-                PostSummaryResponse.builder()
-                        .id(2)
-                        .title("title2")
-                        .summary("summary2")
-                        .createdAt(LocalDateTime.now())
-                        .updatedAt(LocalDateTime.now())
-                        .build()
-        );
-    }
 
     private List<Comment> commentMockData() {
         Post post = postMockData();
@@ -100,8 +86,11 @@ public class PublicServiceTest {
     @Test
     public void returnPostSummaryListResponseWithMockedData() {
         // given
-        List<PostSummaryResponse> postList = postSummaryMockData();
-        when(postRepository.findAll(0, 10)).thenReturn(postList);
+        List<Post> postList = List.of(postMockData());
+        SortCriteria sortCriteria = new SortCriteria("createdAt", "ASC", "ORDER BY p.createdAt ASC");
+        when(postSortBuilder.buildSortCriteria("asc")).thenReturn(sortCriteria);
+        when(postRepository.findAll(0, 10, "ORDER BY p.createdAt ASC")).thenReturn(postList);
+        when(postRepository.countAll()).thenReturn(1);
 
         // when
         var result = publicService.getPostList(0, 10, "asc");
@@ -109,14 +98,14 @@ public class PublicServiceTest {
         // then
         assertThat(result.getContent())
                 .isNotNull()
-                .hasSize(2)
+                .hasSize(1)
                 .extracting("title", "summary")
                 .containsExactly(
-                        tuple("title1", "summary1"),
-                        tuple("title2", "summary2")
+                        tuple("Sample Post Title", "Sample summary of the post")
                 );
         assertThat(result.getPageSize()).isNotNull().isEqualTo(10);
         assertThat(result.getPageNumber()).isNotNull().isEqualTo(0);
+        assertThat(result.getTotalElements()).isEqualTo(1);
     }
 
     @Test
@@ -251,5 +240,85 @@ public class PublicServiceTest {
                         tuple(category1.getId(), category1.getName(), category1.getOrdernum()),
                         tuple(category2.getId(), category2.getName(), category2.getOrdernum())
                 );
+    }
+
+    @Test
+    public void incrementPostViewsShouldIncreaseViewsCount() {
+        // given
+        Post post = postMockData();
+        Long initialViews = post.getViews();
+        when(postRepository.findById(post.getId())).thenReturn(post);
+
+        // when
+        publicService.incrementPostViews(post.getId());
+
+        // then
+        assertThat(post.getViews()).isEqualTo(initialViews + 1);
+        verify(postRepository).update(post);
+    }
+
+    @Test
+    public void throwPostNotFoundExceptionWhenRepositoryReturnsNullPostForIncrementPostViews() {
+        // given
+        int postId = 999;
+        when(postRepository.findById(postId)).thenReturn(null);
+
+        // then
+        assertThatThrownBy(() -> publicService.incrementPostViews(postId))
+                .isInstanceOf(NoSuchElementException.class);
+        verify(postRepository, never()).update(any());
+    }
+
+    @Test
+    public void getPostListShouldCallRepositoryWithViewsSortDesc() {
+        // given
+        List<Post> postList = List.of(postMockData());
+        SortCriteria sortCriteria = new SortCriteria("views", "DESC", "ORDER BY p.views DESC");
+        when(postSortBuilder.buildSortCriteria("views,desc")).thenReturn(sortCriteria);
+        when(postRepository.findAll(0, 10, "ORDER BY p.views DESC")).thenReturn(postList);
+        when(postRepository.countAll()).thenReturn(1);
+
+        // when
+        var result = publicService.getPostList(0, 10, "views,desc");
+
+        // then
+        verify(postRepository).findAll(0, 10, "ORDER BY p.views DESC");
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent().get(0).getViews()).isEqualTo(5L);
+    }
+
+    @Test
+    public void getPostListShouldCallRepositoryWithCreatedAtSortAsc() {
+        // given
+        List<Post> postList = List.of(postMockData());
+        SortCriteria sortCriteria = new SortCriteria("createdAt", "ASC", "ORDER BY p.createdAt ASC");
+        when(postSortBuilder.buildSortCriteria("createdAt,asc")).thenReturn(sortCriteria);
+        when(postRepository.findAll(0, 5, "ORDER BY p.createdAt ASC")).thenReturn(postList);
+        when(postRepository.countAll()).thenReturn(1);
+
+        // when
+        var result = publicService.getPostList(0, 5, "createdAt,asc");
+
+        // then
+        verify(postRepository).findAll(0, 5, "ORDER BY p.createdAt ASC");
+        assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    public void getPostListByCategoryShouldCallRepositoryWithViewsSort() {
+        // given
+        int categoryId = 1;
+        List<Post> postList = List.of(postMockData());
+        SortCriteria sortCriteria = new SortCriteria("views", "ASC", "ORDER BY p.views ASC");
+        when(postSortBuilder.buildSortCriteria("views,asc")).thenReturn(sortCriteria);
+        when(postRepository.findAllByCategoryId(categoryId, 0, 10, "ORDER BY p.views ASC")).thenReturn(postList);
+        when(postRepository.countByCategoryId(categoryId)).thenReturn(1);
+
+        // when
+        var result = publicService.getPostList(categoryId, 0, 10, "views,asc");
+
+        // then
+        verify(postRepository).findAllByCategoryId(categoryId, 0, 10, "ORDER BY p.views ASC");
+        assertThat(result.getContent()).hasSize(1);
     }
 }

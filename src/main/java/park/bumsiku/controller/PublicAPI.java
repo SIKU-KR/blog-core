@@ -124,4 +124,24 @@ public interface PublicAPI {
     @ApiResponse(responseCode = "500", description = "서버 오류")
     @GetMapping("/categories")
     Response<List<CategoryResponse>> getCategories();
+
+    @Operation(
+            summary = "게시글 조회수 증가",
+            description = "특정 게시글의 조회수를 1 증가시킵니다."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "OK",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = Response.class)
+            )
+    )
+    @ApiResponse(responseCode = "400", description = "잘못된 요청 (ID 형식 오류)")
+    @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")
+    @PatchMapping("/posts/{postId}/views")
+    Response<Void> incrementPostViews(
+            @Parameter(description = "조회수를 증가시킬 게시글 ID")
+            @PathVariable("postId") int postId
+    );
 }
