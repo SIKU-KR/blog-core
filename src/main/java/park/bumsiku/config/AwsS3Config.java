@@ -10,7 +10,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 
 @Configuration
 @Profile("!test")
-public class AwsS3 {
+public class AwsS3Config {
 
     @Bean
     public S3Client s3Client(@Value("${aws.region}") String region) {

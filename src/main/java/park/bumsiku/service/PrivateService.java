@@ -17,11 +17,11 @@ import park.bumsiku.domain.dto.response.UploadImageResponse;
 import park.bumsiku.domain.entity.Category;
 import park.bumsiku.domain.entity.Comment;
 import park.bumsiku.domain.entity.Post;
+import park.bumsiku.utils.monitoring.LogExecutionTime;
 import park.bumsiku.repository.CategoryRepository;
 import park.bumsiku.repository.CommentRepository;
 import park.bumsiku.repository.ImageRepository;
 import park.bumsiku.repository.PostRepository;
-import park.bumsiku.log.aop.LogExecutionTime;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -85,14 +85,14 @@ public class PrivateService {
     @LogExecutionTime
     public void deleteComment(String commentId) {
         long id = Long.parseLong(commentId);
-        
+
         Comment comment = commentRepository.findById(id);
 
         if (comment == null) {
             log.warn("Comment not found with id: {}", commentId);
             throw new NoSuchElementException("Comment not found with id: " + commentId);
         }
-        
+
         commentRepository.delete(comment.getId());
     }
 
@@ -136,7 +136,7 @@ public class PrivateService {
                 .build();
 
         Post savedPost = postRepository.insert(post);
-        
+
         return PostResponse.builder()
                 .id(savedPost.getId())
                 .title(savedPost.getTitle())

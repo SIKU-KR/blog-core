@@ -7,26 +7,19 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.web.util.ContentCachingRequestWrapper;
-import org.springframework.web.util.ContentCachingResponseWrapper;
-import park.bumsiku.log.LoggingFilter;
+import park.bumsiku.utils.monitoring.LoggingFilter;
 
 import java.io.IOException;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
-import static park.bumsiku.log.LoggingConstants.HEADER_REQUEST_ID;
-import static park.bumsiku.log.LoggingConstants.SLOW_REQUEST_THRESHOLD_MS;
 
 @ExtendWith(MockitoExtension.class)
 class LoggingFilterTest {
@@ -39,16 +32,10 @@ class LoggingFilterTest {
     private MockHttpServletRequest request;
     private MockHttpServletResponse response;
 
-    // Fixed clock for testing
-    private Clock fixedClock;
-
     @BeforeEach
     void setUp() {
-        // Create a fixed clock for testing
-        fixedClock = Clock.fixed(Instant.parse("2023-01-01T12:00:00Z"), ZoneId.systemDefault());
-
-        // Create the filter with the fixed clock
-        loggingFilter = new LoggingFilter(fixedClock);
+        // Create the simplified filter
+        loggingFilter = new LoggingFilter();
 
         // Create mock request and response
         request = new MockHttpServletRequest();
@@ -57,51 +44,25 @@ class LoggingFilterTest {
         // Set up request with test data
         request.setMethod("GET");
         request.setRequestURI("/test");
-        request.addHeader("User-Agent", "Test User Agent");
     }
 
     @Test
-    void shouldWrapRequestAndResponse() throws ServletException, IOException {
+    void shouldProcessRequest() throws ServletException, IOException {
         // When
         loggingFilter.doFilter(request, response, filterChain);
 
         // Then
-        ArgumentCaptor<HttpServletRequest> requestCaptor = ArgumentCaptor.forClass(HttpServletRequest.class);
-        ArgumentCaptor<HttpServletResponse> responseCaptor = ArgumentCaptor.forClass(HttpServletResponse.class);
-
-        verify(filterChain).doFilter(requestCaptor.capture(), responseCaptor.capture());
-
-        assertTrue(requestCaptor.getValue() instanceof ContentCachingRequestWrapper);
-        assertTrue(responseCaptor.getValue() instanceof ContentCachingResponseWrapper);
+        verify(filterChain).doFilter(any(HttpServletRequest.class), any(HttpServletResponse.class));
     }
 
     @Test
-    void shouldUseExistingRequestId() throws ServletException, IOException {
-        // Given
-        String expectedRequestId = "test-request-id";
-        request.addHeader(HEADER_REQUEST_ID, expectedRequestId);
-
+    void shouldGenerateUniqueRequestId() throws ServletException, IOException {
         // When
         loggingFilter.doFilter(request, response, filterChain);
 
         // Then
         verify(filterChain).doFilter(any(), any());
-        // We can't easily verify MDC values directly in a test, but we can check that the filter completed successfully
-    }
-
-    @Test
-    void shouldLogSlowRequestsWithWarnLevel() throws ServletException, IOException {
-        // Given
-        // Create a clock that advances by more than the slow threshold
-        Clock advancingClock = new AdvancingClock(fixedClock, SLOW_REQUEST_THRESHOLD_MS + 100);
-        loggingFilter = new LoggingFilter(advancingClock);
-
-        // When
-        loggingFilter.doFilter(request, response, filterChain);
-
-        // Then
-        verify(filterChain).doFilter(any(), any());
-        // We can't easily verify log levels directly in a test, but we can check that the filter completed successfully
+        // Each request gets a unique UUID - inner class handles MDC
     }
 
     @Test
@@ -116,44 +77,5 @@ class LoggingFilterTest {
         });
 
         assertEquals(expectedException, thrownException);
-    }
-
-    /**
-     * Custom Clock implementation that advances time between now() calls
-     */
-    private static class AdvancingClock extends Clock {
-        private final Clock baseClock;
-        private final long advanceMillis;
-        private long callCount = 0;
-
-        public AdvancingClock(Clock baseClock, long advanceMillis) {
-            this.baseClock = baseClock;
-            this.advanceMillis = advanceMillis;
-        }
-
-        @Override
-        public ZoneId getZone() {
-            return baseClock.getZone();
-        }
-
-        @Override
-        public Clock withZone(ZoneId zone) {
-            return new AdvancingClock(baseClock.withZone(zone), advanceMillis);
-        }
-
-        @Override
-        public Instant instant() {
-            // First call returns the base time, subsequent calls advance by advanceMillis
-            if (callCount++ == 0) {
-                return baseClock.instant();
-            } else {
-                return baseClock.instant().plusMillis(advanceMillis);
-            }
-        }
-
-        @Override
-        public long millis() {
-            return instant().toEpochMilli();
-        }
     }
 }

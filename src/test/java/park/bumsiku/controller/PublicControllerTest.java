@@ -9,12 +9,13 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import park.bumsiku.config.ClockConfig;
-import park.bumsiku.config.Security;
+import park.bumsiku.config.LoggingConfig;
+import park.bumsiku.config.SecurityConfig;
 import park.bumsiku.domain.dto.request.CommentRequest;
 import park.bumsiku.domain.dto.response.*;
 import park.bumsiku.service.PublicService;
-import park.bumsiku.utils.ArgumentValidator;
-import park.bumsiku.utils.DiscordWebhookCreator;
+import park.bumsiku.utils.validation.ArgumentValidator;
+import park.bumsiku.utils.integration.DiscordWebhookCreator;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -32,7 +33,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(PublicController.class)
-@Import({Security.class, ClockConfig.class})
+@Import({SecurityConfig.class, ClockConfig.class, LoggingConfig.class})
 public class PublicControllerTest {
 
     @Autowired

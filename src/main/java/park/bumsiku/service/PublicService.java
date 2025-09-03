@@ -5,19 +5,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import park.bumsiku.domain.dto.request.CommentRequest;
-import park.bumsiku.domain.dto.response.CategoryResponse;
-import park.bumsiku.domain.dto.response.CommentResponse;
-import park.bumsiku.domain.dto.response.PostListResponse;
-import park.bumsiku.domain.dto.response.PostResponse;
-import park.bumsiku.domain.dto.response.PostSummaryResponse;
+import park.bumsiku.domain.dto.response.*;
 import park.bumsiku.domain.entity.Category;
 import park.bumsiku.domain.entity.Comment;
 import park.bumsiku.domain.entity.Post;
+import park.bumsiku.utils.monitoring.LogExecutionTime;
 import park.bumsiku.repository.CategoryRepository;
 import park.bumsiku.repository.CommentRepository;
 import park.bumsiku.repository.PostRepository;
-import park.bumsiku.utils.DiscordWebhookCreator;
-import park.bumsiku.log.aop.LogExecutionTime;
+import park.bumsiku.utils.integration.DiscordWebhookCreator;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -100,9 +96,9 @@ public class PublicService {
                 .content(commentRequest.getContent())
                 .build();
         Comment saved = commentRepository.insert(comment);
-        
+
         discord.sendMessage(String.format("💬 게시글 ID: %d에 '%s'님이 댓글을 작성했습니다.\n내용: %s", id, commentRequest.getAuthor(), saved.getContent()));
-        
+
         return CommentResponse.builder()
                 .id(saved.getId().intValue())
                 .authorName(saved.getAuthorName())

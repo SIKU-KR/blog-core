@@ -13,10 +13,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import park.bumsiku.domain.dto.response.Response;
+import park.bumsiku.utils.integration.DiscordWebhookCreator;
 
 import java.util.NoSuchElementException;
 
-import static park.bumsiku.log.LoggingConstants.UNKNOWN;
 
 @ControllerAdvice
 @AllArgsConstructor
@@ -62,7 +62,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<Response<Void>> handleTypeMismatchException(MethodArgumentTypeMismatchException e) {
         String param = e.getName();
-        String expectedType = e.getRequiredType() != null ? e.getRequiredType().getSimpleName() : UNKNOWN;
+        String expectedType = e.getRequiredType() != null ? e.getRequiredType().getSimpleName() : "unknown";
         Object value = e.getValue();
         String detail = String.format("Parameter '%s' must be of type '%s' but value '%s' is invalid", param, expectedType, value);
 
