@@ -33,7 +33,7 @@ public class PublicService {
 
     @LogExecutionTime
     public PostListResponse getPostList(int page, int size, String sort) {
-        List<PostSummaryResponse> postSummaryList = postRepository.findAll(page, size);
+        List<PostSummaryResponse> postSummaryList = postRepository.findAll(page, size, sort);
         int totalElements = postRepository.countAll();
 
         return PostListResponse.builder()
@@ -46,7 +46,7 @@ public class PublicService {
 
     @LogExecutionTime
     public PostListResponse getPostList(int categoryId, int page, int size, String sort) {
-        List<PostSummaryResponse> postSummaryList = postRepository.findAllByCategoryId(categoryId, page, size);
+        List<PostSummaryResponse> postSummaryList = postRepository.findAllByCategoryId(categoryId, page, size, sort);
         int totalElements = postRepository.countByCategoryId(categoryId);
 
         return PostListResponse.builder()

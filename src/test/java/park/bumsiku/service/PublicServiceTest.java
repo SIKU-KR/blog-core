@@ -71,6 +71,7 @@ public class PublicServiceTest {
                         .summary("summary1")
                         .createdAt(LocalDateTime.now())
                         .updatedAt(LocalDateTime.now())
+                        .views(10L)
                         .build(),
                 PostSummaryResponse.builder()
                         .id(2)
@@ -78,6 +79,7 @@ public class PublicServiceTest {
                         .summary("summary2")
                         .createdAt(LocalDateTime.now())
                         .updatedAt(LocalDateTime.now())
+                        .views(5L)
                         .build()
         );
     }
@@ -102,7 +104,7 @@ public class PublicServiceTest {
     public void returnPostSummaryListResponseWithMockedData() {
         // given
         List<PostSummaryResponse> postList = postSummaryMockData();
-        when(postRepository.findAll(0, 10)).thenReturn(postList);
+        when(postRepository.findAll(0, 10, "asc")).thenReturn(postList);
 
         // when
         var result = publicService.getPostList(0, 10, "asc");
@@ -279,5 +281,53 @@ public class PublicServiceTest {
         assertThatThrownBy(() -> publicService.incrementPostViews(postId))
                 .isInstanceOf(NoSuchElementException.class);
         verify(postRepository, never()).update(any());
+    }
+
+    @Test
+    public void getPostListShouldCallRepositoryWithViewsSortDesc() {
+        // given
+        List<PostSummaryResponse> postList = postSummaryMockData();
+        when(postRepository.findAll(0, 10, "views,desc")).thenReturn(postList);
+        when(postRepository.countAll()).thenReturn(2);
+
+        // when
+        var result = publicService.getPostList(0, 10, "views,desc");
+
+        // then
+        verify(postRepository).findAll(0, 10, "views,desc");
+        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.getContent().get(0).getViews()).isEqualTo(10L);
+        assertThat(result.getContent().get(1).getViews()).isEqualTo(5L);
+    }
+
+    @Test
+    public void getPostListShouldCallRepositoryWithCreatedAtSortAsc() {
+        // given
+        List<PostSummaryResponse> postList = postSummaryMockData();
+        when(postRepository.findAll(0, 5, "createdAt,asc")).thenReturn(postList);
+        when(postRepository.countAll()).thenReturn(2);
+
+        // when
+        var result = publicService.getPostList(0, 5, "createdAt,asc");
+
+        // then
+        verify(postRepository).findAll(0, 5, "createdAt,asc");
+        assertThat(result.getContent()).hasSize(2);
+    }
+
+    @Test
+    public void getPostListByCategoryShouldCallRepositoryWithViewsSort() {
+        // given
+        int categoryId = 1;
+        List<PostSummaryResponse> postList = postSummaryMockData();
+        when(postRepository.findAllByCategoryId(categoryId, 0, 10, "views,asc")).thenReturn(postList);
+        when(postRepository.countByCategoryId(categoryId)).thenReturn(2);
+
+        // when
+        var result = publicService.getPostList(categoryId, 0, 10, "views,asc");
+
+        // then
+        verify(postRepository).findAllByCategoryId(categoryId, 0, 10, "views,asc");
+        assertThat(result.getContent()).hasSize(2);
     }
 }

@@ -37,8 +37,12 @@ public class PostRepository {
     }
 
     public List<PostSummaryResponse> findAll(int page, int size) {
+        return findAll(page, size, "createdAt,desc");
+    }
+
+    public List<PostSummaryResponse> findAll(int page, int size, String sort) {
         String jpql = buildPostSummarySelectClause() +
-                "FROM Post p ORDER BY p.createdAt DESC";
+                "FROM Post p " + buildOrderByClause(sort);
         TypedQuery<PostSummaryResponse> query =
                 entityManager.createQuery(jpql, PostSummaryResponse.class);
         query.setFirstResult(page * size);
@@ -47,8 +51,12 @@ public class PostRepository {
     }
 
     public List<PostSummaryResponse> findAllByCategoryId(int categoryId, int page, int size) {
+        return findAllByCategoryId(categoryId, page, size, "createdAt,desc");
+    }
+
+    public List<PostSummaryResponse> findAllByCategoryId(int categoryId, int page, int size, String sort) {
         String jpql = buildPostSummarySelectClause() +
-                "FROM Post p WHERE p.category.id = :categoryId ORDER BY p.createdAt DESC";
+                "FROM Post p WHERE p.category.id = :categoryId " + buildOrderByClause(sort);
         TypedQuery<PostSummaryResponse> query =
                 entityManager.createQuery(jpql, PostSummaryResponse.class);
         query.setParameter("categoryId", categoryId);
@@ -72,6 +80,30 @@ public class PostRepository {
 
     private String buildPostSummarySelectClause() {
         return "SELECT new park.bumsiku.domain.dto.response.PostSummaryResponse(" +
-                "p.id, p.title, p.summary, p.category.id, p.createdAt, p.updatedAt) ";
+                "p.id, p.title, p.summary, p.category.id, p.createdAt, p.updatedAt, p.views) ";
+    }
+
+    private String buildOrderByClause(String sort) {
+        if (sort == null || sort.trim().isEmpty()) {
+            return "ORDER BY p.createdAt DESC";
+        }
+        
+        String[] parts = sort.split(",");
+        String field = parts[0].trim().toLowerCase();
+        String direction = parts.length > 1 ? parts[1].trim().toUpperCase() : "DESC";
+        
+        if (!"ASC".equals(direction) && !"DESC".equals(direction)) {
+            direction = "DESC";
+        }
+        
+        switch (field) {
+            case "views":
+                return "ORDER BY p.views " + direction;
+            case "createdat":
+            case "created_at":
+                return "ORDER BY p.createdAt " + direction;
+            default:
+                return "ORDER BY p.createdAt DESC";
+        }
     }
 }

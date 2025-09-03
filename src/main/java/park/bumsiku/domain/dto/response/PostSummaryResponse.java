@@ -18,4 +18,5 @@ public class PostSummaryResponse {
     private int categoryId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Long views;
 }
