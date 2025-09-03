@@ -15,6 +15,7 @@ import park.bumsiku.repository.PostRepository;
 import park.bumsiku.utils.integration.DiscordWebhookCreator;
 import park.bumsiku.utils.monitoring.LogExecutionTime;
 import park.bumsiku.utils.sorting.PostSortBuilder;
+import park.bumsiku.utils.sorting.SortCriteria;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -35,7 +36,7 @@ public class PublicService {
 
     @LogExecutionTime
     public PostListResponse getPostList(int page, int size, String sort) {
-        PostSortBuilder.SortCriteria sortCriteria = postSortBuilder.buildSortCriteria(sort);
+        SortCriteria sortCriteria = postSortBuilder.buildSortCriteria(sort);
         List<Post> posts = postRepository.findAll(page, size, sortCriteria.getJpqlOrderClause());
         List<PostSummaryResponse> postSummaryList = posts.stream()
                 .map(PostSummaryResponse::from)
@@ -52,7 +53,7 @@ public class PublicService {
 
     @LogExecutionTime
     public PostListResponse getPostList(int categoryId, int page, int size, String sort) {
-        PostSortBuilder.SortCriteria sortCriteria = postSortBuilder.buildSortCriteria(sort);
+        SortCriteria sortCriteria = postSortBuilder.buildSortCriteria(sort);
         List<Post> posts = postRepository.findAllByCategoryId(categoryId, page, size, sortCriteria.getJpqlOrderClause());
         List<PostSummaryResponse> postSummaryList = posts.stream()
                 .map(PostSummaryResponse::from)

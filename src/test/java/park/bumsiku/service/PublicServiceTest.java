@@ -16,6 +16,7 @@ import park.bumsiku.repository.CategoryRepository;
 import park.bumsiku.repository.CommentRepository;
 import park.bumsiku.repository.PostRepository;
 import park.bumsiku.utils.integration.DiscordWebhookCreator;
+import park.bumsiku.utils.sorting.SortCriteria;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -86,8 +87,7 @@ public class PublicServiceTest {
     public void returnPostSummaryListResponseWithMockedData() {
         // given
         List<Post> postList = List.of(postMockData());
-        park.bumsiku.utils.sorting.PostSortBuilder.SortCriteria sortCriteria =
-                new park.bumsiku.utils.sorting.PostSortBuilder.SortCriteria("createdAt", "ASC", "ORDER BY p.createdAt ASC");
+        SortCriteria sortCriteria = new SortCriteria("createdAt", "ASC", "ORDER BY p.createdAt ASC");
         when(postSortBuilder.buildSortCriteria("asc")).thenReturn(sortCriteria);
         when(postRepository.findAll(0, 10, "ORDER BY p.createdAt ASC")).thenReturn(postList);
         when(postRepository.countAll()).thenReturn(1);
@@ -273,8 +273,7 @@ public class PublicServiceTest {
     public void getPostListShouldCallRepositoryWithViewsSortDesc() {
         // given
         List<Post> postList = List.of(postMockData());
-        park.bumsiku.utils.sorting.PostSortBuilder.SortCriteria sortCriteria =
-                new park.bumsiku.utils.sorting.PostSortBuilder.SortCriteria("views", "DESC", "ORDER BY p.views DESC");
+        SortCriteria sortCriteria = new SortCriteria("views", "DESC", "ORDER BY p.views DESC");
         when(postSortBuilder.buildSortCriteria("views,desc")).thenReturn(sortCriteria);
         when(postRepository.findAll(0, 10, "ORDER BY p.views DESC")).thenReturn(postList);
         when(postRepository.countAll()).thenReturn(1);
@@ -292,8 +291,7 @@ public class PublicServiceTest {
     public void getPostListShouldCallRepositoryWithCreatedAtSortAsc() {
         // given
         List<Post> postList = List.of(postMockData());
-        park.bumsiku.utils.sorting.PostSortBuilder.SortCriteria sortCriteria =
-                new park.bumsiku.utils.sorting.PostSortBuilder.SortCriteria("createdAt", "ASC", "ORDER BY p.createdAt ASC");
+        SortCriteria sortCriteria = new SortCriteria("createdAt", "ASC", "ORDER BY p.createdAt ASC");
         when(postSortBuilder.buildSortCriteria("createdAt,asc")).thenReturn(sortCriteria);
         when(postRepository.findAll(0, 5, "ORDER BY p.createdAt ASC")).thenReturn(postList);
         when(postRepository.countAll()).thenReturn(1);
@@ -311,8 +309,7 @@ public class PublicServiceTest {
         // given
         int categoryId = 1;
         List<Post> postList = List.of(postMockData());
-        park.bumsiku.utils.sorting.PostSortBuilder.SortCriteria sortCriteria =
-                new park.bumsiku.utils.sorting.PostSortBuilder.SortCriteria("views", "ASC", "ORDER BY p.views ASC");
+        SortCriteria sortCriteria = new SortCriteria("views", "ASC", "ORDER BY p.views ASC");
         when(postSortBuilder.buildSortCriteria("views,asc")).thenReturn(sortCriteria);
         when(postRepository.findAllByCategoryId(categoryId, 0, 10, "ORDER BY p.views ASC")).thenReturn(postList);
         when(postRepository.countByCategoryId(categoryId)).thenReturn(1);

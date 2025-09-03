@@ -16,7 +16,7 @@ public class PostSortBuilderTest {
     @Test
     public void shouldReturnViewsDescSort() {
         // when
-        PostSortBuilder.SortCriteria result = postSortBuilder.buildSortCriteria("views,desc");
+        SortCriteria result = postSortBuilder.buildSortCriteria("views,desc");
 
         // then
         assertThat(result.getField()).isEqualTo("views");
@@ -27,7 +27,7 @@ public class PostSortBuilderTest {
     @Test
     public void shouldReturnViewsAscSort() {
         // when
-        PostSortBuilder.SortCriteria result = postSortBuilder.buildSortCriteria("views,asc");
+        SortCriteria result = postSortBuilder.buildSortCriteria("views,asc");
 
         // then
         assertThat(result.getField()).isEqualTo("views");
@@ -38,7 +38,7 @@ public class PostSortBuilderTest {
     @Test
     public void shouldReturnCreatedAtDescSort() {
         // when
-        PostSortBuilder.SortCriteria result = postSortBuilder.buildSortCriteria("createdAt,desc");
+        SortCriteria result = postSortBuilder.buildSortCriteria("createdAt,desc");
 
         // then
         assertThat(result.getField()).isEqualTo("createdAt");
@@ -49,7 +49,7 @@ public class PostSortBuilderTest {
     @Test
     public void shouldReturnCreatedAtAscSort() {
         // when
-        PostSortBuilder.SortCriteria result = postSortBuilder.buildSortCriteria("createdAt,asc");
+        SortCriteria result = postSortBuilder.buildSortCriteria("createdAt,asc");
 
         // then
         assertThat(result.getField()).isEqualTo("createdAt");
@@ -60,7 +60,7 @@ public class PostSortBuilderTest {
     @Test
     public void shouldReturnDefaultSortForNullInput() {
         // when
-        PostSortBuilder.SortCriteria result = postSortBuilder.buildSortCriteria(null);
+        SortCriteria result = postSortBuilder.buildSortCriteria(null);
 
         // then
         assertThat(result.getField()).isEqualTo("createdAt");
@@ -71,7 +71,7 @@ public class PostSortBuilderTest {
     @Test
     public void shouldReturnDefaultSortForEmptyInput() {
         // when
-        PostSortBuilder.SortCriteria result = postSortBuilder.buildSortCriteria("");
+        SortCriteria result = postSortBuilder.buildSortCriteria("");
 
         // then
         assertThat(result.getField()).isEqualTo("createdAt");
@@ -82,7 +82,7 @@ public class PostSortBuilderTest {
     @Test
     public void shouldReturnDefaultSortForInvalidField() {
         // when
-        PostSortBuilder.SortCriteria result = postSortBuilder.buildSortCriteria("invalidField,desc");
+        SortCriteria result = postSortBuilder.buildSortCriteria("invalidField,desc");
 
         // then
         assertThat(result.getField()).isEqualTo("createdAt");
@@ -93,7 +93,7 @@ public class PostSortBuilderTest {
     @Test
     public void shouldUseDescAsDefaultDirection() {
         // when
-        PostSortBuilder.SortCriteria result = postSortBuilder.buildSortCriteria("views");
+        SortCriteria result = postSortBuilder.buildSortCriteria("views");
 
         // then
         assertThat(result.getField()).isEqualTo("views");
@@ -104,7 +104,7 @@ public class PostSortBuilderTest {
     @Test
     public void shouldReturnDescForInvalidDirection() {
         // when
-        PostSortBuilder.SortCriteria result = postSortBuilder.buildSortCriteria("views,invalid");
+        SortCriteria result = postSortBuilder.buildSortCriteria("views,invalid");
 
         // then
         assertThat(result.getField()).isEqualTo("views");
@@ -115,7 +115,7 @@ public class PostSortBuilderTest {
     @Test
     public void shouldBeCaseInsensitive() {
         // when
-        PostSortBuilder.SortCriteria result = postSortBuilder.buildSortCriteria("VIEWS,ASC");
+        SortCriteria result = postSortBuilder.buildSortCriteria("VIEWS,ASC");
 
         // then
         assertThat(result.getField()).isEqualTo("views");
