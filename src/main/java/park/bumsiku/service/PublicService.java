@@ -39,7 +39,7 @@ public class PublicService {
         SortCriteria sortCriteria = postSortBuilder.buildSortCriteria(sort);
         List<Post> posts = postRepository.findAll(page, size, sortCriteria.jpqlOrderClause());
         int totalElements = postRepository.countAll();
-        
+
         return buildPostListResponse(posts, totalElements, page, size);
     }
 
@@ -48,7 +48,7 @@ public class PublicService {
         SortCriteria sortCriteria = postSortBuilder.buildSortCriteria(sort);
         List<Post> posts = postRepository.findAllByCategoryId(categoryId, page, size, sortCriteria.jpqlOrderClause());
         int totalElements = postRepository.countByCategoryId(categoryId);
-        
+
         return buildPostListResponse(posts, totalElements, page, size);
     }
 
