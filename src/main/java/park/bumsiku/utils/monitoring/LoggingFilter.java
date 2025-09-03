@@ -73,7 +73,7 @@ public class LoggingFilter extends OncePerRequestFilter {
      * Auto-closeable for automatic MDC cleanup
      */
     private static class MdcCloseable implements AutoCloseable {
-        
+
         static MdcCloseable create() {
             return new MdcCloseable();
         }
