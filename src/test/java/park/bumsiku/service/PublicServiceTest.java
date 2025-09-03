@@ -24,7 +24,7 @@ import java.util.NoSuchElementException;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class PublicServiceTest {
@@ -59,6 +59,7 @@ public class PublicServiceTest {
                 .category(mockCategory)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
+                .views(5L)
                 .build();
     }
 
@@ -251,5 +252,32 @@ public class PublicServiceTest {
                         tuple(category1.getId(), category1.getName(), category1.getOrdernum()),
                         tuple(category2.getId(), category2.getName(), category2.getOrdernum())
                 );
+    }
+
+    @Test
+    public void incrementPostViewsShouldIncreaseViewsCount() {
+        // given
+        Post post = postMockData();
+        Long initialViews = post.getViews();
+        when(postRepository.findById(post.getId())).thenReturn(post);
+
+        // when
+        publicService.incrementPostViews(post.getId());
+
+        // then
+        assertThat(post.getViews()).isEqualTo(initialViews + 1);
+        verify(postRepository).update(post);
+    }
+
+    @Test
+    public void throwPostNotFoundExceptionWhenRepositoryReturnsNullPostForIncrementPostViews() {
+        // given
+        int postId = 999;
+        when(postRepository.findById(postId)).thenReturn(null);
+
+        // then
+        assertThatThrownBy(() -> publicService.incrementPostViews(postId))
+                .isInstanceOf(NoSuchElementException.class);
+        verify(postRepository, never()).update(any());
     }
 }

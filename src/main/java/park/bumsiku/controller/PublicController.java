@@ -98,4 +98,17 @@ public class PublicController implements PublicAPI {
 
         return Response.success(result);
     }
+
+    @Override
+    @PatchMapping("/posts/{postId}/views")
+    @LogExecutionTime
+    public Response<Void> incrementPostViews(
+            @PathVariable("postId") int postId) {
+
+        validator.validatePostId(postId);
+
+        service.incrementPostViews(postId);
+
+        return Response.success(null);
+    }
 }

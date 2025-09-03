@@ -125,6 +125,13 @@ public class PublicService {
                 .collect(Collectors.toList());
     }
 
+    @LogExecutionTime
+    public void incrementPostViews(int id) {
+        Post post = requirePostById(id);
+        post.setViews(post.getViews() + 1);
+        postRepository.update(post);
+    }
+
     private Post requirePostById(int id) {
         Post post = postRepository.findById(id);
         if (post == null) {
