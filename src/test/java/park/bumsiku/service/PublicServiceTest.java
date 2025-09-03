@@ -44,6 +44,9 @@ public class PublicServiceTest {
     @Mock
     private DiscordWebhookCreator discord;
 
+    @Mock
+    private park.bumsiku.utils.sorting.PostSortBuilder postSortBuilder;
+
     private Post postMockData() {
         Category mockCategory = Category.builder()
                 .id(1)
@@ -104,7 +107,10 @@ public class PublicServiceTest {
     public void returnPostSummaryListResponseWithMockedData() {
         // given
         List<PostSummaryResponse> postList = postSummaryMockData();
-        when(postRepository.findAll(0, 10, "asc")).thenReturn(postList);
+        park.bumsiku.utils.sorting.PostSortBuilder.SortCriteria sortCriteria = 
+            new park.bumsiku.utils.sorting.PostSortBuilder.SortCriteria("createdAt", "ASC", "ORDER BY p.createdAt ASC");
+        when(postSortBuilder.buildSortCriteria("asc")).thenReturn(sortCriteria);
+        when(postRepository.findAll(0, 10, "ORDER BY p.createdAt ASC")).thenReturn(postList);
 
         // when
         var result = publicService.getPostList(0, 10, "asc");
@@ -287,14 +293,17 @@ public class PublicServiceTest {
     public void getPostListShouldCallRepositoryWithViewsSortDesc() {
         // given
         List<PostSummaryResponse> postList = postSummaryMockData();
-        when(postRepository.findAll(0, 10, "views,desc")).thenReturn(postList);
+        park.bumsiku.utils.sorting.PostSortBuilder.SortCriteria sortCriteria = 
+            new park.bumsiku.utils.sorting.PostSortBuilder.SortCriteria("views", "DESC", "ORDER BY p.views DESC");
+        when(postSortBuilder.buildSortCriteria("views,desc")).thenReturn(sortCriteria);
+        when(postRepository.findAll(0, 10, "ORDER BY p.views DESC")).thenReturn(postList);
         when(postRepository.countAll()).thenReturn(2);
 
         // when
         var result = publicService.getPostList(0, 10, "views,desc");
 
         // then
-        verify(postRepository).findAll(0, 10, "views,desc");
+        verify(postRepository).findAll(0, 10, "ORDER BY p.views DESC");
         assertThat(result.getContent()).hasSize(2);
         assertThat(result.getContent().get(0).getViews()).isEqualTo(10L);
         assertThat(result.getContent().get(1).getViews()).isEqualTo(5L);
@@ -304,14 +313,17 @@ public class PublicServiceTest {
     public void getPostListShouldCallRepositoryWithCreatedAtSortAsc() {
         // given
         List<PostSummaryResponse> postList = postSummaryMockData();
-        when(postRepository.findAll(0, 5, "createdAt,asc")).thenReturn(postList);
+        park.bumsiku.utils.sorting.PostSortBuilder.SortCriteria sortCriteria = 
+            new park.bumsiku.utils.sorting.PostSortBuilder.SortCriteria("createdAt", "ASC", "ORDER BY p.createdAt ASC");
+        when(postSortBuilder.buildSortCriteria("createdAt,asc")).thenReturn(sortCriteria);
+        when(postRepository.findAll(0, 5, "ORDER BY p.createdAt ASC")).thenReturn(postList);
         when(postRepository.countAll()).thenReturn(2);
 
         // when
         var result = publicService.getPostList(0, 5, "createdAt,asc");
 
         // then
-        verify(postRepository).findAll(0, 5, "createdAt,asc");
+        verify(postRepository).findAll(0, 5, "ORDER BY p.createdAt ASC");
         assertThat(result.getContent()).hasSize(2);
     }
 
@@ -320,14 +332,17 @@ public class PublicServiceTest {
         // given
         int categoryId = 1;
         List<PostSummaryResponse> postList = postSummaryMockData();
-        when(postRepository.findAllByCategoryId(categoryId, 0, 10, "views,asc")).thenReturn(postList);
+        park.bumsiku.utils.sorting.PostSortBuilder.SortCriteria sortCriteria = 
+            new park.bumsiku.utils.sorting.PostSortBuilder.SortCriteria("views", "ASC", "ORDER BY p.views ASC");
+        when(postSortBuilder.buildSortCriteria("views,asc")).thenReturn(sortCriteria);
+        when(postRepository.findAllByCategoryId(categoryId, 0, 10, "ORDER BY p.views ASC")).thenReturn(postList);
         when(postRepository.countByCategoryId(categoryId)).thenReturn(2);
 
         // when
         var result = publicService.getPostList(categoryId, 0, 10, "views,asc");
 
         // then
-        verify(postRepository).findAllByCategoryId(categoryId, 0, 10, "views,asc");
+        verify(postRepository).findAllByCategoryId(categoryId, 0, 10, "ORDER BY p.views ASC");
         assertThat(result.getContent()).hasSize(2);
     }
 }
