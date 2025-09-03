@@ -36,29 +36,25 @@ public class PostRepository {
         return entityManager.find(Post.class, id);
     }
 
-    public List<PostSummaryResponse> findAll(int page, int size) {
+    public List<Post> findAll(int page, int size) {
         return findAll(page, size, "ORDER BY p.createdAt DESC");
     }
 
-    public List<PostSummaryResponse> findAll(int page, int size, String orderByClause) {
-        String jpql = buildPostSummarySelectClause() +
-                "FROM Post p " + orderByClause;
-        TypedQuery<PostSummaryResponse> query =
-                entityManager.createQuery(jpql, PostSummaryResponse.class);
+    public List<Post> findAll(int page, int size, String orderByClause) {
+        String jpql = "SELECT p FROM Post p " + orderByClause;
+        TypedQuery<Post> query = entityManager.createQuery(jpql, Post.class);
         query.setFirstResult(page * size);
         query.setMaxResults(size);
         return query.getResultList();
     }
 
-    public List<PostSummaryResponse> findAllByCategoryId(int categoryId, int page, int size) {
+    public List<Post> findAllByCategoryId(int categoryId, int page, int size) {
         return findAllByCategoryId(categoryId, page, size, "ORDER BY p.createdAt DESC");
     }
 
-    public List<PostSummaryResponse> findAllByCategoryId(int categoryId, int page, int size, String orderByClause) {
-        String jpql = buildPostSummarySelectClause() +
-                "FROM Post p WHERE p.category.id = :categoryId " + orderByClause;
-        TypedQuery<PostSummaryResponse> query =
-                entityManager.createQuery(jpql, PostSummaryResponse.class);
+    public List<Post> findAllByCategoryId(int categoryId, int page, int size, String orderByClause) {
+        String jpql = "SELECT p FROM Post p WHERE p.category.id = :categoryId " + orderByClause;
+        TypedQuery<Post> query = entityManager.createQuery(jpql, Post.class);
         query.setParameter("categoryId", categoryId);
         query.setFirstResult(page * size);
         query.setMaxResults(size);
@@ -76,10 +72,5 @@ public class PostRepository {
         TypedQuery<Long> query = entityManager.createQuery(jpql, Long.class);
         query.setParameter("categoryId", categoryId);
         return query.getSingleResult().intValue();
-    }
-
-    private String buildPostSummarySelectClause() {
-        return "SELECT new park.bumsiku.domain.dto.response.PostSummaryResponse(" +
-                "p.id, p.title, p.summary, p.category.id, p.createdAt, p.updatedAt, p.views) ";
     }
 }

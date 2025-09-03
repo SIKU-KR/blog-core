@@ -36,7 +36,10 @@ public class PublicService {
     @LogExecutionTime
     public PostListResponse getPostList(int page, int size, String sort) {
         PostSortBuilder.SortCriteria sortCriteria = postSortBuilder.buildSortCriteria(sort);
-        List<PostSummaryResponse> postSummaryList = postRepository.findAll(page, size, sortCriteria.getJpqlOrderClause());
+        List<Post> posts = postRepository.findAll(page, size, sortCriteria.getJpqlOrderClause());
+        List<PostSummaryResponse> postSummaryList = posts.stream()
+                .map(PostSummaryResponse::from)
+                .collect(Collectors.toList());
         int totalElements = postRepository.countAll();
 
         return PostListResponse.builder()
@@ -50,7 +53,10 @@ public class PublicService {
     @LogExecutionTime
     public PostListResponse getPostList(int categoryId, int page, int size, String sort) {
         PostSortBuilder.SortCriteria sortCriteria = postSortBuilder.buildSortCriteria(sort);
-        List<PostSummaryResponse> postSummaryList = postRepository.findAllByCategoryId(categoryId, page, size, sortCriteria.getJpqlOrderClause());
+        List<Post> posts = postRepository.findAllByCategoryId(categoryId, page, size, sortCriteria.getJpqlOrderClause());
+        List<PostSummaryResponse> postSummaryList = posts.stream()
+                .map(PostSummaryResponse::from)
+                .collect(Collectors.toList());
         int totalElements = postRepository.countByCategoryId(categoryId);
 
         return PostListResponse.builder()
