@@ -1,19 +1,16 @@
 package park.bumsiku.utils.sorting;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
+@AllArgsConstructor
 public enum PostSortField {
     VIEWS("views", "p.views"),
     CREATED_AT("createdAt", "p.createdAt");
 
     private final String parameterName;
     private final String jpqlField;
-
-    PostSortField(String parameterName, String jpqlField) {
-        this.parameterName = parameterName;
-        this.jpqlField = jpqlField;
-    }
 
     public static PostSortField fromParameter(String parameter) {
         String normalized = parameter.trim().toLowerCase();

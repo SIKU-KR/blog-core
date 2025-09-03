@@ -19,9 +19,9 @@ public class PostSortBuilderTest {
         SortCriteria result = postSortBuilder.buildSortCriteria("views,desc");
 
         // then
-        assertThat(result.getField()).isEqualTo("views");
-        assertThat(result.getDirection()).isEqualTo("DESC");
-        assertThat(result.getJpqlOrderClause()).isEqualTo("ORDER BY p.views DESC");
+        assertThat(result.field()).isEqualTo("views");
+        assertThat(result.direction()).isEqualTo("DESC");
+        assertThat(result.jpqlOrderClause()).isEqualTo("ORDER BY p.views DESC");
     }
 
     @Test
@@ -30,9 +30,9 @@ public class PostSortBuilderTest {
         SortCriteria result = postSortBuilder.buildSortCriteria("views,asc");
 
         // then
-        assertThat(result.getField()).isEqualTo("views");
-        assertThat(result.getDirection()).isEqualTo("ASC");
-        assertThat(result.getJpqlOrderClause()).isEqualTo("ORDER BY p.views ASC");
+        assertThat(result.field()).isEqualTo("views");
+        assertThat(result.direction()).isEqualTo("ASC");
+        assertThat(result.jpqlOrderClause()).isEqualTo("ORDER BY p.views ASC");
     }
 
     @Test
@@ -41,9 +41,9 @@ public class PostSortBuilderTest {
         SortCriteria result = postSortBuilder.buildSortCriteria("createdAt,desc");
 
         // then
-        assertThat(result.getField()).isEqualTo("createdAt");
-        assertThat(result.getDirection()).isEqualTo("DESC");
-        assertThat(result.getJpqlOrderClause()).isEqualTo("ORDER BY p.createdAt DESC");
+        assertThat(result.field()).isEqualTo("createdAt");
+        assertThat(result.direction()).isEqualTo("DESC");
+        assertThat(result.jpqlOrderClause()).isEqualTo("ORDER BY p.createdAt DESC");
     }
 
     @Test
@@ -52,9 +52,9 @@ public class PostSortBuilderTest {
         SortCriteria result = postSortBuilder.buildSortCriteria("createdAt,asc");
 
         // then
-        assertThat(result.getField()).isEqualTo("createdAt");
-        assertThat(result.getDirection()).isEqualTo("ASC");
-        assertThat(result.getJpqlOrderClause()).isEqualTo("ORDER BY p.createdAt ASC");
+        assertThat(result.field()).isEqualTo("createdAt");
+        assertThat(result.direction()).isEqualTo("ASC");
+        assertThat(result.jpqlOrderClause()).isEqualTo("ORDER BY p.createdAt ASC");
     }
 
     @Test
@@ -63,9 +63,9 @@ public class PostSortBuilderTest {
         SortCriteria result = postSortBuilder.buildSortCriteria(null);
 
         // then
-        assertThat(result.getField()).isEqualTo("createdAt");
-        assertThat(result.getDirection()).isEqualTo("DESC");
-        assertThat(result.getJpqlOrderClause()).isEqualTo("ORDER BY p.createdAt DESC");
+        assertThat(result.field()).isEqualTo("createdAt");
+        assertThat(result.direction()).isEqualTo("DESC");
+        assertThat(result.jpqlOrderClause()).isEqualTo("ORDER BY p.createdAt DESC");
     }
 
     @Test
@@ -74,9 +74,9 @@ public class PostSortBuilderTest {
         SortCriteria result = postSortBuilder.buildSortCriteria("");
 
         // then
-        assertThat(result.getField()).isEqualTo("createdAt");
-        assertThat(result.getDirection()).isEqualTo("DESC");
-        assertThat(result.getJpqlOrderClause()).isEqualTo("ORDER BY p.createdAt DESC");
+        assertThat(result.field()).isEqualTo("createdAt");
+        assertThat(result.direction()).isEqualTo("DESC");
+        assertThat(result.jpqlOrderClause()).isEqualTo("ORDER BY p.createdAt DESC");
     }
 
     @Test
@@ -85,9 +85,9 @@ public class PostSortBuilderTest {
         SortCriteria result = postSortBuilder.buildSortCriteria("invalidField,desc");
 
         // then
-        assertThat(result.getField()).isEqualTo("createdAt");
-        assertThat(result.getDirection()).isEqualTo("DESC");
-        assertThat(result.getJpqlOrderClause()).isEqualTo("ORDER BY p.createdAt DESC");
+        assertThat(result.field()).isEqualTo("createdAt");
+        assertThat(result.direction()).isEqualTo("DESC");
+        assertThat(result.jpqlOrderClause()).isEqualTo("ORDER BY p.createdAt DESC");
     }
 
     @Test
@@ -96,9 +96,9 @@ public class PostSortBuilderTest {
         SortCriteria result = postSortBuilder.buildSortCriteria("views");
 
         // then
-        assertThat(result.getField()).isEqualTo("views");
-        assertThat(result.getDirection()).isEqualTo("DESC");
-        assertThat(result.getJpqlOrderClause()).isEqualTo("ORDER BY p.views DESC");
+        assertThat(result.field()).isEqualTo("views");
+        assertThat(result.direction()).isEqualTo("DESC");
+        assertThat(result.jpqlOrderClause()).isEqualTo("ORDER BY p.views DESC");
     }
 
     @Test
@@ -107,9 +107,9 @@ public class PostSortBuilderTest {
         SortCriteria result = postSortBuilder.buildSortCriteria("views,invalid");
 
         // then
-        assertThat(result.getField()).isEqualTo("views");
-        assertThat(result.getDirection()).isEqualTo("DESC");
-        assertThat(result.getJpqlOrderClause()).isEqualTo("ORDER BY p.views DESC");
+        assertThat(result.field()).isEqualTo("views");
+        assertThat(result.direction()).isEqualTo("DESC");
+        assertThat(result.jpqlOrderClause()).isEqualTo("ORDER BY p.views DESC");
     }
 
     @Test
@@ -118,8 +118,8 @@ public class PostSortBuilderTest {
         SortCriteria result = postSortBuilder.buildSortCriteria("VIEWS,ASC");
 
         // then
-        assertThat(result.getField()).isEqualTo("views");
-        assertThat(result.getDirection()).isEqualTo("ASC");
-        assertThat(result.getJpqlOrderClause()).isEqualTo("ORDER BY p.views ASC");
+        assertThat(result.field()).isEqualTo("views");
+        assertThat(result.direction()).isEqualTo("ASC");
+        assertThat(result.jpqlOrderClause()).isEqualTo("ORDER BY p.views ASC");
     }
 }

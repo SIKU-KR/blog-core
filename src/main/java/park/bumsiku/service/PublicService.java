@@ -37,7 +37,7 @@ public class PublicService {
     @LogExecutionTime
     public PostListResponse getPostList(int page, int size, String sort) {
         SortCriteria sortCriteria = postSortBuilder.buildSortCriteria(sort);
-        List<Post> posts = postRepository.findAll(page, size, sortCriteria.getJpqlOrderClause());
+        List<Post> posts = postRepository.findAll(page, size, sortCriteria.jpqlOrderClause());
         List<PostSummaryResponse> postSummaryList = posts.stream()
                 .map(PostSummaryResponse::from)
                 .collect(Collectors.toList());
@@ -54,7 +54,7 @@ public class PublicService {
     @LogExecutionTime
     public PostListResponse getPostList(int categoryId, int page, int size, String sort) {
         SortCriteria sortCriteria = postSortBuilder.buildSortCriteria(sort);
-        List<Post> posts = postRepository.findAllByCategoryId(categoryId, page, size, sortCriteria.getJpqlOrderClause());
+        List<Post> posts = postRepository.findAllByCategoryId(categoryId, page, size, sortCriteria.jpqlOrderClause());
         List<PostSummaryResponse> postSummaryList = posts.stream()
                 .map(PostSummaryResponse::from)
                 .collect(Collectors.toList());
