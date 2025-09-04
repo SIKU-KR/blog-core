@@ -100,7 +100,7 @@ public class AdminTest extends AbstractTestSupport {
                         .authorName("Test Author " + (j + 1))
                         .content("This is a test comment " + (j + 1) + " for post " + (i + 1))
                         .build();
-                comments.add(commentRepository.insert(comment));
+                comments.add(commentRepository.save(comment));
             }
         }
     }
@@ -348,8 +348,8 @@ public class AdminTest extends AbstractTestSupport {
                 .andExpect(jsonPath("$.data.message", is("Comment deleted successfully")));
 
         // Verify the comment was actually deleted
-        Comment deletedComment = commentRepository.findById(commentId);
-        assert deletedComment == null;
+        boolean exists = commentRepository.findById(commentId).isPresent();
+        org.assertj.core.api.Assertions.assertThat(exists).isFalse();
     }
 
     @Test

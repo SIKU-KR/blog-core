@@ -80,7 +80,7 @@ public class PublicService {
                 .authorName(commentRequest.getAuthor())
                 .content(commentRequest.getContent())
                 .build();
-        Comment saved = commentRepository.insert(comment);
+        Comment saved = commentRepository.save(comment);
 
         discord.sendMessage(String.format("💬 게시글 ID: %d에 '%s'님이 댓글을 작성했습니다.\n내용: %s", id, commentRequest.getAuthor(), saved.getContent()));
 

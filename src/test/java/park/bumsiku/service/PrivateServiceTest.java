@@ -175,8 +175,8 @@ public class PrivateServiceTest {
         Comment comment = new Comment(commentId, post, "tester", "hello world", now);
 
         // Mock repository behavior
-        when(commentRepository.findById(commentId)).thenReturn(comment);
-        doNothing().when(commentRepository).delete(commentId);
+        when(commentRepository.findById(commentId)).thenReturn(java.util.Optional.of(comment));
+        doNothing().when(commentRepository).deleteById(commentId);
 
         // when
         privateService.deleteComment(String.valueOf(commentId));
@@ -184,7 +184,7 @@ public class PrivateServiceTest {
         // then
         // Verify the mock was called
         verify(commentRepository).findById(commentId);
-        verify(commentRepository).delete(commentId);
+        verify(commentRepository).deleteById(commentId);
     }
 
     @Test
@@ -194,7 +194,7 @@ public class PrivateServiceTest {
         long nonExistentCommentId = 999L;
 
         // Mock repository behavior
-        when(commentRepository.findById(nonExistentCommentId)).thenReturn(null);
+        when(commentRepository.findById(nonExistentCommentId)).thenReturn(java.util.Optional.empty());
 
         // when & then
         assertThatThrownBy(() -> privateService.deleteComment(String.valueOf(nonExistentCommentId)))
@@ -338,7 +338,7 @@ public class PrivateServiceTest {
         // Mock repository behavior
         when(postRepository.findById(postId)).thenReturn(post);
         when(commentRepository.findAllByPost(post)).thenReturn(comments);
-        doNothing().when(commentRepository).delete(commentId);
+        doNothing().when(commentRepository).deleteById(commentId);
         when(postRepository.update(any(Post.class))).thenReturn(post);
         doNothing().when(postRepository).delete(postId);
 
@@ -349,7 +349,7 @@ public class PrivateServiceTest {
         // Verify the mocks were called
         verify(postRepository).findById(postId);
         verify(commentRepository).findAllByPost(post);
-        verify(commentRepository).delete(commentId);
+        verify(commentRepository).deleteById(commentId);
         verify(postRepository).delete(postId);
     }
 

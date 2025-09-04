@@ -87,14 +87,14 @@ public class PrivateService {
     public void deleteComment(String commentId) {
         long id = Long.parseLong(commentId);
 
-        Comment comment = commentRepository.findById(id);
+        Comment comment = commentRepository.findById(id).orElse(null);
 
         if (comment == null) {
             log.warn("Comment not found with id: {}", commentId);
             throw new NoSuchElementException("Comment not found with id: " + commentId);
         }
 
-        commentRepository.delete(comment.getId());
+        commentRepository.deleteById(comment.getId());
     }
 
     @LogExecutionTime
@@ -170,9 +170,7 @@ public class PrivateService {
 
         if (!comments.isEmpty()) {
             log.info("Deleting {} comments associated with post id: {}", comments.size(), postId);
-            comments.forEach(comment ->
-                    commentRepository.delete(comment.getId())
-            );
+            comments.forEach(comment -> commentRepository.deleteById(comment.getId()));
         }
 
         // Clear tags from post before deletion

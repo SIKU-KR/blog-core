@@ -93,7 +93,7 @@ public class PublicTest extends AbstractTestSupport {
                         .authorName("Commenter " + (j + 1))
                         .content("This is comment " + (j + 1) + " for post " + (i + 1))
                         .build();
-                comments.add(commentRepository.insert(comment));
+                comments.add(commentRepository.save(comment));
             }
         }
 
@@ -104,7 +104,7 @@ public class PublicTest extends AbstractTestSupport {
                     .authorName("Single Commenter")
                     .content("This is the only comment for post " + (i + 1))
                     .build();
-            comments.add(commentRepository.insert(comment));
+            comments.add(commentRepository.save(comment));
         }
     }
 
