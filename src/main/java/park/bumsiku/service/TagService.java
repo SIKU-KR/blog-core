@@ -70,11 +70,9 @@ public class TagService {
             return new HashSet<>();
         }
 
-        // Find existing tags
         List<Tag> existingTags = tagRepository.findByNameIn(inputNames);
         Set<Tag> tagsFound = new HashSet<>(existingTags);
 
-        // Determine missing names and create them
         Set<String> existingNames = existingTagNameSet(existingTags);
         List<String> missingNames = findMissingTagNames(inputNames, existingNames);
         createAndAttachMissingTags(tagsFound, missingNames);
@@ -99,10 +97,8 @@ public class TagService {
     public void updatePostTags(Post post, List<String> newTagNames) {
         newTagNames = safeTagNames(newTagNames);
 
-        // Clear existing tags
         post.clearTags();
 
-        // Add new tags (create if they don't exist)
         Set<Tag> newTags = findOrCreateTags(newTagNames);
         newTags.forEach(post::addTag);
 
