@@ -19,7 +19,6 @@ import park.bumsiku.domain.dto.response.PostResponse;
 import park.bumsiku.domain.dto.response.Response;
 import park.bumsiku.domain.dto.response.UploadImageResponse;
 
-import java.util.List;
 import java.util.Map;
 
 @Tag(name = "Admin API", description = "관리자 전용 API")

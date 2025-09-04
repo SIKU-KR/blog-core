@@ -49,6 +49,9 @@ public class PrivateServiceTest {
     @Mock
     private ImageRepository imageRepository;
 
+    @Mock
+    private TagService tagService;
+
     @InjectMocks
     private PrivateService privateService;
 
@@ -273,7 +276,12 @@ public class PrivateServiceTest {
     @DisplayName("createPost should save post and return response when request is valid")
     void createPost_validRequest_shouldSavePostAndReturnResponse() {
         // given
-        CreatePostRequest request = new CreatePostRequest("New Post", "Content", "Summary", 1);
+        CreatePostRequest request = CreatePostRequest.builder()
+                .title("New Post")
+                .content("Content")
+                .summary("Summary")
+                .category(1)
+                .build();
 
         Post expectedPost = Post.builder()
                 .id(1)
@@ -331,7 +339,9 @@ public class PrivateServiceTest {
         when(postRepository.findById(postId)).thenReturn(post);
         when(commentRepository.findAllByPost(post)).thenReturn(comments);
         doNothing().when(commentRepository).delete(commentId);
+        when(postRepository.update(any(Post.class))).thenReturn(post);
         doNothing().when(postRepository).delete(postId);
+        doNothing().when(tagService).cleanupOrphanedTags();
 
         // when
         privateService.deletePost(postId);
@@ -380,12 +390,12 @@ public class PrivateServiceTest {
                 .build();
 
         // Create update request
-        UpdatePostRequest request = new UpdatePostRequest(
-                "Updated Title",
-                "Updated Content",
-                "Updated Summary",
-                lifeCategory.getId()
-        );
+        UpdatePostRequest request = UpdatePostRequest.builder()
+                .title("Updated Title")
+                .content("Updated Content")
+                .summary("Updated Summary")
+                .category(lifeCategory.getId())
+                .build();
 
         // Create updated post
         Post updatedPost = Post.builder()
@@ -401,6 +411,8 @@ public class PrivateServiceTest {
 
         // Mock repository behavior
         when(postRepository.findById(postId)).thenReturn(post);
+        when(categoryRepository.findById(request.getCategory())).thenReturn(lifeCategory);
+        doNothing().when(tagService).updatePostTags(any(Post.class), any());
         when(postRepository.update(any(Post.class))).thenReturn(updatedPost);
 
         // when
@@ -427,12 +439,12 @@ public class PrivateServiceTest {
     void updatePost_whenPostNotExists_shouldThrowPostNotFoundException() {
         // given
         int nonExistentPostId = 999;
-        UpdatePostRequest request = new UpdatePostRequest(
-                "Updated Title",
-                "Updated Content",
-                "Updated Summary",
-                1
-        );
+        UpdatePostRequest request = UpdatePostRequest.builder()
+                .title("Updated Title")
+                .content("Updated Content")
+                .summary("Updated Summary")
+                .category(1)
+                .build();
 
         // Mock repository behavior
         when(postRepository.findById(nonExistentPostId)).thenReturn(null);

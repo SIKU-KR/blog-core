@@ -19,9 +19,9 @@ import java.util.Optional;
 @Slf4j
 @Service
 @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
-    value = "migration.categories-to-tags.enabled",
-    havingValue = "true",
-    matchIfMissing = false
+        value = "migration.categories-to-tags.enabled",
+        havingValue = "true",
+        matchIfMissing = false
 )
 @RequiredArgsConstructor
 public class CategoryToTagMigrationService implements ApplicationRunner {
@@ -42,12 +42,12 @@ public class CategoryToTagMigrationService implements ApplicationRunner {
 
     public void migrateCategoriesAsTagsToAllPosts() {
         List<Category> categories = categoryRepository.findAll();
-        
+
         log.info("Found {} categories to migrate", categories.size());
 
         for (Category category : categories) {
             String tagName = category.getName();
-            
+
             Tag tag = tagRepository.findByNameIgnoreCase(tagName)
                     .orElseGet(() -> {
                         log.info("Creating new tag for category: {}", tagName);
@@ -59,9 +59,9 @@ public class CategoryToTagMigrationService implements ApplicationRunner {
 
             // Find all posts with this category and add the corresponding tag
             List<Post> postsInCategory = findPostsByCategoryId(category.getId());
-            
+
             log.info("Adding tag '{}' to {} posts", tagName, postsInCategory.size());
-            
+
             for (Post post : postsInCategory) {
                 if (!post.getTags().contains(tag)) {
                     post.addTag(tag);
@@ -70,25 +70,25 @@ public class CategoryToTagMigrationService implements ApplicationRunner {
                 }
             }
         }
-        
+
         log.info("Successfully migrated all categories as tags to their respective posts");
     }
 
     public void rollbackCategoryToTagMigration() {
         log.info("Starting rollback of category to tag migration...");
-        
+
         List<Category> categories = categoryRepository.findAll();
-        
+
         for (Category category : categories) {
             String tagName = category.getName();
             Optional<Tag> tagOptional = tagRepository.findByNameIgnoreCase(tagName);
-            
+
             if (tagOptional.isPresent()) {
                 Tag tag = tagOptional.get();
-                
+
                 // Remove this tag from all posts that have the same category
                 List<Post> postsInCategory = findPostsByCategoryId(category.getId());
-                
+
                 for (Post post : postsInCategory) {
                     if (post.getTags().contains(tag)) {
                         post.removeTag(tag);
@@ -96,7 +96,7 @@ public class CategoryToTagMigrationService implements ApplicationRunner {
                         log.debug("Removed tag '{}' from post: {}", tagName, post.getTitle());
                     }
                 }
-                
+
                 // If the tag has no posts left, delete it
                 if (tag.getPosts().isEmpty()) {
                     tagRepository.delete(tag);
@@ -104,7 +104,7 @@ public class CategoryToTagMigrationService implements ApplicationRunner {
                 }
             }
         }
-        
+
         log.info("Successfully rolled back category to tag migration");
     }
 
@@ -121,13 +121,13 @@ public class CategoryToTagMigrationService implements ApplicationRunner {
 
         for (Category category : categories) {
             Optional<Tag> correspondingTag = tagRepository.findByNameIgnoreCase(category.getName());
-            
+
             if (correspondingTag.isPresent()) {
                 migratedCategories++;
-                
+
                 List<Post> postsInCategory = findPostsByCategoryId(category.getId());
                 totalPosts += postsInCategory.size();
-                
+
                 for (Post post : postsInCategory) {
                     if (post.getTags().contains(correspondingTag.get())) {
                         migratedPosts++;
@@ -156,11 +156,11 @@ public class CategoryToTagMigrationService implements ApplicationRunner {
         private int totalPosts;
         private int migratedPosts;
         private boolean migrationCompleted;
-        
+
         public double getCategoryMigrationPercentage() {
             return totalCategories == 0 ? 100.0 : (migratedCategories * 100.0) / totalCategories;
         }
-        
+
         public double getPostMigrationPercentage() {
             return totalPosts == 0 ? 100.0 : (migratedPosts * 100.0) / totalPosts;
         }

@@ -32,21 +32,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 public class AdminTest extends AbstractTestSupport {
 
-    @Autowired
-    private EntityManager entityManager;
-
-    @Autowired
-    private CategoryRepository categoryRepository;
-
-    @Autowired
-    private PostRepository postRepository;
-
-    @Autowired
-    private CommentRepository commentRepository;
-
     private final List<Category> categories = new ArrayList<>();
     private final List<Post> posts = new ArrayList<>();
     private final List<Comment> comments = new ArrayList<>();
+    @Autowired
+    private EntityManager entityManager;
+    @Autowired
+    private CategoryRepository categoryRepository;
+    @Autowired
+    private PostRepository postRepository;
+    @Autowired
+    private CommentRepository commentRepository;
 
     @BeforeEach
     public void setup() {
@@ -726,12 +722,14 @@ public class AdminTest extends AbstractTestSupport {
                 .category(-1)
                 .build();
 
-        // Perform request and verify - this should still work because the service defaults to category ID 1
+        // Perform request and verify - this should fail because category -1 does not exist
         mockMvc.perform(put("/admin/posts/" + postId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success", is(true)));
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(400)))
+                .andExpect(jsonPath("$.error.message", containsString("Category not found with id: -1")));
     }
 
     @Test
@@ -996,5 +994,105 @@ public class AdminTest extends AbstractTestSupport {
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.error.code", is(404)))
                 .andExpect(jsonPath("$.error.message", containsString("Category not found")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testAddPost_WithTags_Success() throws Exception {
+        // Prepare test data with tags
+        CreatePostRequest request = CreatePostRequest.builder()
+                .title("Post with Tags")
+                .content("This is content for post with tags")
+                .summary("Summary of post with tags")
+                .category(categories.get(0).getId())
+                .tags(List.of("Spring", "Java", "Backend"))
+                .build();
+
+        // Perform request and verify
+        mockMvc.perform(post("/admin/posts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data.id", greaterThan(0)))
+                .andExpect(jsonPath("$.data.title", is("Post with Tags")))
+                .andExpect(jsonPath("$.data.tags", hasSize(3)))
+                .andExpect(jsonPath("$.data.tags", containsInAnyOrder("Spring", "Java", "Backend")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testAddPost_EmptyTags_Success() throws Exception {
+        // Prepare test data with empty tags list
+        CreatePostRequest request = CreatePostRequest.builder()
+                .title("Post without Tags")
+                .content("This is content for post without tags")
+                .summary("Summary of post without tags")
+                .category(categories.get(0).getId())
+                .tags(List.of())
+                .build();
+
+        // Perform request and verify
+        mockMvc.perform(post("/admin/posts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data.tags", hasSize(0)));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testEditPost_UpdateTags_Success() throws Exception {
+        // Get an existing post ID
+        int postId = posts.get(0).getId();
+
+        // Prepare test data with new tags
+        UpdatePostRequest request = UpdatePostRequest.builder()
+                .title("Updated Post with New Tags")
+                .content("Updated content with new tags")
+                .summary("Updated summary with new tags")
+                .category(categories.get(0).getId())
+                .tags(List.of("React", "Frontend", "JavaScript"))
+                .build();
+
+        // Perform request and verify
+        mockMvc.perform(put("/admin/posts/" + postId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data.id", is(postId)))
+                .andExpect(jsonPath("$.data.title", is("Updated Post with New Tags")))
+                .andExpect(jsonPath("$.data.tags", hasSize(3)))
+                .andExpect(jsonPath("$.data.tags", containsInAnyOrder("React", "Frontend", "JavaScript")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testEditPost_ClearTags_Success() throws Exception {
+        // Get an existing post ID
+        int postId = posts.get(0).getId();
+
+        // Prepare test data with no tags (clearing existing tags)
+        UpdatePostRequest request = UpdatePostRequest.builder()
+                .title("Updated Post without Tags")
+                .content("Updated content without tags")
+                .summary("Updated summary without tags")
+                .category(categories.get(0).getId())
+                .tags(List.of())
+                .build();
+
+        // Perform request and verify
+        mockMvc.perform(put("/admin/posts/" + postId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data.tags", hasSize(0)));
     }
 }

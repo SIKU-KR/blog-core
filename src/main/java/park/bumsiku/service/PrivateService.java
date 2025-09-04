@@ -178,9 +178,9 @@ public class PrivateService {
         // Clear tags from post before deletion
         post.clearTags();
         postRepository.update(post);
-        
+
         postRepository.delete(postId);
-        
+
         // Clean up orphaned tags after post deletion
         tagService.cleanupOrphanedTags();
     }
@@ -196,6 +196,11 @@ public class PrivateService {
 
         Category category = categoryRepository.findById(request.getCategory());
 
+        if (category == null) {
+            log.warn("Category not found with id: {}", request.getCategory());
+            throw new IllegalArgumentException("Category not found with id: " + request.getCategory());
+        }
+
         post.setTitle(request.getTitle());
         post.setContent(request.getContent());
         post.setSummary(request.getSummary());
@@ -204,7 +209,7 @@ public class PrivateService {
 
         // Update tags - this will automatically clean up orphaned tags
         tagService.updatePostTags(post, request.getTags());
-        
+
         Post updatedPost = postRepository.update(post);
 
         return PostResponse.builder()

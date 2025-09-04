@@ -1,6 +1,9 @@
 package park.bumsiku.domain.dto.response;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import park.bumsiku.domain.entity.Tag;
 
 @Data

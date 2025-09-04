@@ -27,18 +27,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 public class PublicTest extends AbstractTestSupport {
 
-    @Autowired
-    private CategoryRepository categoryRepository;
-
-    @Autowired
-    private PostRepository postRepository;
-
-    @Autowired
-    private CommentRepository commentRepository;
-
     private final List<Category> categories = new ArrayList<>();
     private final List<Post> posts = new ArrayList<>();
     private final List<Comment> comments = new ArrayList<>();
+    @Autowired
+    private CategoryRepository categoryRepository;
+    @Autowired
+    private PostRepository postRepository;
+    @Autowired
+    private CommentRepository commentRepository;
 
     @BeforeEach
     public void setup() {

@@ -126,9 +126,9 @@ public class PublicService {
     @LogExecutionTime
     public PostListResponse getPostsByTag(String tagName, int page, int size, String sort) {
         // Validate tag exists
-        Tag tag = tagRepository.findByName(tagName).orElseThrow(() -> 
-            new NoSuchElementException("Tag not found: " + tagName));
-        
+        Tag tag = tagRepository.findByName(tagName).orElseThrow(() ->
+                new NoSuchElementException("Tag not found: " + tagName));
+
         SortCriteria sortCriteria = postSortBuilder.buildSortCriteria(sort);
         List<Post> posts = postRepository.findAllByTagName(tagName, page, size, sortCriteria.jpqlOrderClause());
         int totalElements = postRepository.countByTagName(tagName);

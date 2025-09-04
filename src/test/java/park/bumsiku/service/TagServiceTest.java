@@ -8,22 +8,18 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import park.bumsiku.domain.dto.request.CreateTagRequest;
-import park.bumsiku.domain.dto.request.UpdateTagRequest;
 import park.bumsiku.domain.dto.response.TagResponse;
+import park.bumsiku.domain.entity.Post;
 import park.bumsiku.domain.entity.Tag;
 import park.bumsiku.repository.TagRepository;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,203 +33,87 @@ class TagServiceTest {
 
     private Tag springTag;
     private Tag javaTag;
+    private Tag orphanedTag;
+    private Post mockPost;
     private LocalDateTime now;
 
     @BeforeEach
     void setUp() {
         now = LocalDateTime.now();
+        mockPost = mock(Post.class);
+
         springTag = Tag.builder()
                 .id(1)
                 .name("Spring")
                 .createdAt(now)
                 .build();
-        
+        springTag.setPosts(Set.of(mockPost));
+
         javaTag = Tag.builder()
                 .id(2)
                 .name("Java")
                 .createdAt(now.minusHours(1))
                 .build();
+        javaTag.setPosts(Set.of(mockPost));
+
+        orphanedTag = Tag.builder()
+                .id(3)
+                .name("Orphaned")
+                .createdAt(now.minusHours(2))
+                .build();
+        orphanedTag.setPosts(new HashSet<>());
     }
 
     @Test
-    @DisplayName("getAllTags should return all tags ordered by name")
-    void getAllTags_shouldReturnAllTagsOrderedByName() {
+    @DisplayName("getAllActiveTagsWithPosts should return only tags that have posts")
+    void getAllActiveTagsWithPosts_shouldReturnOnlyTagsWithPosts() {
         // given
-        List<Tag> tags = List.of(springTag, javaTag);
-        when(tagRepository.findAllByOrderByNameAsc()).thenReturn(tags);
+        List<Tag> allTags = List.of(springTag, javaTag, orphanedTag);
+        when(tagRepository.findAllByOrderByNameAsc()).thenReturn(allTags);
 
         // when
-        List<TagResponse> result = tagService.getAllTags();
+        List<TagResponse> result = tagService.getAllActiveTagsWithPosts();
 
         // then
         assertThat(result).hasSize(2);
-        assertThat(result.get(0).getName()).isEqualTo("Spring");
-        assertThat(result.get(1).getName()).isEqualTo("Java");
+        assertThat(result)
+                .extracting(TagResponse::getName)
+                .containsExactlyInAnyOrder("Spring", "Java");
         verify(tagRepository).findAllByOrderByNameAsc();
     }
 
     @Test
-    @DisplayName("getTagById should return tag when tag exists")
-    void getTagById_whenTagExists_shouldReturnTag() {
+    @DisplayName("cleanupOrphanedTags should delete tags with no posts")
+    void cleanupOrphanedTags_shouldDeleteTagsWithNoPosts() {
         // given
-        when(tagRepository.findById(1)).thenReturn(Optional.of(springTag));
+        List<Tag> allTags = List.of(springTag, javaTag, orphanedTag);
+        when(tagRepository.findAll()).thenReturn(allTags);
+        doNothing().when(tagRepository).deleteAll(any());
 
         // when
-        TagResponse result = tagService.getTagById(1);
+        tagService.cleanupOrphanedTags();
 
         // then
-        assertThat(result.getId()).isEqualTo(1);
-        assertThat(result.getName()).isEqualTo("Spring");
-        verify(tagRepository).findById(1);
+        ArgumentCaptor<List<Tag>> deletedTagsCaptor = ArgumentCaptor.forClass(List.class);
+        verify(tagRepository).deleteAll(deletedTagsCaptor.capture());
+        List<Tag> deletedTags = deletedTagsCaptor.getValue();
+
+        assertThat(deletedTags).hasSize(1);
+        assertThat(deletedTags.get(0).getName()).isEqualTo("Orphaned");
     }
 
     @Test
-    @DisplayName("getTagById should throw exception when tag does not exist")
-    void getTagById_whenTagDoesNotExist_shouldThrowException() {
+    @DisplayName("cleanupOrphanedTags should do nothing when all tags have posts")
+    void cleanupOrphanedTags_whenAllTagsHavePosts_shouldDoNothing() {
         // given
-        when(tagRepository.findById(999)).thenReturn(Optional.empty());
-
-        // when & then
-        assertThatThrownBy(() -> tagService.getTagById(999))
-                .isInstanceOf(NoSuchElementException.class)
-                .hasMessage("Tag not found with id: 999");
-
-        verify(tagRepository).findById(999);
-    }
-
-    @Test
-    @DisplayName("createTag should create new tag when name does not exist")
-    void createTag_whenNameDoesNotExist_shouldCreateNewTag() {
-        // given
-        CreateTagRequest request = new CreateTagRequest("React");
-        Tag newTag = Tag.builder()
-                .id(3)
-                .name("React")
-                .createdAt(now)
-                .build();
-
-        when(tagRepository.existsByNameIgnoreCase("React")).thenReturn(false);
-        when(tagRepository.save(any(Tag.class))).thenReturn(newTag);
+        List<Tag> allTags = List.of(springTag, javaTag);
+        when(tagRepository.findAll()).thenReturn(allTags);
 
         // when
-        TagResponse result = tagService.createTag(request);
+        tagService.cleanupOrphanedTags();
 
         // then
-        assertThat(result.getId()).isEqualTo(3);
-        assertThat(result.getName()).isEqualTo("React");
-
-        ArgumentCaptor<Tag> tagCaptor = ArgumentCaptor.forClass(Tag.class);
-        verify(tagRepository).save(tagCaptor.capture());
-        Tag capturedTag = tagCaptor.getValue();
-        assertThat(capturedTag.getName()).isEqualTo("React");
-    }
-
-    @Test
-    @DisplayName("createTag should throw exception when tag name already exists")
-    void createTag_whenNameAlreadyExists_shouldThrowException() {
-        // given
-        CreateTagRequest request = new CreateTagRequest("Spring");
-        when(tagRepository.existsByNameIgnoreCase("Spring")).thenReturn(true);
-
-        // when & then
-        assertThatThrownBy(() -> tagService.createTag(request))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Tag with name 'Spring' already exists");
-
-        verify(tagRepository).existsByNameIgnoreCase("Spring");
-        verify(tagRepository, never()).save(any(Tag.class));
-    }
-
-    @Test
-    @DisplayName("updateTag should update tag when tag exists and new name is unique")
-    void updateTag_whenTagExistsAndNewNameIsUnique_shouldUpdateTag() {
-        // given
-        UpdateTagRequest request = new UpdateTagRequest("SpringBoot");
-        Tag updatedTag = Tag.builder()
-                .id(1)
-                .name("SpringBoot")
-                .createdAt(springTag.getCreatedAt())
-                .build();
-
-        when(tagRepository.findById(1)).thenReturn(Optional.of(springTag));
-        when(tagRepository.existsByNameIgnoreCase("SpringBoot")).thenReturn(false);
-        when(tagRepository.save(any(Tag.class))).thenReturn(updatedTag);
-
-        // when
-        TagResponse result = tagService.updateTag(1, request);
-
-        // then
-        assertThat(result.getId()).isEqualTo(1);
-        assertThat(result.getName()).isEqualTo("SpringBoot");
-
-        ArgumentCaptor<Tag> tagCaptor = ArgumentCaptor.forClass(Tag.class);
-        verify(tagRepository).save(tagCaptor.capture());
-        Tag capturedTag = tagCaptor.getValue();
-        assertThat(capturedTag.getName()).isEqualTo("SpringBoot");
-    }
-
-    @Test
-    @DisplayName("updateTag should throw exception when tag does not exist")
-    void updateTag_whenTagDoesNotExist_shouldThrowException() {
-        // given
-        UpdateTagRequest request = new UpdateTagRequest("NewName");
-        when(tagRepository.findById(999)).thenReturn(Optional.empty());
-
-        // when & then
-        assertThatThrownBy(() -> tagService.updateTag(999, request))
-                .isInstanceOf(NoSuchElementException.class)
-                .hasMessage("Tag not found with id: 999");
-
-        verify(tagRepository).findById(999);
-        verify(tagRepository, never()).save(any(Tag.class));
-    }
-
-    @Test
-    @DisplayName("updateTag should throw exception when new name already exists")
-    void updateTag_whenNewNameAlreadyExists_shouldThrowException() {
-        // given
-        UpdateTagRequest request = new UpdateTagRequest("Java");
-        when(tagRepository.findById(1)).thenReturn(Optional.of(springTag));
-        when(tagRepository.existsByNameIgnoreCase("Java")).thenReturn(true);
-
-        // when & then
-        assertThatThrownBy(() -> tagService.updateTag(1, request))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Tag with name 'Java' already exists");
-
-        verify(tagRepository).findById(1);
-        verify(tagRepository).existsByNameIgnoreCase("Java");
-        verify(tagRepository, never()).save(any(Tag.class));
-    }
-
-    @Test
-    @DisplayName("deleteTag should delete tag when tag exists")
-    void deleteTag_whenTagExists_shouldDeleteTag() {
-        // given
-        when(tagRepository.findById(1)).thenReturn(Optional.of(springTag));
-        doNothing().when(tagRepository).deleteById(1);
-
-        // when
-        tagService.deleteTag(1);
-
-        // then
-        verify(tagRepository).findById(1);
-        verify(tagRepository).deleteById(1);
-    }
-
-    @Test
-    @DisplayName("deleteTag should throw exception when tag does not exist")
-    void deleteTag_whenTagDoesNotExist_shouldThrowException() {
-        // given
-        when(tagRepository.findById(999)).thenReturn(Optional.empty());
-
-        // when & then
-        assertThatThrownBy(() -> tagService.deleteTag(999))
-                .isInstanceOf(NoSuchElementException.class)
-                .hasMessage("Tag not found with id: 999");
-
-        verify(tagRepository).findById(999);
-        verify(tagRepository, never()).deleteById(any());
+        verify(tagRepository, never()).deleteAll(any());
     }
 
     @Test
@@ -241,14 +121,14 @@ class TagServiceTest {
     void findOrCreateTags_shouldReturnExistingTagsAndCreateNewOnes() {
         // given
         List<String> tagNames = List.of("Spring", "React", "Vue");
-        
+
         // Mock existing tags
         when(tagRepository.findByNameIn(tagNames)).thenReturn(List.of(springTag));
-        
+
         // Mock tag existence checks for new tags only (Spring already exists)
         when(tagRepository.existsByNameIgnoreCase("React")).thenReturn(false);
         when(tagRepository.existsByNameIgnoreCase("Vue")).thenReturn(false);
-        
+
         // Mock new tag creation
         Tag reactTag = Tag.builder().id(3).name("React").createdAt(now).build();
         Tag vueTag = Tag.builder().id(4).name("Vue").createdAt(now).build();
@@ -299,7 +179,47 @@ class TagServiceTest {
         assertThat(result)
                 .extracting(TagResponse::getName)
                 .containsExactlyInAnyOrder("Spring", "Java");
-        
+
         verify(tagRepository).findByNameIn(tagNames);
+    }
+
+    @Test
+    @DisplayName("updatePostTags should clear existing tags and add new ones")
+    void updatePostTags_shouldClearExistingTagsAndAddNewOnes() {
+        // given
+        Post post = mock(Post.class);
+        List<String> newTagNames = List.of("Spring", "React");
+
+        when(tagRepository.findByNameIn(newTagNames)).thenReturn(List.of(springTag));
+        when(tagRepository.existsByNameIgnoreCase("React")).thenReturn(false);
+
+        Tag reactTag = Tag.builder().id(4).name("React").createdAt(now).build();
+        when(tagRepository.save(any(Tag.class))).thenReturn(reactTag);
+        when(tagRepository.findAll()).thenReturn(List.of(springTag, reactTag));
+
+        // when
+        tagService.updatePostTags(post, newTagNames);
+
+        // then
+        verify(post).clearTags();
+        verify(post, times(2)).addTag(any(Tag.class));
+        verify(tagRepository).save(any(Tag.class)); // For creating React tag
+        verify(tagRepository).findAll(); // For cleanup check
+    }
+
+    @Test
+    @DisplayName("updatePostTags should handle null tag names")
+    void updatePostTags_whenTagNamesIsNull_shouldClearTags() {
+        // given
+        Post post = mock(Post.class);
+        when(tagRepository.findAll()).thenReturn(List.of());
+
+        // when
+        tagService.updatePostTags(post, null);
+
+        // then
+        verify(post).clearTags();
+        verify(post, never()).addTag(any(Tag.class));
+        verify(tagRepository).findAll(); // For cleanup check
     }
 }

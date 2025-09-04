@@ -12,7 +12,6 @@ import park.bumsiku.utils.monitoring.LogExecutionTime;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -42,20 +41,20 @@ public class TagService {
         }
 
         Set<Tag> tags = new HashSet<>();
-        
+
         // Find existing tags
         List<Tag> existingTags = tagRepository.findByNameIn(tagNames);
         tags.addAll(existingTags);
-        
+
         // Find missing tag names
         Set<String> existingTagNames = existingTags.stream()
                 .map(Tag::getName)
                 .collect(Collectors.toSet());
-        
+
         List<String> missingTagNames = tagNames.stream()
                 .filter(name -> !existingTagNames.contains(name))
                 .collect(Collectors.toList());
-        
+
         // Create new tags for missing names
         for (String tagName : missingTagNames) {
             String trimmedName = tagName.trim();
@@ -67,7 +66,7 @@ public class TagService {
                 tags.add(savedTag);
             }
         }
-        
+
         return tags;
     }
 
@@ -76,7 +75,7 @@ public class TagService {
         if (tagNames == null || tagNames.isEmpty()) {
             return List.of();
         }
-        
+
         List<Tag> tags = tagRepository.findByNameIn(tagNames);
         return tags.stream()
                 .map(TagResponse::fromWithoutPostCount)
@@ -90,7 +89,7 @@ public class TagService {
         List<Tag> orphanedTags = allTags.stream()
                 .filter(tag -> tag.getPosts().isEmpty())
                 .collect(Collectors.toList());
-        
+
         if (!orphanedTags.isEmpty()) {
             log.info("Cleaning up {} orphaned tags", orphanedTags.size());
             tagRepository.deleteAll(orphanedTags);
@@ -103,14 +102,14 @@ public class TagService {
         if (newTagNames == null) {
             newTagNames = List.of();
         }
-        
+
         // Clear existing tags
         post.clearTags();
-        
+
         // Add new tags (create if they don't exist)
         Set<Tag> newTags = findOrCreateTags(newTagNames);
         newTags.forEach(post::addTag);
-        
+
         // Clean up orphaned tags after update
         cleanupOrphanedTags();
     }

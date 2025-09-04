@@ -25,23 +25,6 @@ public class PostSummaryResponse {
     private LocalDateTime updatedAt;
     private Long views;
 
-    public static PostSummaryResponse from(Post post) {
-        List<String> tagNames = post.getTags().stream()
-                .map(Tag::getName)
-                .collect(Collectors.toList());
-                
-        return PostSummaryResponse.builder()
-                .id(post.getId())
-                .title(post.getTitle())
-                .summary(post.getSummary())
-                .categoryId(post.getCategory().getId())
-                .tags(tagNames)
-                .createdAt(post.getCreatedAt())
-                .updatedAt(post.getUpdatedAt())
-                .views(post.getViews())
-                .build();
-    }
-
     // JPQL Constructor Expression을 위한 생성자 (Repository에서만 사용)
     public PostSummaryResponse(Integer id, String title, String summary, Integer categoryId,
                                LocalDateTime createdAt, LocalDateTime updatedAt, Long views) {
@@ -52,5 +35,22 @@ public class PostSummaryResponse {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.views = views;
+    }
+
+    public static PostSummaryResponse from(Post post) {
+        List<String> tagNames = post.getTags().stream()
+                .map(Tag::getName)
+                .collect(Collectors.toList());
+
+        return PostSummaryResponse.builder()
+                .id(post.getId())
+                .title(post.getTitle())
+                .summary(post.getSummary())
+                .categoryId(post.getCategory().getId())
+                .tags(tagNames)
+                .createdAt(post.getCreatedAt())
+                .updatedAt(post.getUpdatedAt())
+                .views(post.getViews())
+                .build();
     }
 }
