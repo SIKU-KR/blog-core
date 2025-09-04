@@ -151,12 +151,18 @@ public class PublicService {
     }
 
     private PostResponse buildPostResponse(Post post) {
+        List<String> tagNames = post.getTags().stream()
+                .map(Tag::getName)
+                .collect(Collectors.toList());
+        
         return PostResponse.builder()
                 .id(post.getId())
                 .title(post.getTitle())
                 .content(post.getContent())
                 .summary(post.getSummary())
                 .categoryId(post.getCategory() != null ? post.getCategory().getId() : null)
+                .tags(tagNames)
+                .views(post.getViews())
                 .createdAt(post.getCreatedAt().toString())
                 .updatedAt(post.getUpdatedAt().toString())
                 .build();
