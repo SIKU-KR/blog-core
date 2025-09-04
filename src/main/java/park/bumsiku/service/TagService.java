@@ -102,9 +102,9 @@ public class TagService {
                 .filter(tag -> !hasPosts(tag))
                 .collect(Collectors.toList());
 
+        // 더 이상 고아 태그를 삭제하지 않습니다. 목록 조회 시 제외 처리합니다.
         if (!orphanedTags.isEmpty()) {
-            log.info("Cleaning up {} orphaned tags", orphanedTags.size());
-            tagRepository.deleteAll(orphanedTags);
+            log.info("Detected {} orphaned tags (kept, excluded from public list)", orphanedTags.size());
         }
     }
 

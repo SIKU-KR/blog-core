@@ -83,23 +83,17 @@ class TagServiceTest {
     }
 
     @Test
-    @DisplayName("cleanupOrphanedTags should delete tags with no posts")
-    void cleanupOrphanedTags_shouldDeleteTagsWithNoPosts() {
+    @DisplayName("cleanupOrphanedTags should not delete tags with no posts (kept and filtered later)")
+    void cleanupOrphanedTags_shouldNotDeleteTagsWithNoPosts() {
         // given
         List<Tag> allTags = List.of(springTag, javaTag, orphanedTag);
         when(tagRepository.findAll()).thenReturn(allTags);
-        doNothing().when(tagRepository).deleteAll(any());
 
         // when
         tagService.cleanupOrphanedTags();
 
         // then
-        ArgumentCaptor<List<Tag>> deletedTagsCaptor = ArgumentCaptor.forClass(List.class);
-        verify(tagRepository).deleteAll(deletedTagsCaptor.capture());
-        List<Tag> deletedTags = deletedTagsCaptor.getValue();
-
-        assertThat(deletedTags).hasSize(1);
-        assertThat(deletedTags.get(0).getName()).isEqualTo("Orphaned");
+        verify(tagRepository, never()).deleteAll(any());
     }
 
     @Test

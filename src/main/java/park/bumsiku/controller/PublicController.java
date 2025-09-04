@@ -122,6 +122,4 @@ public class PublicController implements PublicAPI {
         List<TagResponse> tags = service.getAllActiveTagsWithPosts();
         return Response.success(tags);
     }
-
-    // 이전: /posts/by-tag는 /posts?tag= 로 통합되었습니다.
 }
