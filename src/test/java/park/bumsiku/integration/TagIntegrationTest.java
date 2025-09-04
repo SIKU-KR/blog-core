@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +42,7 @@ class TagIntegrationTest extends AbstractTestSupport {
 
     @Test
     @DisplayName("GET /admin/tags - should return all tags")
+    @WithMockUser
     void getAllTags_shouldReturnAllTags() throws Exception {
         mockMvc.perform(get("/admin/tags")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -52,6 +54,7 @@ class TagIntegrationTest extends AbstractTestSupport {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("GET /admin/tags/{tagId} - should return specific tag when tag exists")
     void getTagById_whenTagExists_shouldReturnTag() throws Exception {
         mockMvc.perform(get("/admin/tags/{tagId}", springTag.getId())
@@ -64,6 +67,7 @@ class TagIntegrationTest extends AbstractTestSupport {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("GET /admin/tags/{tagId} - should return 404 when tag does not exist")
     void getTagById_whenTagDoesNotExist_shouldReturn404() throws Exception {
         mockMvc.perform(get("/admin/tags/{tagId}", 999)
@@ -74,6 +78,7 @@ class TagIntegrationTest extends AbstractTestSupport {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("POST /admin/tags - should create new tag when request is valid")
     void createTag_whenRequestIsValid_shouldCreateTag() throws Exception {
         CreateTagRequest request = CreateTagRequest.builder()
@@ -91,6 +96,7 @@ class TagIntegrationTest extends AbstractTestSupport {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("POST /admin/tags - should return 400 when tag name already exists")
     void createTag_whenTagNameAlreadyExists_shouldReturn400() throws Exception {
         CreateTagRequest request = CreateTagRequest.builder()
@@ -106,6 +112,7 @@ class TagIntegrationTest extends AbstractTestSupport {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("POST /admin/tags - should return 400 when tag name is invalid")
     void createTag_whenTagNameIsInvalid_shouldReturn400() throws Exception {
         CreateTagRequest request = CreateTagRequest.builder()
@@ -121,6 +128,7 @@ class TagIntegrationTest extends AbstractTestSupport {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("PUT /admin/tags/{tagId} - should update tag when request is valid")
     void updateTag_whenRequestIsValid_shouldUpdateTag() throws Exception {
         UpdateTagRequest request = UpdateTagRequest.builder()
@@ -137,6 +145,7 @@ class TagIntegrationTest extends AbstractTestSupport {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("PUT /admin/tags/{tagId} - should return 404 when tag does not exist")
     void updateTag_whenTagDoesNotExist_shouldReturn404() throws Exception {
         UpdateTagRequest request = UpdateTagRequest.builder()
@@ -152,6 +161,7 @@ class TagIntegrationTest extends AbstractTestSupport {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("PUT /admin/tags/{tagId} - should return 400 when new name already exists")
     void updateTag_whenNewNameAlreadyExists_shouldReturn400() throws Exception {
         UpdateTagRequest request = UpdateTagRequest.builder()
@@ -167,6 +177,7 @@ class TagIntegrationTest extends AbstractTestSupport {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("DELETE /admin/tags/{tagId} - should delete tag when tag exists")
     void deleteTag_whenTagExists_shouldDeleteTag() throws Exception {
         mockMvc.perform(delete("/admin/tags/{tagId}", springTag.getId())
@@ -177,6 +188,7 @@ class TagIntegrationTest extends AbstractTestSupport {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("DELETE /admin/tags/{tagId} - should return 404 when tag does not exist")
     void deleteTag_whenTagDoesNotExist_shouldReturn404() throws Exception {
         mockMvc.perform(delete("/admin/tags/{tagId}", 999)
@@ -199,6 +211,7 @@ class TagIntegrationTest extends AbstractTestSupport {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("GET /admin/tags/{tagId} - should return 400 for invalid tag ID")
     void getTagById_whenTagIdIsInvalid_shouldReturn400() throws Exception {
         mockMvc.perform(get("/admin/tags/{tagId}", -1)
@@ -209,6 +222,7 @@ class TagIntegrationTest extends AbstractTestSupport {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("POST /admin/tags - should trim whitespace from tag name")
     void createTag_shouldTrimWhitespaceFromName() throws Exception {
         CreateTagRequest request = CreateTagRequest.builder()
@@ -224,6 +238,7 @@ class TagIntegrationTest extends AbstractTestSupport {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("PUT /admin/tags/{tagId} - should allow updating to same name (case insensitive)")
     void updateTag_whenUpdatingToSameNameWithDifferentCase_shouldSucceed() throws Exception {
         UpdateTagRequest request = UpdateTagRequest.builder()

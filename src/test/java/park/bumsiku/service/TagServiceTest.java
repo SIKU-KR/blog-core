@@ -245,8 +245,7 @@ class TagServiceTest {
         // Mock existing tags
         when(tagRepository.findByNameIn(tagNames)).thenReturn(List.of(springTag));
         
-        // Mock tag existence checks
-        when(tagRepository.existsByNameIgnoreCase("Spring")).thenReturn(true);
+        // Mock tag existence checks for new tags only (Spring already exists)
         when(tagRepository.existsByNameIgnoreCase("React")).thenReturn(false);
         when(tagRepository.existsByNameIgnoreCase("Vue")).thenReturn(false);
         

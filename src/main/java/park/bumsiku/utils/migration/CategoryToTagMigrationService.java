@@ -18,6 +18,11 @@ import java.util.Optional;
 
 @Slf4j
 @Service
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
+    value = "migration.categories-to-tags.enabled",
+    havingValue = "true",
+    matchIfMissing = false
+)
 @RequiredArgsConstructor
 public class CategoryToTagMigrationService implements ApplicationRunner {
 
@@ -36,7 +41,7 @@ public class CategoryToTagMigrationService implements ApplicationRunner {
     }
 
     public void migrateCategoriesAsTagsToAllPosts() {
-        List<Category> categories = categoryRepository.findAllByOrderByOrdernumAsc();
+        List<Category> categories = categoryRepository.findAll();
         
         log.info("Found {} categories to migrate", categories.size());
 
@@ -72,7 +77,7 @@ public class CategoryToTagMigrationService implements ApplicationRunner {
     public void rollbackCategoryToTagMigration() {
         log.info("Starting rollback of category to tag migration...");
         
-        List<Category> categories = categoryRepository.findAllByOrderByOrdernumAsc();
+        List<Category> categories = categoryRepository.findAll();
         
         for (Category category : categories) {
             String tagName = category.getName();
@@ -108,7 +113,7 @@ public class CategoryToTagMigrationService implements ApplicationRunner {
     }
 
     public MigrationStatus getMigrationStatus() {
-        List<Category> categories = categoryRepository.findAllByOrderByOrdernumAsc();
+        List<Category> categories = categoryRepository.findAll();
         int totalCategories = categories.size();
         int migratedCategories = 0;
         int totalPosts = 0;
