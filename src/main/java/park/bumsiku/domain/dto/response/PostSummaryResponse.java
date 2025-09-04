@@ -19,7 +19,7 @@ public class PostSummaryResponse {
     private int id;
     private String title;
     private String summary;
-    private int categoryId;
+    private Integer categoryId;
     private List<String> tags;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -46,7 +46,7 @@ public class PostSummaryResponse {
                 .id(post.getId())
                 .title(post.getTitle())
                 .summary(post.getSummary())
-                .categoryId(post.getCategory().getId())
+                .categoryId(post.getCategory() != null ? post.getCategory().getId() : null)
                 .tags(tagNames)
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())

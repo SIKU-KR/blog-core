@@ -121,11 +121,14 @@ public class PrivateService {
 
     @LogExecutionTime
     public PostResponse createPost(CreatePostRequest request) {
-        Category category = categoryRepository.findById(request.getCategory());
-
-        if (category == null) {
-            log.warn("Category not found with id: {}", request.getCategory());
-            throw new IllegalArgumentException("Category not found with id: " + request.getCategory());
+        Category category = null;
+        boolean categoryProvided = request.getCategory() != null;
+        if (categoryProvided) {
+            category = categoryRepository.findById(request.getCategory());
+            if (category == null) {
+                log.warn("Category not found with id: {}", request.getCategory());
+                throw new IllegalArgumentException("Category not found with id: " + request.getCategory());
+            }
         }
 
         Post post = Post.builder()
@@ -149,7 +152,7 @@ public class PrivateService {
                 .title(savedPost.getTitle())
                 .content(savedPost.getContent())
                 .summary(savedPost.getSummary())
-                .categoryId(savedPost.getCategory().getId())
+                .categoryId(savedPost.getCategory() != null ? savedPost.getCategory().getId() : null)
                 .tags(savedPost.getTags().stream().map(tag -> tag.getName()).toList())
                 .views(savedPost.getViews())
                 .createdAt(savedPost.getCreatedAt().toString())
@@ -190,17 +193,23 @@ public class PrivateService {
             throw new NoSuchElementException("Post not found with id: " + postId);
         }
 
-        Category category = categoryRepository.findById(request.getCategory());
-
-        if (category == null) {
-            log.warn("Category not found with id: {}", request.getCategory());
-            throw new IllegalArgumentException("Category not found with id: " + request.getCategory());
+        Category category = null;
+        boolean categoryProvided = request.getCategory() != null;
+        if (categoryProvided) {
+            category = categoryRepository.findById(request.getCategory());
+            if (category == null) {
+                log.warn("Category not found with id: {}", request.getCategory());
+                throw new IllegalArgumentException("Category not found with id: " + request.getCategory());
+            }
         }
 
         post.setTitle(request.getTitle());
         post.setContent(request.getContent());
         post.setSummary(request.getSummary());
-        post.setCategory(category);
+        // retain existing category if not provided in request
+        if (categoryProvided) {
+            post.setCategory(category);
+        }
         post.setUpdatedAt(LocalDateTime.now());
 
         // Update tags - this will automatically clean up orphaned tags
@@ -213,7 +222,7 @@ public class PrivateService {
                 .title(updatedPost.getTitle())
                 .content(updatedPost.getContent())
                 .summary(updatedPost.getSummary())
-                .categoryId(updatedPost.getCategory().getId())
+                .categoryId(updatedPost.getCategory() != null ? updatedPost.getCategory().getId() : null)
                 .tags(updatedPost.getTags().stream().map(tag -> tag.getName()).toList())
                 .views(updatedPost.getViews())
                 .createdAt(updatedPost.getCreatedAt().toString())

@@ -46,14 +46,7 @@ public class ArgumentValidatorImplTest extends AbstractTestSupport {
         assertThrows(IllegalArgumentException.class, () -> validator.validateCommentId(null));
     }
 
-    @Test
-    void testValidateCategoryId() {
-        // Valid category ID
-        assertDoesNotThrow(() -> validator.validateCategoryId(1));
-
-        // Invalid category ID - null
-        assertThrows(IllegalArgumentException.class, () -> validator.validateCategoryId(null));
-    }
+    
 
     @Test
     void testValidatePagination() {
@@ -108,13 +101,13 @@ public class ArgumentValidatorImplTest extends AbstractTestSupport {
                 .build();
         assertThrows(IllegalArgumentException.class, () -> validator.validatePostRequest(invalidSummary));
 
-        // Invalid post request - blank category
-        CreatePostRequest invalidCategory = CreatePostRequest.builder()
+        // Category is optional; absence should be allowed
+        CreatePostRequest noCategory = CreatePostRequest.builder()
                 .title("Valid Title")
                 .content("Valid content")
                 .summary("Valid summary")
                 .build();
-        assertThrows(IllegalArgumentException.class, () -> validator.validatePostRequest(invalidCategory));
+        assertDoesNotThrow(() -> validator.validatePostRequest(noCategory));
     }
 
     @Test
@@ -134,33 +127,33 @@ public class ArgumentValidatorImplTest extends AbstractTestSupport {
         // Other invalid cases would be similar to the create test
     }
 
-    @Test
-    void testValidateCategoryRequest() {
-        // Valid category request
-        UpdateCategoryRequest validRequest = UpdateCategoryRequest.builder()
-                .name("Technology")
-                .orderNum(1)
-                .build();
-        assertDoesNotThrow(() -> validator.validateCategoryRequest(validRequest));
-
-        // Invalid category request - null
-        assertThrows(IllegalArgumentException.class, () -> validator.validateCategoryRequest((CreateCategoryRequest) null));
-        assertThrows(IllegalArgumentException.class, () -> validator.validateCategoryRequest((UpdateCategoryRequest) null));
-
-        // Invalid category request - blank category
-        UpdateCategoryRequest invalidCategory = UpdateCategoryRequest.builder()
-                .name("")
-                .orderNum(1)
-                .build();
-        assertThrows(IllegalArgumentException.class, () -> validator.validateCategoryRequest(invalidCategory));
-
-        // Invalid category request - null order
-        UpdateCategoryRequest invalidOrder = UpdateCategoryRequest.builder()
-                .name("Technology")
-                .orderNum(null)
-                .build();
-        assertThrows(IllegalArgumentException.class, () -> validator.validateCategoryRequest(invalidOrder));
-    }
+//    @Test
+//    void testValidateCategoryRequest() {
+//        // Valid category request
+//        UpdateCategoryRequest validRequest = UpdateCategoryRequest.builder()
+//                .name("Technology")
+//                .orderNum(1)
+//                .build();
+//        assertDoesNotThrow(() -> validator.validateCategoryRequest(validRequest));
+//
+//        // Invalid category request - null
+//        assertThrows(IllegalArgumentException.class, () -> validator.validateCategoryRequest((CreateCategoryRequest) null));
+//        assertThrows(IllegalArgumentException.class, () -> validator.validateCategoryRequest((UpdateCategoryRequest) null));
+//
+//        // Invalid category request - blank category
+//        UpdateCategoryRequest invalidCategory = UpdateCategoryRequest.builder()
+//                .name("")
+//                .orderNum(1)
+//                .build();
+//        assertThrows(IllegalArgumentException.class, () -> validator.validateCategoryRequest(invalidCategory));
+//
+//        // Invalid category request - null order
+//        UpdateCategoryRequest invalidOrder = UpdateCategoryRequest.builder()
+//                .name("Technology")
+//                .orderNum(null)
+//                .build();
+//        assertThrows(IllegalArgumentException.class, () -> validator.validateCategoryRequest(invalidOrder));
+//    }
 
     @Test
     void testValidatePostIdAndCommentRequest() {

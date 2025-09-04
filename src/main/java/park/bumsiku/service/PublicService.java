@@ -156,7 +156,7 @@ public class PublicService {
                 .title(post.getTitle())
                 .content(post.getContent())
                 .summary(post.getSummary())
-                .categoryId(post.getCategory().getId())
+                .categoryId(post.getCategory() != null ? post.getCategory().getId() : null)
                 .createdAt(post.getCreatedAt().toString())
                 .updatedAt(post.getUpdatedAt().toString())
                 .build();

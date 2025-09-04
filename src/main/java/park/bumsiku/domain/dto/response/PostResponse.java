@@ -14,7 +14,7 @@ public class PostResponse {
     private String title;
     private String content;
     private String summary;
-    private int categoryId;
+    private Integer categoryId;
     private List<String> tags;
     private String createdAt;
     private String updatedAt;
