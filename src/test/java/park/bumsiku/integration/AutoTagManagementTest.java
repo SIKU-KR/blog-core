@@ -1,6 +1,5 @@
 package park.bumsiku.integration;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,7 +9,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import park.bumsiku.config.AbstractTestSupport;
 import park.bumsiku.domain.dto.request.CreatePostRequest;
@@ -24,9 +22,11 @@ import park.bumsiku.repository.TagRepository;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -36,10 +36,10 @@ class AutoTagManagementTest extends AbstractTestSupport {
 
     @Autowired
     private TagRepository tagRepository;
-    
+
     @Autowired
     private CategoryRepository categoryRepository;
-    
+
     @Autowired
     private PostRepository postRepository;
 
@@ -90,7 +90,7 @@ class AutoTagManagementTest extends AbstractTestSupport {
                 .state("published")
                 .build();
         post = postRepository.insert(post);
-        
+
         // Create initial tags through API
         CreatePostRequest createRequest = CreatePostRequest.builder()
                 .title("Test Post")
@@ -132,6 +132,7 @@ class AutoTagManagementTest extends AbstractTestSupport {
 
     @Test
     @DisplayName("GET /tags - should only return tags that have posts")
+    @WithMockUser
     void getTags_shouldOnlyReturnTagsWithPosts() throws Exception {
         // Create a post with tags
         CreatePostRequest createRequest = CreatePostRequest.builder()
@@ -179,7 +180,7 @@ class AutoTagManagementTest extends AbstractTestSupport {
 
         // Extract post ID from response (simplified approach)
         // In a real scenario, you'd parse the JSON properly
-        
+
         // Verify tags exist
         assertThat(tagRepository.findByName("UniqueTag1")).isPresent();
         assertThat(tagRepository.findByName("UniqueTag2")).isPresent();
@@ -200,6 +201,7 @@ class AutoTagManagementTest extends AbstractTestSupport {
 
     @Test
     @DisplayName("GET /posts/by-tag - should filter posts by tag")
+    @WithMockUser
     void getPostsByTag_shouldFilterPostsByTag() throws Exception {
         // Create posts with different tags
         CreatePostRequest post1 = CreatePostRequest.builder()
