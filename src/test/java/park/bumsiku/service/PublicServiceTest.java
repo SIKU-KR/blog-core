@@ -183,7 +183,7 @@ public class PublicServiceTest {
         Post post = postMockData();
 
         when(postRepository.findById(post.getId())).thenReturn(post);
-        when(commentRepository.insert(any(Comment.class)))
+        when(commentRepository.save(any(Comment.class)))
                 .thenReturn(Comment.builder()
                         .id(1L)
                         .post(post)
