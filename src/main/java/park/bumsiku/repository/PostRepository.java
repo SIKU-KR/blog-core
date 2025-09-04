@@ -78,7 +78,7 @@ public class PostRepository {
     }
 
     public List<Post> findAllByTagName(String tagName, int page, int size, String orderByClause) {
-        String jpql = "SELECT DISTINCT p FROM Post p JOIN p.tags t WHERE t.name = :tagName " + orderByClause;
+        String jpql = "SELECT p FROM Post p WHERE p.id IN (SELECT DISTINCT pt.id FROM Post pt JOIN pt.tags t WHERE t.name = :tagName) " + orderByClause;
         TypedQuery<Post> query = entityManager.createQuery(jpql, Post.class);
         query.setParameter("tagName", tagName);
         query.setFirstResult(page * size);
@@ -87,7 +87,7 @@ public class PostRepository {
     }
 
     public int countByTagName(String tagName) {
-        String jpql = "SELECT COUNT(DISTINCT p) FROM Post p JOIN p.tags t WHERE t.name = :tagName";
+        String jpql = "SELECT COUNT(DISTINCT p.id) FROM Post p JOIN p.tags t WHERE t.name = :tagName";
         TypedQuery<Long> query = entityManager.createQuery(jpql, Long.class);
         query.setParameter("tagName", tagName);
         return query.getSingleResult().intValue();
