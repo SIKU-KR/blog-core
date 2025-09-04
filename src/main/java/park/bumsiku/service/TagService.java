@@ -23,11 +23,41 @@ public class TagService {
 
     private final TagRepository tagRepository;
 
+    // Helper methods to avoid duplication
+    private boolean hasPosts(Tag tag) {
+        return tag != null && tag.getPosts() != null && !tag.getPosts().isEmpty();
+    }
+
+    private List<String> safeTagNames(List<String> tagNames) {
+        return tagNames == null ? List.of() : tagNames;
+    }
+
+    private Set<String> existingTagNameSet(List<Tag> existingTags) {
+        return existingTags.stream().map(Tag::getName).collect(Collectors.toSet());
+    }
+
+    private List<String> findMissingTagNames(List<String> tagNames, Set<String> existingNames) {
+        return tagNames.stream()
+                .filter(name -> !existingNames.contains(name))
+                .toList();
+    }
+
+    private void createAndAttachMissingTags(Set<Tag> collector, List<String> missingNames) {
+        for (String tagName : missingNames) {
+            String trimmedName = tagName == null ? "" : tagName.trim();
+            if (!trimmedName.isEmpty() && !tagRepository.existsByNameIgnoreCase(trimmedName)) {
+                Tag newTag = Tag.builder().name(trimmedName).build();
+                Tag savedTag = tagRepository.save(newTag);
+                collector.add(savedTag);
+            }
+        }
+    }
+
     @LogExecutionTime
     public List<TagResponse> getAllActiveTagsWithPosts() {
         List<Tag> tags = tagRepository.findAllByOrderByNameAsc().stream()
-                .filter(tag -> !tag.getPosts().isEmpty())
-                .collect(Collectors.toList());
+                .filter(this::hasPosts)
+                .toList();
         return tags.stream()
                 .map(TagResponse::from)
                 .collect(Collectors.toList());
@@ -36,38 +66,23 @@ public class TagService {
     @LogExecutionTime
     @Transactional
     public Set<Tag> findOrCreateTags(List<String> tagNames) {
-        if (tagNames == null || tagNames.isEmpty()) {
+        List<String> inputNames = safeTagNames(tagNames);
+        if (inputNames.isEmpty()) {
             return new HashSet<>();
         }
 
-        Set<Tag> tags = new HashSet<>();
+        Set<Tag> collected = new HashSet<>();
 
         // Find existing tags
-        List<Tag> existingTags = tagRepository.findByNameIn(tagNames);
-        tags.addAll(existingTags);
+        List<Tag> existingTags = tagRepository.findByNameIn(inputNames);
+        collected.addAll(existingTags);
 
-        // Find missing tag names
-        Set<String> existingTagNames = existingTags.stream()
-                .map(Tag::getName)
-                .collect(Collectors.toSet());
+        // Determine missing names and create them
+        Set<String> existingNames = existingTagNameSet(existingTags);
+        List<String> missingNames = findMissingTagNames(inputNames, existingNames);
+        createAndAttachMissingTags(collected, missingNames);
 
-        List<String> missingTagNames = tagNames.stream()
-                .filter(name -> !existingTagNames.contains(name))
-                .collect(Collectors.toList());
-
-        // Create new tags for missing names
-        for (String tagName : missingTagNames) {
-            String trimmedName = tagName.trim();
-            if (!trimmedName.isEmpty() && !tagRepository.existsByNameIgnoreCase(trimmedName)) {
-                Tag newTag = Tag.builder()
-                        .name(trimmedName)
-                        .build();
-                Tag savedTag = tagRepository.save(newTag);
-                tags.add(savedTag);
-            }
-        }
-
-        return tags;
+        return collected;
     }
 
     @LogExecutionTime
@@ -87,7 +102,7 @@ public class TagService {
     public void cleanupOrphanedTags() {
         List<Tag> allTags = tagRepository.findAll();
         List<Tag> orphanedTags = allTags.stream()
-                .filter(tag -> tag.getPosts().isEmpty())
+                .filter(tag -> !hasPosts(tag))
                 .collect(Collectors.toList());
 
         if (!orphanedTags.isEmpty()) {
@@ -99,9 +114,7 @@ public class TagService {
     @LogExecutionTime
     @Transactional
     public void updatePostTags(Post post, List<String> newTagNames) {
-        if (newTagNames == null) {
-            newTagNames = List.of();
-        }
+        newTagNames = safeTagNames(newTagNames);
 
         // Clear existing tags
         post.clearTags();
