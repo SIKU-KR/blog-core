@@ -58,17 +58,9 @@ public class PublicService {
     @LogExecutionTime
     public PostResponse getPostById(int id) {
         Post post = requirePostById(id);
-
-        return PostResponse.builder()
-                .id(post.getId())
-                .title(post.getTitle())
-                .content(post.getContent())
-                .summary(post.getSummary())
-                .categoryId(post.getCategory().getId())
-                .createdAt(post.getCreatedAt().toString())
-                .updatedAt(post.getUpdatedAt().toString())
-                .build();
+        return buildPostResponse(post);
     }
+
 
     @LogExecutionTime
     public List<CommentResponse> getCommentsById(int id) {
@@ -77,7 +69,7 @@ public class PublicService {
 
         return commentList.stream()
                 .map(this::buildCommentResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @LogExecutionTime
@@ -125,9 +117,7 @@ public class PublicService {
 
     @LogExecutionTime
     public PostListResponse getPostsByTag(String tagName, int page, int size, String sort) {
-        // Validate tag exists
-        Tag tag = tagRepository.findByName(tagName).orElseThrow(() ->
-                new NoSuchElementException("Tag not found: " + tagName));
+        requireTagByName(tagName);
 
         SortCriteria sortCriteria = postSortBuilder.buildSortCriteria(sort);
         List<Post> posts = postRepository.findAllByTagName(tagName, page, size, sortCriteria.jpqlOrderClause());
@@ -150,6 +140,23 @@ public class PublicService {
             throw new NoSuchElementException("Post not found");
         }
         return post;
+    }
+
+    private Tag requireTagByName(String tagName) {
+        return tagRepository.findByName(tagName)
+                .orElseThrow(() -> new NoSuchElementException("Tag not found: " + tagName));
+    }
+
+    private PostResponse buildPostResponse(Post post) {
+        return PostResponse.builder()
+                .id(post.getId())
+                .title(post.getTitle())
+                .content(post.getContent())
+                .summary(post.getSummary())
+                .categoryId(post.getCategory().getId())
+                .createdAt(post.getCreatedAt().toString())
+                .updatedAt(post.getUpdatedAt().toString())
+                .build();
     }
 
     private PostListResponse buildPostListResponse(List<Post> posts, int totalElements, int page, int size) {
