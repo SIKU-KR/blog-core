@@ -109,7 +109,7 @@ public class PublicService {
     public List<TagResponse> getAllActiveTagsWithPosts() {
         List<Tag> tags = tagRepository.findAllByOrderByNameAsc().stream()
                 .filter(tag -> !tag.getPosts().isEmpty())
-                .collect(Collectors.toList());
+                .toList();
         return tags.stream()
                 .map(TagResponse::from)
                 .collect(Collectors.toList());
@@ -144,7 +144,10 @@ public class PublicService {
 
     private Tag requireTagByName(String tagName) {
         return tagRepository.findByName(tagName)
-                .orElseThrow(() -> new NoSuchElementException("Tag not found: " + tagName));
+                .orElseThrow(() -> {
+                    log.warn("Tag with name {} not found", tagName);
+                    return new NoSuchElementException("Tag not found");
+                });
     }
 
     private PostResponse buildPostResponse(Post post) {

@@ -23,7 +23,6 @@ public class TagService {
 
     private final TagRepository tagRepository;
 
-    // Helper methods to avoid duplication
     private boolean hasPosts(Tag tag) {
         return tag != null && tag.getPosts() != null && !tag.getPosts().isEmpty();
     }
@@ -71,18 +70,16 @@ public class TagService {
             return new HashSet<>();
         }
 
-        Set<Tag> collected = new HashSet<>();
-
         // Find existing tags
         List<Tag> existingTags = tagRepository.findByNameIn(inputNames);
-        collected.addAll(existingTags);
+        Set<Tag> tagsFound = new HashSet<>(existingTags);
 
         // Determine missing names and create them
         Set<String> existingNames = existingTagNameSet(existingTags);
         List<String> missingNames = findMissingTagNames(inputNames, existingNames);
-        createAndAttachMissingTags(collected, missingNames);
+        createAndAttachMissingTags(tagsFound, missingNames);
 
-        return collected;
+        return tagsFound;
     }
 
     @LogExecutionTime
