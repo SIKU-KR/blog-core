@@ -200,7 +200,7 @@ class AutoTagManagementTest extends AbstractTestSupport {
     }
 
     @Test
-    @DisplayName("GET /posts/by-tag - should filter posts by tag")
+    @DisplayName("GET /posts?tag= - should filter posts by tag")
     @WithMockUser
     void getPostsByTag_shouldFilterPostsByTag() throws Exception {
         // Create posts with different tags
@@ -231,7 +231,7 @@ class AutoTagManagementTest extends AbstractTestSupport {
                 .andExpect(status().isOk());
 
         // Filter posts by Spring tag
-        mockMvc.perform(get("/posts/by-tag")
+        mockMvc.perform(get("/posts")
                         .param("tag", "Spring")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())

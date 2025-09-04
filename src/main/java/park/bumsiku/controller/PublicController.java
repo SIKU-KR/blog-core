@@ -33,6 +33,7 @@ public class PublicController implements PublicAPI {
     @LogExecutionTime
     public Response<PostListResponse> getPosts(
             @RequestParam(value = "category", required = false) Integer categoryId,
+            @RequestParam(value = "tag", required = false) String tagName,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt,desc") String sort) {
@@ -41,7 +42,9 @@ public class PublicController implements PublicAPI {
             validator.validateCategoryId(categoryId);
         }
         PostListResponse result;
-        if (categoryId != null) {
+        if (tagName != null && !tagName.isBlank()) {
+            result = service.getPostsByTag(tagName, page, size, sort);
+        } else if (categoryId != null) {
             result = service.getPostList(categoryId, page, size, sort);
         } else {
             result = service.getPostList(page, size, sort);
@@ -120,17 +123,5 @@ public class PublicController implements PublicAPI {
         return Response.success(tags);
     }
 
-    @Override
-    @GetMapping("/posts/by-tag")
-    @LogExecutionTime
-    public Response<PostListResponse> getPostsByTag(
-            @RequestParam(value = "tag") String tagName,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "createdAt,desc") String sort
-    ) {
-        validator.validatePagination(page, size);
-        PostListResponse result = service.getPostsByTag(tagName, page, size, sort);
-        return Response.success(result);
-    }
+    // 이전: /posts/by-tag는 /posts?tag= 로 통합되었습니다.
 }

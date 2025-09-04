@@ -40,6 +40,7 @@ public interface PublicAPI {
     @GetMapping("/posts")
     Response<PostListResponse> getPosts(
             @RequestParam(value = "category", required = false) Integer categoryId,
+            @RequestParam(value = "tag", required = false) String tagName,
             @Parameter(description = "페이지 번호 (0부터 시작)")
             @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "페이지 크기")
@@ -161,28 +162,5 @@ public interface PublicAPI {
     @GetMapping("/tags")
     Response<List<TagResponse>> getTags();
 
-    @Operation(
-            summary = "태그별 게시글 조회",
-            description = "특정 태그에 연결된 게시글 목록을 조회합니다."
-    )
-    @ApiResponse(
-            responseCode = "200",
-            description = "OK",
-            content = @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = Response.class)
-            )
-    )
-    @ApiResponse(responseCode = "400", description = "잘못된 요청 (페이지 또는 사이즈 파라미터 오류)")
-    @ApiResponse(responseCode = "404", description = "태그를 찾을 수 없음")
-    @GetMapping("/posts/by-tag")
-    Response<PostListResponse> getPostsByTag(
-            @RequestParam(value = "tag") String tagName,
-            @Parameter(description = "페이지 번호 (0부터 시작)")
-            @RequestParam(defaultValue = "0") int page,
-            @Parameter(description = "페이지 크기")
-            @RequestParam(defaultValue = "10") int size,
-            @Parameter(description = "정렬 기준 (예: createdAt,desc)")
-            @RequestParam(defaultValue = "createdAt,desc") String sort
-    );
+    // 이전: /posts/by-tag는 /posts?tag= 로 통합되었습니다.
 }
