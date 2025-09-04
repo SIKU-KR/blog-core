@@ -1,0 +1,167 @@
+package park.bumsiku.repository;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.test.context.ActiveProfiles;
+import park.bumsiku.domain.entity.Tag;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+@DataJpaTest
+@ActiveProfiles("test")
+class TagRepositoryTest {
+
+    @Autowired
+    private TestEntityManager entityManager;
+
+    @Autowired
+    private TagRepository tagRepository;
+
+    @Test
+    @DisplayName("findByName should return tag when tag exists")
+    void findByName_whenTagExists_shouldReturnTag() {
+        // given
+        Tag tag = Tag.builder()
+                .name("Spring")
+                .build();
+        tag.prePersist();
+        entityManager.persistAndFlush(tag);
+
+        // when
+        Optional<Tag> result = tagRepository.findByName("Spring");
+
+        // then
+        assertThat(result).isPresent();
+        assertThat(result.get().getName()).isEqualTo("Spring");
+    }
+
+    @Test
+    @DisplayName("findByName should return empty when tag does not exist")
+    void findByName_whenTagDoesNotExist_shouldReturnEmpty() {
+        // when
+        Optional<Tag> result = tagRepository.findByName("NonExistent");
+
+        // then
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    @DisplayName("findByNameIgnoreCase should return tag when name matches case insensitively")
+    void findByNameIgnoreCase_whenNameMatchesCaseInsensitively_shouldReturnTag() {
+        // given
+        Tag tag = Tag.builder()
+                .name("Spring")
+                .build();
+        tag.prePersist();
+        entityManager.persistAndFlush(tag);
+
+        // when
+        Optional<Tag> result = tagRepository.findByNameIgnoreCase("SPRING");
+
+        // then
+        assertThat(result).isPresent();
+        assertThat(result.get().getName()).isEqualTo("Spring");
+    }
+
+    @Test
+    @DisplayName("findByNameIn should return tags that match given names")
+    void findByNameIn_shouldReturnMatchingTags() {
+        // given
+        Tag springTag = Tag.builder().name("Spring").build();
+        springTag.prePersist();
+        Tag javaTag = Tag.builder().name("Java").build();
+        javaTag.prePersist();
+        Tag pythonTag = Tag.builder().name("Python").build();
+        pythonTag.prePersist();
+
+        entityManager.persistAndFlush(springTag);
+        entityManager.persistAndFlush(javaTag);
+        entityManager.persistAndFlush(pythonTag);
+
+        // when
+        List<Tag> result = tagRepository.findByNameIn(List.of("Spring", "Java", "NonExistent"));
+
+        // then
+        assertThat(result).hasSize(2);
+        assertThat(result)
+                .extracting(Tag::getName)
+                .containsExactlyInAnyOrder("Spring", "Java");
+    }
+
+    @Test
+    @DisplayName("findAllByOrderByNameAsc should return all tags ordered by name")
+    void findAllByOrderByNameAsc_shouldReturnTagsOrderedByName() {
+        // given
+        Tag zTag = Tag.builder().name("Zeppelin").build();
+        zTag.prePersist();
+        Tag aTag = Tag.builder().name("Angular").build();
+        aTag.prePersist();
+        Tag mTag = Tag.builder().name("MongoDB").build();
+        mTag.prePersist();
+
+        entityManager.persistAndFlush(zTag);
+        entityManager.persistAndFlush(aTag);
+        entityManager.persistAndFlush(mTag);
+
+        // when
+        List<Tag> result = tagRepository.findAllByOrderByNameAsc();
+
+        // then
+        assertThat(result).hasSize(3);
+        assertThat(result)
+                .extracting(Tag::getName)
+                .containsExactly("Angular", "MongoDB", "Zeppelin");
+    }
+
+    @Test
+    @DisplayName("existsByNameIgnoreCase should return true when tag exists case insensitively")
+    void existsByNameIgnoreCase_whenTagExists_shouldReturnTrue() {
+        // given
+        Tag tag = Tag.builder()
+                .name("React")
+                .build();
+        tag.prePersist();
+        entityManager.persistAndFlush(tag);
+
+        // when
+        boolean exists = tagRepository.existsByNameIgnoreCase("react");
+
+        // then
+        assertThat(exists).isTrue();
+    }
+
+    @Test
+    @DisplayName("existsByNameIgnoreCase should return false when tag does not exist")
+    void existsByNameIgnoreCase_whenTagDoesNotExist_shouldReturnFalse() {
+        // when
+        boolean exists = tagRepository.existsByNameIgnoreCase("NonExistent");
+
+        // then
+        assertThat(exists).isFalse();
+    }
+
+    @Test
+    @DisplayName("save should persist tag with auto-generated createdAt")
+    void save_shouldPersistTagWithAutoGeneratedCreatedAt() {
+        // given
+        Tag tag = Tag.builder()
+                .name("Docker")
+                .build();
+
+        // when
+        Tag savedTag = tagRepository.save(tag);
+
+        // then
+        assertThat(savedTag.getId()).isNotNull();
+        assertThat(savedTag.getName()).isEqualTo("Docker");
+        assertThat(savedTag.getCreatedAt()).isNotNull();
+        assertThat(savedTag.getCreatedAt()).isBefore(LocalDateTime.now().plusSeconds(1));
+    }
+}

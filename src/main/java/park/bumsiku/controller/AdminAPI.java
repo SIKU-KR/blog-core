@@ -185,4 +185,5 @@ public interface AdminAPI {
             @Parameter(description = "수정할 게시물 정보")
             @RequestBody UpdatePostRequest request
     );
+
 }

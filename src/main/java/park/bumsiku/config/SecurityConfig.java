@@ -29,10 +29,9 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private static final String ADMIN_ID = "admin";
     @Value("${admin.password}")
     private String adminPassword;
-
-    private static final String ADMIN_ID = "admin";
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {

@@ -33,6 +33,7 @@ public class PublicController implements PublicAPI {
     @LogExecutionTime
     public Response<PostListResponse> getPosts(
             @RequestParam(value = "category", required = false) Integer categoryId,
+            @RequestParam(value = "tag", required = false) String tagName,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt,desc") String sort) {
@@ -41,7 +42,9 @@ public class PublicController implements PublicAPI {
             validator.validateCategoryId(categoryId);
         }
         PostListResponse result;
-        if (categoryId != null) {
+        if (tagName != null && !tagName.isBlank()) {
+            result = service.getPostsByTag(tagName, page, size, sort);
+        } else if (categoryId != null) {
             result = service.getPostList(categoryId, page, size, sort);
         } else {
             result = service.getPostList(page, size, sort);
@@ -110,5 +113,13 @@ public class PublicController implements PublicAPI {
         service.incrementPostViews(postId);
 
         return Response.success(null);
+    }
+
+    @Override
+    @GetMapping("/tags")
+    @LogExecutionTime
+    public Response<List<TagResponse>> getTags() {
+        List<TagResponse> tags = service.getAllActiveTagsWithPosts();
+        return Response.success(tags);
     }
 }

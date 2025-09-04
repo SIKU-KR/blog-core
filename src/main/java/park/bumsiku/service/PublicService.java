@@ -9,9 +9,11 @@ import park.bumsiku.domain.dto.response.*;
 import park.bumsiku.domain.entity.Category;
 import park.bumsiku.domain.entity.Comment;
 import park.bumsiku.domain.entity.Post;
+import park.bumsiku.domain.entity.Tag;
 import park.bumsiku.repository.CategoryRepository;
 import park.bumsiku.repository.CommentRepository;
 import park.bumsiku.repository.PostRepository;
+import park.bumsiku.repository.TagRepository;
 import park.bumsiku.utils.integration.DiscordWebhookCreator;
 import park.bumsiku.utils.monitoring.LogExecutionTime;
 import park.bumsiku.utils.sorting.PostSortBuilder;
@@ -30,6 +32,7 @@ public class PublicService {
     private PostRepository postRepository;
     private CommentRepository commentRepository;
     private CategoryRepository categoryRepository;
+    private TagRepository tagRepository;
     private PostSortBuilder postSortBuilder;
 
     private DiscordWebhookCreator discord;
@@ -55,17 +58,9 @@ public class PublicService {
     @LogExecutionTime
     public PostResponse getPostById(int id) {
         Post post = requirePostById(id);
-
-        return PostResponse.builder()
-                .id(post.getId())
-                .title(post.getTitle())
-                .content(post.getContent())
-                .summary(post.getSummary())
-                .categoryId(post.getCategory().getId())
-                .createdAt(post.getCreatedAt().toString())
-                .updatedAt(post.getUpdatedAt().toString())
-                .build();
+        return buildPostResponse(post);
     }
+
 
     @LogExecutionTime
     public List<CommentResponse> getCommentsById(int id) {
@@ -74,7 +69,7 @@ public class PublicService {
 
         return commentList.stream()
                 .map(this::buildCommentResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @LogExecutionTime
@@ -111,6 +106,27 @@ public class PublicService {
     }
 
     @LogExecutionTime
+    public List<TagResponse> getAllActiveTagsWithPosts() {
+        List<Tag> tags = tagRepository.findAllByOrderByNameAsc().stream()
+                .filter(tag -> !tag.getPosts().isEmpty())
+                .toList();
+        return tags.stream()
+                .map(TagResponse::from)
+                .collect(Collectors.toList());
+    }
+
+    @LogExecutionTime
+    public PostListResponse getPostsByTag(String tagName, int page, int size, String sort) {
+        requireTagByName(tagName);
+
+        SortCriteria sortCriteria = postSortBuilder.buildSortCriteria(sort);
+        List<Post> posts = postRepository.findAllByTagName(tagName, page, size, sortCriteria.jpqlOrderClause());
+        int totalElements = postRepository.countByTagName(tagName);
+
+        return buildPostListResponse(posts, totalElements, page, size);
+    }
+
+    @LogExecutionTime
     public void incrementPostViews(int id) {
         Post post = requirePostById(id);
         post.setViews(post.getViews() + 1);
@@ -124,6 +140,26 @@ public class PublicService {
             throw new NoSuchElementException("Post not found");
         }
         return post;
+    }
+
+    private Tag requireTagByName(String tagName) {
+        return tagRepository.findByName(tagName)
+                .orElseThrow(() -> {
+                    log.warn("Tag with name {} not found", tagName);
+                    return new NoSuchElementException("Tag not found");
+                });
+    }
+
+    private PostResponse buildPostResponse(Post post) {
+        return PostResponse.builder()
+                .id(post.getId())
+                .title(post.getTitle())
+                .content(post.getContent())
+                .summary(post.getSummary())
+                .categoryId(post.getCategory().getId())
+                .createdAt(post.getCreatedAt().toString())
+                .updatedAt(post.getUpdatedAt().toString())
+                .build();
     }
 
     private PostListResponse buildPostListResponse(List<Post> posts, int totalElements, int page, int size) {

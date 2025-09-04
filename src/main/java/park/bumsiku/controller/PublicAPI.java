@@ -40,6 +40,7 @@ public interface PublicAPI {
     @GetMapping("/posts")
     Response<PostListResponse> getPosts(
             @RequestParam(value = "category", required = false) Integer categoryId,
+            @RequestParam(value = "tag", required = false) String tagName,
             @Parameter(description = "페이지 번호 (0부터 시작)")
             @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "페이지 크기")
@@ -144,4 +145,22 @@ public interface PublicAPI {
             @Parameter(description = "조회수를 증가시킬 게시글 ID")
             @PathVariable("postId") int postId
     );
+
+    @Operation(
+            summary = "태그 목록 조회",
+            description = "블로그에 등록된 모든 태그와 각 태그에 연결된 게시글 수를 조회합니다."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "OK",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = Response.class)
+            )
+    )
+    @ApiResponse(responseCode = "500", description = "서버 오류")
+    @GetMapping("/tags")
+    Response<List<TagResponse>> getTags();
+
+    // 이전: /posts/by-tag는 /posts?tag= 로 통합되었습니다.
 }

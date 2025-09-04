@@ -4,6 +4,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -25,4 +27,6 @@ public class CreatePostRequest {
 
     @NotBlank(message = "카테고리를 선택해주세요")
     private int category;
+
+    private List<String> tags;
 }

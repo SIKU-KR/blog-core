@@ -5,8 +5,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import park.bumsiku.domain.entity.Post;
+import park.bumsiku.domain.entity.Tag;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @NoArgsConstructor
@@ -17,21 +20,10 @@ public class PostSummaryResponse {
     private String title;
     private String summary;
     private int categoryId;
+    private List<String> tags;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Long views;
-
-    public static PostSummaryResponse from(Post post) {
-        return PostSummaryResponse.builder()
-                .id(post.getId())
-                .title(post.getTitle())
-                .summary(post.getSummary())
-                .categoryId(post.getCategory().getId())
-                .createdAt(post.getCreatedAt())
-                .updatedAt(post.getUpdatedAt())
-                .views(post.getViews())
-                .build();
-    }
 
     // JPQL Constructor Expression을 위한 생성자 (Repository에서만 사용)
     public PostSummaryResponse(Integer id, String title, String summary, Integer categoryId,
@@ -43,5 +35,22 @@ public class PostSummaryResponse {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.views = views;
+    }
+
+    public static PostSummaryResponse from(Post post) {
+        List<String> tagNames = post.getTags().stream()
+                .map(Tag::getName)
+                .collect(Collectors.toList());
+
+        return PostSummaryResponse.builder()
+                .id(post.getId())
+                .title(post.getTitle())
+                .summary(post.getSummary())
+                .categoryId(post.getCategory().getId())
+                .tags(tagNames)
+                .createdAt(post.getCreatedAt())
+                .updatedAt(post.getUpdatedAt())
+                .views(post.getViews())
+                .build();
     }
 }

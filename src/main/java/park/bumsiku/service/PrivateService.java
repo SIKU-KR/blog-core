@@ -40,6 +40,7 @@ public class PrivateService {
     private CommentRepository commentRepository;
     private PostRepository postRepository;
     private ImageRepository imageRepository;
+    private TagService tagService;
 
     @LogExecutionTime
     public CategoryResponse createCategory(CreateCategoryRequest request) {
@@ -137,10 +138,20 @@ public class PrivateService {
 
         Post savedPost = postRepository.insert(post);
 
+        // Handle tags
+        if (request.getTags() != null && !request.getTags().isEmpty()) {
+            tagService.updatePostTags(savedPost, request.getTags());
+            savedPost = postRepository.update(savedPost);
+        }
+
         return PostResponse.builder()
                 .id(savedPost.getId())
                 .title(savedPost.getTitle())
                 .content(savedPost.getContent())
+                .summary(savedPost.getSummary())
+                .categoryId(savedPost.getCategory().getId())
+                .tags(savedPost.getTags().stream().map(tag -> tag.getName()).toList())
+                .views(savedPost.getViews())
                 .createdAt(savedPost.getCreatedAt().toString())
                 .updatedAt(savedPost.getUpdatedAt().toString())
                 .build();
@@ -164,7 +175,12 @@ public class PrivateService {
             );
         }
 
+        // Clear tags from post before deletion
+        post.clearTags();
+        postRepository.update(post);
+
         postRepository.delete(postId);
+
     }
 
     @LogExecutionTime
@@ -178,11 +194,19 @@ public class PrivateService {
 
         Category category = categoryRepository.findById(request.getCategory());
 
+        if (category == null) {
+            log.warn("Category not found with id: {}", request.getCategory());
+            throw new IllegalArgumentException("Category not found with id: " + request.getCategory());
+        }
+
         post.setTitle(request.getTitle());
         post.setContent(request.getContent());
         post.setSummary(request.getSummary());
         post.setCategory(category);
         post.setUpdatedAt(LocalDateTime.now());
+
+        // Update tags - this will automatically clean up orphaned tags
+        tagService.updatePostTags(post, request.getTags());
 
         Post updatedPost = postRepository.update(post);
 
@@ -190,6 +214,10 @@ public class PrivateService {
                 .id(updatedPost.getId())
                 .title(updatedPost.getTitle())
                 .content(updatedPost.getContent())
+                .summary(updatedPost.getSummary())
+                .categoryId(updatedPost.getCategory().getId())
+                .tags(updatedPost.getTags().stream().map(tag -> tag.getName()).toList())
+                .views(updatedPost.getViews())
                 .createdAt(updatedPost.getCreatedAt().toString())
                 .updatedAt(updatedPost.getUpdatedAt().toString())
                 .build();

@@ -110,4 +110,5 @@ public class AdminController implements AdminAPI {
         PostResponse postResponse = service.updatePost(postId, request);
         return Response.success(postResponse);
     }
+
 }

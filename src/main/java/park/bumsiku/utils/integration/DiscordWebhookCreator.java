@@ -17,12 +17,10 @@ import java.util.Map;
 @Component
 public class DiscordWebhookCreator {
 
+    private static final Logger log = LoggerFactory.getLogger(DiscordWebhookCreator.class);
+    private final RestTemplate restTemplate;
     @Value("${discord.url}")
     private String apiUrl;
-
-    private static final Logger log = LoggerFactory.getLogger(DiscordWebhookCreator.class);
-
-    private final RestTemplate restTemplate;
 
     public DiscordWebhookCreator(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
