@@ -341,7 +341,6 @@ public class PrivateServiceTest {
         doNothing().when(commentRepository).delete(commentId);
         when(postRepository.update(any(Post.class))).thenReturn(post);
         doNothing().when(postRepository).delete(postId);
-        doNothing().when(tagService).cleanupOrphanedTags();
 
         // when
         privateService.deletePost(postId);

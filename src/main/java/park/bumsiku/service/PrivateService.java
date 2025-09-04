@@ -181,8 +181,6 @@ public class PrivateService {
 
         postRepository.delete(postId);
 
-        // Clean up orphaned tags after post deletion
-        tagService.cleanupOrphanedTags();
     }
 
     @LogExecutionTime

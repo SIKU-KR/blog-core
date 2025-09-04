@@ -82,33 +82,7 @@ class TagServiceTest {
         verify(tagRepository).findAllByOrderByNameAsc();
     }
 
-    @Test
-    @DisplayName("cleanupOrphanedTags should not delete tags with no posts (kept and filtered later)")
-    void cleanupOrphanedTags_shouldNotDeleteTagsWithNoPosts() {
-        // given
-        List<Tag> allTags = List.of(springTag, javaTag, orphanedTag);
-        when(tagRepository.findAll()).thenReturn(allTags);
-
-        // when
-        tagService.cleanupOrphanedTags();
-
-        // then
-        verify(tagRepository, never()).deleteAll(any());
-    }
-
-    @Test
-    @DisplayName("cleanupOrphanedTags should do nothing when all tags have posts")
-    void cleanupOrphanedTags_whenAllTagsHavePosts_shouldDoNothing() {
-        // given
-        List<Tag> allTags = List.of(springTag, javaTag);
-        when(tagRepository.findAll()).thenReturn(allTags);
-
-        // when
-        tagService.cleanupOrphanedTags();
-
-        // then
-        verify(tagRepository, never()).deleteAll(any());
-    }
+    // cleanupOrphanedTags removed: orphan tags are kept and filtered in public listing
 
     @Test
     @DisplayName("findOrCreateTags should return existing tags and create new ones")
@@ -189,7 +163,6 @@ class TagServiceTest {
 
         Tag reactTag = Tag.builder().id(4).name("React").createdAt(now).build();
         when(tagRepository.save(any(Tag.class))).thenReturn(reactTag);
-        when(tagRepository.findAll()).thenReturn(List.of(springTag, reactTag));
 
         // when
         tagService.updatePostTags(post, newTagNames);
@@ -198,7 +171,7 @@ class TagServiceTest {
         verify(post).clearTags();
         verify(post, times(2)).addTag(any(Tag.class));
         verify(tagRepository).save(any(Tag.class)); // For creating React tag
-        verify(tagRepository).findAll(); // For cleanup check
+        // no cleanup call
     }
 
     @Test
@@ -206,7 +179,6 @@ class TagServiceTest {
     void updatePostTags_whenTagNamesIsNull_shouldClearTags() {
         // given
         Post post = mock(Post.class);
-        when(tagRepository.findAll()).thenReturn(List.of());
 
         // when
         tagService.updatePostTags(post, null);
@@ -214,6 +186,6 @@ class TagServiceTest {
         // then
         verify(post).clearTags();
         verify(post, never()).addTag(any(Tag.class));
-        verify(tagRepository).findAll(); // For cleanup check
+        // no cleanup call
     }
 }

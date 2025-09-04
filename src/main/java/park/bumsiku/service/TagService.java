@@ -96,20 +96,6 @@ public class TagService {
 
     @LogExecutionTime
     @Transactional
-    public void cleanupOrphanedTags() {
-        List<Tag> allTags = tagRepository.findAll();
-        List<Tag> orphanedTags = allTags.stream()
-                .filter(tag -> !hasPosts(tag))
-                .collect(Collectors.toList());
-
-        // 더 이상 고아 태그를 삭제하지 않습니다. 목록 조회 시 제외 처리합니다.
-        if (!orphanedTags.isEmpty()) {
-            log.info("Detected {} orphaned tags (kept, excluded from public list)", orphanedTags.size());
-        }
-    }
-
-    @LogExecutionTime
-    @Transactional
     public void updatePostTags(Post post, List<String> newTagNames) {
         newTagNames = safeTagNames(newTagNames);
 
@@ -120,7 +106,5 @@ public class TagService {
         Set<Tag> newTags = findOrCreateTags(newTagNames);
         newTags.forEach(post::addTag);
 
-        // Clean up orphaned tags after update
-        cleanupOrphanedTags();
     }
 }
