@@ -114,6 +114,16 @@ public class PublicService {
     }
 
     @LogExecutionTime
+    public List<TagResponse> getAllActiveTagsWithPosts() {
+        List<Tag> tags = tagRepository.findAllByOrderByNameAsc().stream()
+                .filter(tag -> !tag.getPosts().isEmpty())
+                .collect(Collectors.toList());
+        return tags.stream()
+                .map(TagResponse::from)
+                .collect(Collectors.toList());
+    }
+
+    @LogExecutionTime
     public PostListResponse getPostsByTag(String tagName, int page, int size, String sort) {
         // Validate tag exists
         Tag tag = tagRepository.findByName(tagName).orElseThrow(() -> 

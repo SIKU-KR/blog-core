@@ -26,10 +26,4 @@ public interface ArgumentValidator {
     void validatePostIdAndPostRequest(int postId, UpdatePostRequest request);
 
     void validateImage(MultipartFile image);
-
-    void validateTagId(Integer tagId);
-
-    void validateTagRequest(CreateTagRequest request);
-
-    void validateTagRequest(UpdateTagRequest request);
 }

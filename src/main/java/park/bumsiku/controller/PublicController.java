@@ -7,7 +7,6 @@ import org.springframework.web.servlet.view.RedirectView;
 import park.bumsiku.domain.dto.request.CommentRequest;
 import park.bumsiku.domain.dto.response.*;
 import park.bumsiku.service.PublicService;
-import park.bumsiku.service.TagService;
 import park.bumsiku.utils.monitoring.LogExecutionTime;
 import park.bumsiku.utils.validation.ArgumentValidator;
 
@@ -20,7 +19,6 @@ import java.util.List;
 public class PublicController implements PublicAPI {
 
     private PublicService service;
-    private TagService tagService;
     private ArgumentValidator validator;
 
     @Override
@@ -118,7 +116,7 @@ public class PublicController implements PublicAPI {
     @GetMapping("/tags")
     @LogExecutionTime
     public Response<List<TagResponse>> getTags() {
-        List<TagResponse> tags = tagService.getAllTags();
+        List<TagResponse> tags = service.getAllActiveTagsWithPosts();
         return Response.success(tags);
     }
 

@@ -1,11 +1,11 @@
 package park.bumsiku.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import park.bumsiku.domain.dto.request.CreateTagRequest;
-import park.bumsiku.domain.dto.request.UpdateTagRequest;
 import park.bumsiku.domain.dto.response.TagResponse;
+import park.bumsiku.domain.entity.Post;
 import park.bumsiku.domain.entity.Tag;
 import park.bumsiku.repository.TagRepository;
 import park.bumsiku.utils.monitoring.LogExecutionTime;
@@ -16,6 +16,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -24,62 +25,13 @@ public class TagService {
     private final TagRepository tagRepository;
 
     @LogExecutionTime
-    public List<TagResponse> getAllTags() {
-        List<Tag> tags = tagRepository.findAllByOrderByNameAsc();
+    public List<TagResponse> getAllActiveTagsWithPosts() {
+        List<Tag> tags = tagRepository.findAllByOrderByNameAsc().stream()
+                .filter(tag -> !tag.getPosts().isEmpty())
+                .collect(Collectors.toList());
         return tags.stream()
                 .map(TagResponse::from)
                 .collect(Collectors.toList());
-    }
-
-    @LogExecutionTime
-    public TagResponse getTagById(Integer id) {
-        Tag tag = tagRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Tag not found with id: " + id));
-        return TagResponse.from(tag);
-    }
-
-    @LogExecutionTime
-    @Transactional
-    public TagResponse createTag(CreateTagRequest request) {
-        String tagName = request.getName().trim();
-        
-        if (tagRepository.existsByNameIgnoreCase(tagName)) {
-            throw new IllegalArgumentException("Tag with name '" + tagName + "' already exists");
-        }
-
-        Tag tag = Tag.builder()
-                .name(tagName)
-                .build();
-
-        Tag savedTag = tagRepository.save(tag);
-        return TagResponse.fromWithoutPostCount(savedTag);
-    }
-
-    @LogExecutionTime
-    @Transactional
-    public TagResponse updateTag(Integer id, UpdateTagRequest request) {
-        Tag existingTag = tagRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Tag not found with id: " + id));
-
-        String newName = request.getName().trim();
-        
-        if (tagRepository.existsByNameIgnoreCase(newName) && 
-            !existingTag.getName().equalsIgnoreCase(newName)) {
-            throw new IllegalArgumentException("Tag with name '" + newName + "' already exists");
-        }
-
-        existingTag.setName(newName);
-        Tag updatedTag = tagRepository.save(existingTag);
-        return TagResponse.from(updatedTag);
-    }
-
-    @LogExecutionTime
-    @Transactional
-    public void deleteTag(Integer id) {
-        Tag tag = tagRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Tag not found with id: " + id));
-        
-        tagRepository.deleteById(id);
     }
 
     @LogExecutionTime
@@ -129,5 +81,37 @@ public class TagService {
         return tags.stream()
                 .map(TagResponse::fromWithoutPostCount)
                 .collect(Collectors.toList());
+    }
+
+    @LogExecutionTime
+    @Transactional
+    public void cleanupOrphanedTags() {
+        List<Tag> allTags = tagRepository.findAll();
+        List<Tag> orphanedTags = allTags.stream()
+                .filter(tag -> tag.getPosts().isEmpty())
+                .collect(Collectors.toList());
+        
+        if (!orphanedTags.isEmpty()) {
+            log.info("Cleaning up {} orphaned tags", orphanedTags.size());
+            tagRepository.deleteAll(orphanedTags);
+        }
+    }
+
+    @LogExecutionTime
+    @Transactional
+    public void updatePostTags(Post post, List<String> newTagNames) {
+        if (newTagNames == null) {
+            newTagNames = List.of();
+        }
+        
+        // Clear existing tags
+        post.clearTags();
+        
+        // Add new tags (create if they don't exist)
+        Set<Tag> newTags = findOrCreateTags(newTagNames);
+        newTags.forEach(post::addTag);
+        
+        // Clean up orphaned tags after update
+        cleanupOrphanedTags();
     }
 }
