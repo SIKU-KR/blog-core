@@ -209,4 +209,42 @@ public class ArgumentValidatorImpl implements ArgumentValidator {
         }
         return filename.substring(lastDotIndex + 1);
     }
+
+    @Override
+    public void validateTagId(Integer tagId) {
+        if (tagId == null) {
+            throw new IllegalArgumentException("태그 ID를 입력해주세요");
+        }
+        if (tagId <= 0) {
+            throw new IllegalArgumentException("태그 ID는 양수여야 합니다");
+        }
+    }
+
+    @Override
+    public void validateTagRequest(CreateTagRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("요청 정보가 없습니다");
+        }
+        validateTagName(request.getName());
+    }
+
+    @Override
+    public void validateTagRequest(UpdateTagRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("요청 정보가 없습니다");
+        }
+        validateTagName(request.getName());
+    }
+
+    private void validateTagName(String tagName) {
+        if (tagName == null || tagName.isBlank()) {
+            throw new IllegalArgumentException("태그 이름을 입력해주세요");
+        }
+        if (tagName.length() > 50) {
+            throw new IllegalArgumentException("태그 이름은 1자 이상 50자 이하로 입력해주세요");
+        }
+        if (tagName.trim().length() == 0) {
+            throw new IllegalArgumentException("태그 이름은 공백만으로 구성될 수 없습니다");
+        }
+    }
 }

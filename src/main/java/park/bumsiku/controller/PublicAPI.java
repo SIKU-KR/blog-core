@@ -144,4 +144,45 @@ public interface PublicAPI {
             @Parameter(description = "조회수를 증가시킬 게시글 ID")
             @PathVariable("postId") int postId
     );
+
+    @Operation(
+            summary = "태그 목록 조회",
+            description = "블로그에 등록된 모든 태그와 각 태그에 연결된 게시글 수를 조회합니다."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "OK",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = Response.class)
+            )
+    )
+    @ApiResponse(responseCode = "500", description = "서버 오류")
+    @GetMapping("/tags")
+    Response<List<TagResponse>> getTags();
+
+    @Operation(
+            summary = "태그별 게시글 조회",
+            description = "특정 태그에 연결된 게시글 목록을 조회합니다."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "OK",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = Response.class)
+            )
+    )
+    @ApiResponse(responseCode = "400", description = "잘못된 요청 (페이지 또는 사이즈 파라미터 오류)")
+    @ApiResponse(responseCode = "404", description = "태그를 찾을 수 없음")
+    @GetMapping("/posts/by-tag")
+    Response<PostListResponse> getPostsByTag(
+            @RequestParam(value = "tag") String tagName,
+            @Parameter(description = "페이지 번호 (0부터 시작)")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "페이지 크기")
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "정렬 기준 (예: createdAt,desc)")
+            @RequestParam(defaultValue = "createdAt,desc") String sort
+    );
 }

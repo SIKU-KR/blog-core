@@ -5,8 +5,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import park.bumsiku.domain.entity.Post;
+import park.bumsiku.domain.entity.Tag;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @NoArgsConstructor
@@ -17,16 +20,22 @@ public class PostSummaryResponse {
     private String title;
     private String summary;
     private int categoryId;
+    private List<String> tags;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Long views;
 
     public static PostSummaryResponse from(Post post) {
+        List<String> tagNames = post.getTags().stream()
+                .map(Tag::getName)
+                .collect(Collectors.toList());
+                
         return PostSummaryResponse.builder()
                 .id(post.getId())
                 .title(post.getTitle())
                 .summary(post.getSummary())
                 .categoryId(post.getCategory().getId())
+                .tags(tagNames)
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .views(post.getViews())

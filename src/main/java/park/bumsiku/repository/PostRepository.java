@@ -72,4 +72,24 @@ public class PostRepository {
         query.setParameter("categoryId", categoryId);
         return query.getSingleResult().intValue();
     }
+
+    public List<Post> findAllByTagName(String tagName, int page, int size) {
+        return findAllByTagName(tagName, page, size, "ORDER BY p.createdAt DESC");
+    }
+
+    public List<Post> findAllByTagName(String tagName, int page, int size, String orderByClause) {
+        String jpql = "SELECT DISTINCT p FROM Post p JOIN p.tags t WHERE t.name = :tagName " + orderByClause;
+        TypedQuery<Post> query = entityManager.createQuery(jpql, Post.class);
+        query.setParameter("tagName", tagName);
+        query.setFirstResult(page * size);
+        query.setMaxResults(size);
+        return query.getResultList();
+    }
+
+    public int countByTagName(String tagName) {
+        String jpql = "SELECT COUNT(DISTINCT p) FROM Post p JOIN p.tags t WHERE t.name = :tagName";
+        TypedQuery<Long> query = entityManager.createQuery(jpql, Long.class);
+        query.setParameter("tagName", tagName);
+        return query.getSingleResult().intValue();
+    }
 }

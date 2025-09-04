@@ -7,6 +7,7 @@ import org.springframework.web.servlet.view.RedirectView;
 import park.bumsiku.domain.dto.request.CommentRequest;
 import park.bumsiku.domain.dto.response.*;
 import park.bumsiku.service.PublicService;
+import park.bumsiku.service.TagService;
 import park.bumsiku.utils.monitoring.LogExecutionTime;
 import park.bumsiku.utils.validation.ArgumentValidator;
 
@@ -19,6 +20,7 @@ import java.util.List;
 public class PublicController implements PublicAPI {
 
     private PublicService service;
+    private TagService tagService;
     private ArgumentValidator validator;
 
     @Override
@@ -110,5 +112,27 @@ public class PublicController implements PublicAPI {
         service.incrementPostViews(postId);
 
         return Response.success(null);
+    }
+
+    @Override
+    @GetMapping("/tags")
+    @LogExecutionTime
+    public Response<List<TagResponse>> getTags() {
+        List<TagResponse> tags = tagService.getAllTags();
+        return Response.success(tags);
+    }
+
+    @Override
+    @GetMapping("/posts/by-tag")
+    @LogExecutionTime
+    public Response<PostListResponse> getPostsByTag(
+            @RequestParam(value = "tag") String tagName,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt,desc") String sort
+    ) {
+        validator.validatePagination(page, size);
+        PostListResponse result = service.getPostsByTag(tagName, page, size, sort);
+        return Response.success(result);
     }
 }

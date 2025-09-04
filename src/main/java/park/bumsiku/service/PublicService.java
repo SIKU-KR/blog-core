@@ -9,9 +9,11 @@ import park.bumsiku.domain.dto.response.*;
 import park.bumsiku.domain.entity.Category;
 import park.bumsiku.domain.entity.Comment;
 import park.bumsiku.domain.entity.Post;
+import park.bumsiku.domain.entity.Tag;
 import park.bumsiku.repository.CategoryRepository;
 import park.bumsiku.repository.CommentRepository;
 import park.bumsiku.repository.PostRepository;
+import park.bumsiku.repository.TagRepository;
 import park.bumsiku.utils.integration.DiscordWebhookCreator;
 import park.bumsiku.utils.monitoring.LogExecutionTime;
 import park.bumsiku.utils.sorting.PostSortBuilder;
@@ -30,6 +32,7 @@ public class PublicService {
     private PostRepository postRepository;
     private CommentRepository commentRepository;
     private CategoryRepository categoryRepository;
+    private TagRepository tagRepository;
     private PostSortBuilder postSortBuilder;
 
     private DiscordWebhookCreator discord;
@@ -108,6 +111,19 @@ public class PublicService {
                             .build();
                 })
                 .collect(Collectors.toList());
+    }
+
+    @LogExecutionTime
+    public PostListResponse getPostsByTag(String tagName, int page, int size, String sort) {
+        // Validate tag exists
+        Tag tag = tagRepository.findByName(tagName).orElseThrow(() -> 
+            new NoSuchElementException("Tag not found: " + tagName));
+        
+        SortCriteria sortCriteria = postSortBuilder.buildSortCriteria(sort);
+        List<Post> posts = postRepository.findAllByTagName(tagName, page, size, sortCriteria.jpqlOrderClause());
+        int totalElements = postRepository.countByTagName(tagName);
+
+        return buildPostListResponse(posts, totalElements, page, size);
     }
 
     @LogExecutionTime

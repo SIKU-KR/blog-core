@@ -12,13 +12,17 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import park.bumsiku.domain.dto.request.CreateCategoryRequest;
 import park.bumsiku.domain.dto.request.CreatePostRequest;
+import park.bumsiku.domain.dto.request.CreateTagRequest;
 import park.bumsiku.domain.dto.request.UpdateCategoryRequest;
 import park.bumsiku.domain.dto.request.UpdatePostRequest;
+import park.bumsiku.domain.dto.request.UpdateTagRequest;
 import park.bumsiku.domain.dto.response.CategoryResponse;
 import park.bumsiku.domain.dto.response.PostResponse;
 import park.bumsiku.domain.dto.response.Response;
+import park.bumsiku.domain.dto.response.TagResponse;
 import park.bumsiku.domain.dto.response.UploadImageResponse;
 
+import java.util.List;
 import java.util.Map;
 
 @Tag(name = "Admin API", description = "관리자 전용 API")
@@ -184,5 +188,109 @@ public interface AdminAPI {
             @PathVariable int postId,
             @Parameter(description = "수정할 게시물 정보")
             @RequestBody UpdatePostRequest request
+    );
+
+    @Operation(
+            summary = "태그 목록 조회",
+            description = "모든 블로그 태그를 조회합니다 (관리자 전용)"
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "OK",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = TagResponse.class)
+            )
+    )
+    @ApiResponse(responseCode = "401", description = "인증 실패")
+    @ApiResponse(responseCode = "500", description = "서버 오류")
+    @GetMapping("/admin/tags")
+    Response<List<TagResponse>> getAllTags();
+
+    @Operation(
+            summary = "태그 조회",
+            description = "특정 태그의 상세 정보를 조회합니다 (관리자 전용)"
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "OK",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = TagResponse.class)
+            )
+    )
+    @ApiResponse(responseCode = "401", description = "인증 실패")
+    @ApiResponse(responseCode = "404", description = "태그를 찾을 수 없음")
+    @ApiResponse(responseCode = "500", description = "서버 오류")
+    @GetMapping("/admin/tags/{tagId}")
+    Response<TagResponse> getTagById(
+            @Parameter(description = "조회할 태그 ID")
+            @PathVariable Integer tagId
+    );
+
+    @Operation(
+            summary = "태그 추가",
+            description = "새로운 블로그 태그를 추가합니다 (관리자 전용)"
+    )
+    @ApiResponse(
+            responseCode = "201",
+            description = "Created",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = TagResponse.class)
+            )
+    )
+    @ApiResponse(responseCode = "400", description = "잘못된 요청 또는 태그 이름 중복")
+    @ApiResponse(responseCode = "401", description = "인증 실패")
+    @ApiResponse(responseCode = "500", description = "서버 오류")
+    @PostMapping("/admin/tags")
+    Response<TagResponse> createTag(
+            @Parameter(description = "태그 정보")
+            @RequestBody CreateTagRequest request
+    );
+
+    @Operation(
+            summary = "태그 수정",
+            description = "기존 블로그 태그를 수정합니다 (관리자 전용)"
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "OK",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = TagResponse.class)
+            )
+    )
+    @ApiResponse(responseCode = "400", description = "잘못된 요청 또는 태그 이름 중복")
+    @ApiResponse(responseCode = "401", description = "인증 실패")
+    @ApiResponse(responseCode = "404", description = "태그를 찾을 수 없음")
+    @ApiResponse(responseCode = "500", description = "서버 오류")
+    @PutMapping("/admin/tags/{tagId}")
+    Response<TagResponse> updateTag(
+            @Parameter(description = "수정할 태그 ID")
+            @PathVariable Integer tagId,
+            @Parameter(description = "태그 정보")
+            @RequestBody UpdateTagRequest request
+    );
+
+    @Operation(
+            summary = "태그 삭제",
+            description = "블로그 태그를 삭제합니다 (관리자 전용)"
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "삭제 성공 메시지",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = Map.class)
+            )
+    )
+    @ApiResponse(responseCode = "401", description = "인증 실패")
+    @ApiResponse(responseCode = "404", description = "태그를 찾을 수 없음")
+    @ApiResponse(responseCode = "500", description = "서버 오류")
+    @DeleteMapping("/admin/tags/{tagId}")
+    Response<Map<String, String>> deleteTag(
+            @Parameter(description = "삭제할 태그 ID")
+            @PathVariable Integer tagId
     );
 }
