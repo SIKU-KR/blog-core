@@ -34,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@Deprecated(forRemoval = true)
 @ExtendWith(MockitoExtension.class)
 public class PrivateServiceTest {
 

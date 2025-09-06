@@ -25,8 +25,7 @@ public class UpdatePostRequest {
     @Size(min = 1, max = 200, message = "요약은 1자 이상 200자 이하로 입력해주세요")
     private String summary;
 
-    @NotBlank(message = "카테고리를 선택해주세요")
-    private int category;
+    private Integer category;
 
     private List<String> tags;
 }

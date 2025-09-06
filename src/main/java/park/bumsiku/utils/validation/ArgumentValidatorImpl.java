@@ -43,10 +43,11 @@ public class ArgumentValidatorImpl implements ArgumentValidator {
         }
     }
 
+    @Deprecated(forRemoval = true)
     private void validateCategory(String category) {
-        if (category == null || category.isBlank()) {
-            throw new IllegalArgumentException("카테고리를 선택해주세요");
-        }
+//        if (category == null || category.isBlank()) {
+//            throw new IllegalArgumentException("카테고리를 선택해주세요");
+//        }
     }
 
     private void validateCommentContent(String content) {
@@ -68,10 +69,11 @@ public class ArgumentValidatorImpl implements ArgumentValidator {
     }
 
     @Override
+    @Deprecated(forRemoval = true)
     public void validateCategoryId(Integer id) {
-        if (id == null || id == 0) {
-            throw new IllegalArgumentException("카테고리를 선택해주세요");
-        }
+//        if (id == null || id == 0) {
+//            throw new IllegalArgumentException("카테고리를 선택해주세요");
+//        }
     }
 
     private void validateCategoryOrder(Integer order) {
@@ -146,6 +148,7 @@ public class ArgumentValidatorImpl implements ArgumentValidator {
     }
 
     @Override
+    @Deprecated(forRemoval = true)
     public void validateCategoryRequest(CreateCategoryRequest request) {
         if (request == null) {
             throw new IllegalArgumentException("요청 정보가 없습니다");
@@ -155,6 +158,7 @@ public class ArgumentValidatorImpl implements ArgumentValidator {
     }
 
     @Override
+    @Deprecated(forRemoval = true)
     public void validateCategoryRequest(UpdateCategoryRequest request) {
         if (request == null) {
             throw new IllegalArgumentException("요청 정보가 없습니다");

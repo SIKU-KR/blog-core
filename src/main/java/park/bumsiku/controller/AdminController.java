@@ -31,25 +31,22 @@ public class AdminController implements AdminAPI {
     @Override
     @PostMapping("/categories")
     @LogExecutionTime
+    @Deprecated(forRemoval = true)
     public Response<CategoryResponse> createCategory(
             @RequestBody CreateCategoryRequest request
     ) {
-        validator.validateCategoryRequest(request);
-        CategoryResponse categoryResponse = service.createCategory(request);
-        return Response.success(categoryResponse);
+        throw new park.bumsiku.utils.exceptions.ResourceGoneException("Category API is deprecated and removed");
     }
 
     @Override
     @PutMapping("/categories/{id}")
     @LogExecutionTime
+    @Deprecated(forRemoval = true)
     public Response<CategoryResponse> updateCategory(
             @PathVariable Integer id,
             @RequestBody UpdateCategoryRequest request
     ) {
-        validator.validateCategoryId(id);
-        validator.validateCategoryRequest(request);
-        CategoryResponse categoryResponse = service.updateCategory(id, request);
-        return Response.success(categoryResponse);
+        throw new park.bumsiku.utils.exceptions.ResourceGoneException("Category API is deprecated and removed");
     }
 
     @Override

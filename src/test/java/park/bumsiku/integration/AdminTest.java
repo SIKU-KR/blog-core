@@ -277,25 +277,6 @@ public class AdminTest extends AbstractTestSupport {
                 .andExpect(jsonPath("$.error.message", containsString("요약은 1자 이상 200자 이하로 입력해주세요")));
     }
 
-    @Test
-    @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testAddPost_EmptyCategory() throws Exception {
-        // Prepare test data with empty category
-        CreatePostRequest request = CreatePostRequest.builder()
-                .title("New Test Post")
-                .content("This is content for the new test post")
-                .summary("Summary of the new test post")
-                .build();
-
-        // Perform request and verify
-        mockMvc.perform(post("/admin/posts")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.success", is(false)))
-                .andExpect(jsonPath("$.error.code", is(400)))
-                .andExpect(jsonPath("$.error.message", containsString("카테고리를 선택해주세요")));
-    }
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
@@ -685,28 +666,6 @@ public class AdminTest extends AbstractTestSupport {
                 .andExpect(jsonPath("$.error.message", containsString("요약은 1자 이상 200자 이하로 입력해주세요")));
     }
 
-    @Test
-    @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testUpdatePost_EmptyCategory() throws Exception {
-        // Get a valid post ID
-        int postId = posts.get(0).getId();
-
-        // Prepare test data with empty category
-        UpdatePostRequest request = UpdatePostRequest.builder()
-                .title("Updated Test Post")
-                .content("This is updated content for the test post")
-                .summary("Updated summary of the test post")
-                .build();
-
-        // Perform request and verify
-        mockMvc.perform(put("/admin/posts/" + postId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.success", is(false)))
-                .andExpect(jsonPath("$.error.code", is(400)))
-                .andExpect(jsonPath("$.error.message", containsString("카테고리를 선택해주세요")));
-    }
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
@@ -841,7 +800,7 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testAddCategory_Success() throws Exception {
+    public void testAddCategory_Gone() throws Exception {
         // Prepare test data for a new category
         CreateCategoryRequest request = CreateCategoryRequest.builder()
                 .name("New Test Category")
@@ -853,17 +812,14 @@ public class AdminTest extends AbstractTestSupport {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.data.id", notNullValue()))
-                .andExpect(jsonPath("$.data.name", is("New Test Category")))
-                .andExpect(jsonPath("$.data.order", is(3)))
-                .andExpect(jsonPath("$.data.createdAt", notNullValue()));
+                .andExpect(status().isGone())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(410)));
     }
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testUpdateCategory_Success() throws Exception {
+    public void testUpdateCategory_Gone() throws Exception {
         // Get an existing category ID
         Integer categoryId = categories.get(0).getId();
 
@@ -878,41 +834,32 @@ public class AdminTest extends AbstractTestSupport {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.data.id", is(categoryId)))
-                .andExpect(jsonPath("$.data.name", is("Updated Category Name")))
-                .andExpect(jsonPath("$.data.order", is(10)))
-                .andExpect(jsonPath("$.data.createdAt", notNullValue()));
-
-        // Verify the category was actually updated
-        Category updatedCategory = categoryRepository.findById(categoryId);
-        assert updatedCategory != null;
-        assert updatedCategory.getName().equals("Updated Category Name");
-        assert updatedCategory.getOrdernum() == 10;
-    }
-
-    @Test
-    @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testUpdateCategory_EmptyName() throws Exception {
-        // Get an existing category ID
-        Integer categoryId = categories.get(0).getId();
-
-        // Prepare test data with empty name
-        UpdateCategoryRequest request = UpdateCategoryRequest.builder()
-                .name("")
-                .orderNum(10)
-                .build();
-
-        // Perform request and verify
-        mockMvc.perform(put("/admin/categories/" + categoryId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isGone())
                 .andExpect(jsonPath("$.success", is(false)))
-                .andExpect(jsonPath("$.error.code", is(400)))
-                .andExpect(jsonPath("$.error.message", containsString("카테고리를 선택해주세요")));
+                .andExpect(jsonPath("$.error.code", is(410)));
     }
+
+//    @Test
+//    @WithMockUser(username = "admin", roles = {"ADMIN"})
+//    public void testUpdateCategory_EmptyName() throws Exception {
+//        // Get an existing category ID
+//        Integer categoryId = categories.get(0).getId();
+//
+//        // Prepare test data with empty name
+//        UpdateCategoryRequest request = UpdateCategoryRequest.builder()
+//                .name("")
+//                .orderNum(10)
+//                .build();
+//
+//        // Perform request and verify
+//        mockMvc.perform(put("/admin/categories/" + categoryId)
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(objectMapper.writeValueAsString(request)))
+//                .andExpect(status().isBadRequest())
+//                .andExpect(jsonPath("$.success", is(false)))
+//                .andExpect(jsonPath("$.error.code", is(400)))
+//                .andExpect(jsonPath("$.error.message", containsString("카테고리를 선택해주세요")));
+//    }
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
@@ -927,34 +874,11 @@ public class AdminTest extends AbstractTestSupport {
         mockMvc.perform(put("/admin/categories/" + categoryId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isGone())
                 .andExpect(jsonPath("$.success", is(false)))
-                .andExpect(jsonPath("$.error.code", is(400)))
-                .andExpect(jsonPath("$.error.message", containsString("Order cannot be null")));
+                .andExpect(jsonPath("$.error.code", is(410)));
     }
 
-    @Test
-    @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testUpdateCategory_ZeroId() throws Exception {
-        // Use an ID of 0, which should be rejected by the validator
-        Integer invalidId = 0;
-
-        // Prepare test data
-        UpdateCategoryRequest request = UpdateCategoryRequest.builder()
-                .name("Test Category")
-                .orderNum(10)
-                .build();
-
-        // Perform request and verify
-        mockMvc.perform(put("/admin/categories/" + invalidId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.success", is(false)))
-                .andExpect(jsonPath("$.error.code", is(400)))
-                .andExpect(jsonPath("$.error.message", containsString("카테고리를 선택해주세요")));
-    }
 
     @Test
     public void testUpdateCategory_Unauthorized() throws Exception {
@@ -990,10 +914,9 @@ public class AdminTest extends AbstractTestSupport {
         mockMvc.perform(put("/admin/categories/" + nonExistentId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isNotFound())
+                .andExpect(status().isGone())
                 .andExpect(jsonPath("$.success", is(false)))
-                .andExpect(jsonPath("$.error.code", is(404)))
-                .andExpect(jsonPath("$.error.message", containsString("Category not found")));
+                .andExpect(jsonPath("$.error.code", is(410)));
     }
 
     @Test

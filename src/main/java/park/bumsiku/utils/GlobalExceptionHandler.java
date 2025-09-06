@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import park.bumsiku.domain.dto.response.Response;
+import park.bumsiku.utils.exceptions.ResourceGoneException;
 import park.bumsiku.utils.integration.DiscordWebhookCreator;
 
 import java.util.NoSuchElementException;
@@ -93,5 +94,10 @@ public class GlobalExceptionHandler {
         discord.sendMessage("Unhandled exception occurred: " + e.getMessage() + "\n" + partialTrace + "\n" + requestTrace);
 
         return handleErrorException(e, partialTrace.toString());
+    }
+
+    @ExceptionHandler(ResourceGoneException.class)
+    public ResponseEntity<Response<Void>> handleResourceGone(ResourceGoneException e) {
+        return handleException("Resource gone: {}", e, HttpStatus.GONE, null, "Resource Gone");
     }
 }

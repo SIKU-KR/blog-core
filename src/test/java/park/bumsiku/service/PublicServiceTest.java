@@ -26,6 +26,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@Deprecated(forRemoval = true)
 @ExtendWith(MockitoExtension.class)
 public class PublicServiceTest {
 

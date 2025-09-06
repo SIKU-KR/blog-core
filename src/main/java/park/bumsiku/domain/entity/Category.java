@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
+@Deprecated(forRemoval = true)
 @Entity
 @Table(name = "categories")
 @Getter

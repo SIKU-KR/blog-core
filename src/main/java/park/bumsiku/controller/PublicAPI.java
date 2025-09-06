@@ -123,6 +123,7 @@ public interface PublicAPI {
             )
     )
     @ApiResponse(responseCode = "500", description = "서버 오류")
+    @Deprecated(forRemoval = true)
     @GetMapping("/categories")
     Response<List<CategoryResponse>> getCategories();
 
