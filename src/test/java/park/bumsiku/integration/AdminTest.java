@@ -277,7 +277,6 @@ public class AdminTest extends AbstractTestSupport {
                 .andExpect(jsonPath("$.error.message", containsString("요약은 1자 이상 200자 이하로 입력해주세요")));
     }
 
-    
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
@@ -667,7 +666,6 @@ public class AdminTest extends AbstractTestSupport {
                 .andExpect(jsonPath("$.error.message", containsString("요약은 1자 이상 200자 이하로 입력해주세요")));
     }
 
-    
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
@@ -802,7 +800,7 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testAddCategory_Success() throws Exception {
+    public void testAddCategory_Gone() throws Exception {
         // Prepare test data for a new category
         CreateCategoryRequest request = CreateCategoryRequest.builder()
                 .name("New Test Category")
@@ -814,17 +812,14 @@ public class AdminTest extends AbstractTestSupport {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.data.id", notNullValue()))
-                .andExpect(jsonPath("$.data.name", is("New Test Category")))
-                .andExpect(jsonPath("$.data.order", is(3)))
-                .andExpect(jsonPath("$.data.createdAt", notNullValue()));
+                .andExpect(status().isGone())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(410)));
     }
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testUpdateCategory_Success() throws Exception {
+    public void testUpdateCategory_Gone() throws Exception {
         // Get an existing category ID
         Integer categoryId = categories.get(0).getId();
 
@@ -839,18 +834,9 @@ public class AdminTest extends AbstractTestSupport {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.data.id", is(categoryId)))
-                .andExpect(jsonPath("$.data.name", is("Updated Category Name")))
-                .andExpect(jsonPath("$.data.order", is(10)))
-                .andExpect(jsonPath("$.data.createdAt", notNullValue()));
-
-        // Verify the category was actually updated
-        Category updatedCategory = categoryRepository.findById(categoryId);
-        assert updatedCategory != null;
-        assert updatedCategory.getName().equals("Updated Category Name");
-        assert updatedCategory.getOrdernum() == 10;
+                .andExpect(status().isGone())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(410)));
     }
 
 //    @Test
@@ -888,13 +874,11 @@ public class AdminTest extends AbstractTestSupport {
         mockMvc.perform(put("/admin/categories/" + categoryId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isGone())
                 .andExpect(jsonPath("$.success", is(false)))
-                .andExpect(jsonPath("$.error.code", is(400)))
-                .andExpect(jsonPath("$.error.message", containsString("Order cannot be null")));
+                .andExpect(jsonPath("$.error.code", is(410)));
     }
 
-    
 
     @Test
     public void testUpdateCategory_Unauthorized() throws Exception {
@@ -930,10 +914,9 @@ public class AdminTest extends AbstractTestSupport {
         mockMvc.perform(put("/admin/categories/" + nonExistentId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isNotFound())
+                .andExpect(status().isGone())
                 .andExpect(jsonPath("$.success", is(false)))
-                .andExpect(jsonPath("$.error.code", is(404)))
-                .andExpect(jsonPath("$.error.message", containsString("Category not found")));
+                .andExpect(jsonPath("$.error.code", is(410)));
     }
 
     @Test

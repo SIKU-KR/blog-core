@@ -36,6 +36,7 @@ public class Post {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "category_id")
+    @Deprecated(forRemoval = true)
     private Category category;
 
     @Column(nullable = false)

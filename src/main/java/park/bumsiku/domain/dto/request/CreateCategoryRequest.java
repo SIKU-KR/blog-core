@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@Deprecated(forRemoval = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

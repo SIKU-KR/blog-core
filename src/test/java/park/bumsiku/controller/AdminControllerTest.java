@@ -78,10 +78,9 @@ public class AdminControllerTest {
         mockMvc.perform(post("/admin/categories")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.data.id", is(1)))
-                .andExpect(jsonPath("$.data.name", is("New Category")));
+                .andExpect(status().isGone())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(410)));
     }
 
     @Test
@@ -108,10 +107,9 @@ public class AdminControllerTest {
         mockMvc.perform(put("/admin/categories/" + categoryId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.data.id", is(1)))
-                .andExpect(jsonPath("$.data.name", is("Updated Category")));
+                .andExpect(status().isGone())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(410)));
     }
 
     @Test
@@ -280,10 +278,9 @@ public class AdminControllerTest {
         mockMvc.perform(put("/admin/categories/" + categoryId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isGone())
                 .andExpect(jsonPath("$.success", is(false)))
-                .andExpect(jsonPath("$.error.code", is(400)))
-                .andExpect(jsonPath("$.error.message", containsString("카테고리 이름은 필수입니다")));
+                .andExpect(jsonPath("$.error.code", is(410)));
     }
 
     @Test
@@ -442,9 +439,9 @@ public class AdminControllerTest {
         mockMvc.perform(put("/admin/categories/" + categoryId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isInternalServerError())
+                .andExpect(status().isGone())
                 .andExpect(jsonPath("$.success", is(false)))
-                .andExpect(jsonPath("$.error.code", is(500)));
+                .andExpect(jsonPath("$.error.code", is(410)));
     }
 
     @Test

@@ -265,7 +265,7 @@ public class PublicControllerTest {
     }
 
     @Test
-    public void testGetCategories_Success() throws Exception {
+    public void testGetCategories_Gone() throws Exception {
         // Prepare test data
         CategoryResponse category1 = CategoryResponse.builder()
                 .id(1)
@@ -285,18 +285,11 @@ public class PublicControllerTest {
 
         List<CategoryResponse> categories = Arrays.asList(category1, category2);
 
-        // Mock service response
-        when(publicService.getCategories()).thenReturn(categories);
-
-        // Perform request and verify
+        // Perform request and verify: endpoint deprecated
         mockMvc.perform(get("/categories"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.data", hasSize(2)))
-                .andExpect(jsonPath("$.data[0].name", is("Category 1")))
-                .andExpect(jsonPath("$.data[0].postCount", is(5)))
-                .andExpect(jsonPath("$.data[1].name", is("Category 2")))
-                .andExpect(jsonPath("$.data[1].postCount", is(3)));
+                .andExpect(status().isGone())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(410)));
     }
 
     // Additional tests for missing HTTP status codes
@@ -367,14 +360,10 @@ public class PublicControllerTest {
 
     @Test
     public void testGetCategories_ServerError() throws Exception {
-        // Mock service to throw runtime exception
-        when(publicService.getCategories())
-                .thenThrow(new RuntimeException("서버 내부 오류"));
-
-        // Perform request and verify
+        // Even if service would throw, endpoint returns 410 Gone
         mockMvc.perform(get("/categories"))
-                .andExpect(status().isInternalServerError())
+                .andExpect(status().isGone())
                 .andExpect(jsonPath("$.success", is(false)))
-                .andExpect(jsonPath("$.error.code", is(500)));
+                .andExpect(jsonPath("$.error.code", is(410)));
     }
 }

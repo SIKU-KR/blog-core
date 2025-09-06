@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+@Deprecated(forRemoval = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

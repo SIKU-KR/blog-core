@@ -47,6 +47,7 @@ public class PublicService {
     }
 
     @LogExecutionTime
+    @Deprecated(forRemoval = true)
     public PostListResponse getPostList(int categoryId, int page, int size, String sort) {
         SortCriteria sortCriteria = postSortBuilder.buildSortCriteria(sort);
         List<Post> posts = postRepository.findAllByCategoryId(categoryId, page, size, sortCriteria.jpqlOrderClause());
@@ -88,6 +89,7 @@ public class PublicService {
     }
 
     @LogExecutionTime
+    @Deprecated(forRemoval = true)
     public List<CategoryResponse> getCategories() {
         List<Category> categories = categoryRepository.findAll();
 
@@ -154,7 +156,7 @@ public class PublicService {
         List<String> tagNames = post.getTags().stream()
                 .map(Tag::getName)
                 .collect(Collectors.toList());
-        
+
         return PostResponse.builder()
                 .id(post.getId())
                 .title(post.getTitle())

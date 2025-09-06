@@ -7,7 +7,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.mock.web.MockMultipartFile;
 import park.bumsiku.config.AbstractTestSupport;
 import park.bumsiku.config.MethodValidationTestConfig;
-import park.bumsiku.domain.dto.request.*;
+import park.bumsiku.domain.dto.request.CommentRequest;
+import park.bumsiku.domain.dto.request.CreatePostRequest;
+import park.bumsiku.domain.dto.request.UpdatePostRequest;
 import park.bumsiku.utils.validation.ArgumentValidator;
 import park.bumsiku.utils.validation.ArgumentValidatorImpl;
 
@@ -46,7 +48,6 @@ public class ArgumentValidatorImplTest extends AbstractTestSupport {
         assertThrows(IllegalArgumentException.class, () -> validator.validateCommentId(null));
     }
 
-    
 
     @Test
     void testValidatePagination() {

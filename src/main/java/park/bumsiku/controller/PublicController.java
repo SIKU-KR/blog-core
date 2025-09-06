@@ -95,11 +95,9 @@ public class PublicController implements PublicAPI {
     @Override
     @GetMapping("/categories")
     @LogExecutionTime
+    @Deprecated(forRemoval = true)
     public Response<List<CategoryResponse>> getCategories() {
-
-        List<CategoryResponse> result = service.getCategories();
-
-        return Response.success(result);
+        throw new park.bumsiku.utils.exceptions.ResourceGoneException("Category API is deprecated and removed");
     }
 
     @Override

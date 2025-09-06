@@ -457,23 +457,13 @@ public class PublicTest extends AbstractTestSupport {
     }
 
     @Test
-    public void testGetCategoriesSuccess() throws Exception {
+    public void testGetCategoriesGone() throws Exception {
         mockMvc.perform(get("/categories")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.data", hasSize(2)))
-                .andExpect(jsonPath("$.data[0].id", is(categories.get(0).getId())))
-                .andExpect(jsonPath("$.data[0].name", is("Technology")))
-                .andExpect(jsonPath("$.data[0].order", is(1)))
-                .andExpect(jsonPath("$.data[0].createdAt", notNullValue()))
-                .andExpect(jsonPath("$.data[0].postCount", is(8)))
-                .andExpect(jsonPath("$.data[1].id", is(categories.get(1).getId())))
-                .andExpect(jsonPath("$.data[1].name", is("Travel")))
-                .andExpect(jsonPath("$.data[1].order", is(2)))
-                .andExpect(jsonPath("$.data[1].createdAt", notNullValue()))
-                .andExpect(jsonPath("$.data[1].postCount", is(7)));
+                .andExpect(status().isGone())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error.code", is(410)));
     }
 
     @Test

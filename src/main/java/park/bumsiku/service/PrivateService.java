@@ -43,6 +43,7 @@ public class PrivateService {
     private TagService tagService;
 
     @LogExecutionTime
+    @Deprecated(forRemoval = true)
     public CategoryResponse createCategory(CreateCategoryRequest request) {
         Category category = new Category();
         category.setName(request.getName());
@@ -59,6 +60,7 @@ public class PrivateService {
     }
 
     @LogExecutionTime
+    @Deprecated(forRemoval = true)
     public CategoryResponse updateCategory(Integer id, UpdateCategoryRequest request) {
         Category existingCategory = categoryRepository.findById(id);
 
