@@ -35,10 +35,6 @@ public class PostRepository {
         return entityManager.find(Post.class, id);
     }
 
-    public List<Post> findAll(int page, int size) {
-        return findAll(page, size, "ORDER BY p.createdAt DESC");
-    }
-
     public List<Post> findAll(int page, int size, String orderByClause) {
         String jpql = "SELECT p FROM Post p " + orderByClause;
         TypedQuery<Post> query = entityManager.createQuery(jpql, Post.class);
@@ -54,10 +50,6 @@ public class PostRepository {
         return query.getSingleResult().intValue();
     }
 
-
-    public List<Post> findAllByTagName(String tagName, int page, int size) {
-        return findAllByTagName(tagName, page, size, "ORDER BY p.createdAt DESC");
-    }
 
     public List<Post> findAllByTagName(String tagName, int page, int size, String orderByClause) {
         String jpql = "SELECT p FROM Post p WHERE p.id IN (SELECT DISTINCT pt.id FROM Post pt JOIN pt.tags t WHERE t.name = :tagName) " + orderByClause;
