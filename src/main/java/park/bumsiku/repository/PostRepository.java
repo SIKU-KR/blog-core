@@ -66,4 +66,11 @@ public class PostRepository {
         query.setParameter("tagName", tagName);
         return query.getSingleResult().intValue();
     }
+
+    public List<String> findRecentSummaries(int count) {
+        String jpql = "SELECT p.summary FROM Post p ORDER BY p.createdAt DESC";
+        TypedQuery<String> query = entityManager.createQuery(jpql, String.class);
+        query.setMaxResults(count);
+        return query.getResultList();
+    }
 }
