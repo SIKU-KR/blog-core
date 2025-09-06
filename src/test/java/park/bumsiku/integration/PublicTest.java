@@ -6,10 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import park.bumsiku.config.AbstractTestSupport;
-import park.bumsiku.domain.entity.Category;
 import park.bumsiku.domain.entity.Comment;
 import park.bumsiku.domain.entity.Post;
-import park.bumsiku.repository.CategoryRepository;
 import park.bumsiku.repository.CommentRepository;
 import park.bumsiku.repository.PostRepository;
 
@@ -20,18 +18,14 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Transactional
 public class PublicTest extends AbstractTestSupport {
 
-    private final List<Category> categories = new ArrayList<>();
     private final List<Post> posts = new ArrayList<>();
     private final List<Comment> comments = new ArrayList<>();
-    @Autowired
-    private CategoryRepository categoryRepository;
     @Autowired
     private PostRepository postRepository;
     @Autowired
@@ -40,33 +34,16 @@ public class PublicTest extends AbstractTestSupport {
     @BeforeEach
     public void setup() {
         // Clear existing data
-        categories.clear();
         posts.clear();
         comments.clear();
 
         // Create test data
-        createTestCategories();
         createTestPosts();
         createTestComments();
     }
 
-    private void createTestCategories() {
-        Category category1 = Category.builder()
-                .name("Technology")
-                .ordernum(1)
-                .build();
-        Category category2 = Category.builder()
-                .name("Travel")
-                .ordernum(2)
-                .build();
-
-        categories.add(categoryRepository.insert(category1));
-        categories.add(categoryRepository.insert(category2));
-    }
-
     private void createTestPosts() {
         for (int i = 0; i < 15; i++) {
-            Category category = categories.get(i % 2);
             // 조회수를 다양하게 설정 (인덱스가 높을수록 조회수도 높게)
             Long views = (long) ((i + 1) * 10);
             Post post = Post.builder()
@@ -74,7 +51,6 @@ public class PublicTest extends AbstractTestSupport {
                     .content("This is test content for post " + (i + 1))
                     .summary("Summary of test post " + (i + 1))
                     .state("published")
-                    .category(category)
                     .createdAt(LocalDateTime.now().minusDays(15 - i))
                     .updatedAt(LocalDateTime.now().minusDays(15 - i))
                     .views(views)
@@ -135,17 +111,6 @@ public class PublicTest extends AbstractTestSupport {
                 .andExpect(jsonPath("$.data.totalElements", is(15)));
     }
 
-    @Test
-    public void testGetPostsFilteredByCategory() throws Exception {
-        Integer categoryId = categories.get(0).getId();
-        mockMvc.perform(get("/posts")
-                        .param("category", categoryId.toString())
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.data.content[0].title", startsWith("Test Post")))
-                .andExpect(jsonPath("$.data.totalElements", lessThan(15)));
-    }
 
     @Test
     public void testGetPostsWithNegativePageNumber() throws Exception {
@@ -169,16 +134,6 @@ public class PublicTest extends AbstractTestSupport {
                 .andExpect(jsonPath("$.error.message", containsString("페이지 크기는 1 이상이어야 합니다")));
     }
 
-    @Test
-    public void testGetPostsWithInvalidCategoryId() throws Exception {
-        int nonExistentCategoryId = 9999;
-        mockMvc.perform(get("/posts")
-                        .param("category", String.valueOf(nonExistentCategoryId))
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.data.content", hasSize(0)));
-    }
 
     @Test
     public void testGetPostByIdSuccess() throws Exception {
@@ -456,15 +411,6 @@ public class PublicTest extends AbstractTestSupport {
                 .andExpect(status().isBadRequest());
     }
 
-    @Test
-    public void testGetCategoriesGone() throws Exception {
-        mockMvc.perform(get("/categories")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isGone())
-                .andExpect(jsonPath("$.success", is(false)))
-                .andExpect(jsonPath("$.error.code", is(410)));
-    }
 
     @Test
     public void testIncrementPostViewsSuccess() throws Exception {
@@ -580,18 +526,6 @@ public class PublicTest extends AbstractTestSupport {
                 .andExpect(jsonPath("$.data.content[2].title", is("Test Post 13")));
     }
 
-    @Test
-    public void testGetPostsByCategoryWithViewsSort() throws Exception {
-        Integer categoryId = categories.get(0).getId();
-        mockMvc.perform(get("/posts")
-                        .param("category", categoryId.toString())
-                        .param("sort", "views,desc")
-                        .param("size", "3")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success", is(true)))
-        ;
-    }
 
     @Test
     public void testGetPostsWithInvalidSort() throws Exception {

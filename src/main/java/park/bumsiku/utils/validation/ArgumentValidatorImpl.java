@@ -2,7 +2,9 @@ package park.bumsiku.utils.validation;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
-import park.bumsiku.domain.dto.request.*;
+import park.bumsiku.domain.dto.request.CommentRequest;
+import park.bumsiku.domain.dto.request.CreatePostRequest;
+import park.bumsiku.domain.dto.request.UpdatePostRequest;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -43,12 +45,6 @@ public class ArgumentValidatorImpl implements ArgumentValidator {
         }
     }
 
-    @Deprecated(forRemoval = true)
-    private void validateCategory(String category) {
-//        if (category == null || category.isBlank()) {
-//            throw new IllegalArgumentException("카테고리를 선택해주세요");
-//        }
-    }
 
     private void validateCommentContent(String content) {
         if (content == null || content.isBlank()) {
@@ -68,19 +64,6 @@ public class ArgumentValidatorImpl implements ArgumentValidator {
         }
     }
 
-    @Override
-    @Deprecated(forRemoval = true)
-    public void validateCategoryId(Integer id) {
-//        if (id == null || id == 0) {
-//            throw new IllegalArgumentException("카테고리를 선택해주세요");
-//        }
-    }
-
-    private void validateCategoryOrder(Integer order) {
-        if (order == null) {
-            throw new IllegalArgumentException("Order cannot be null");
-        }
-    }
 
     private void validatePage(int page) {
         if (page < 0) {
@@ -125,7 +108,7 @@ public class ArgumentValidatorImpl implements ArgumentValidator {
         validateTitle(request.getTitle());
         validateContent(request.getContent());
         validateSummary(request.getSummary());
-        validateCategoryId(request.getCategory());
+
     }
 
     @Override
@@ -136,7 +119,7 @@ public class ArgumentValidatorImpl implements ArgumentValidator {
         validateTitle(request.getTitle());
         validateContent(request.getContent());
         validateSummary(request.getSummary());
-        validateCategoryId(request.getCategory());
+
     }
 
     private void validateCommentRequest(CommentRequest request) {
@@ -147,25 +130,6 @@ public class ArgumentValidatorImpl implements ArgumentValidator {
         validateCommentAuthor(request.getAuthor());
     }
 
-    @Override
-    @Deprecated(forRemoval = true)
-    public void validateCategoryRequest(CreateCategoryRequest request) {
-        if (request == null) {
-            throw new IllegalArgumentException("요청 정보가 없습니다");
-        }
-        validateCategory(request.getName());
-        validateCategoryOrder(request.getOrderNum());
-    }
-
-    @Override
-    @Deprecated(forRemoval = true)
-    public void validateCategoryRequest(UpdateCategoryRequest request) {
-        if (request == null) {
-            throw new IllegalArgumentException("요청 정보가 없습니다");
-        }
-        validateCategory(request.getName());
-        validateCategoryOrder(request.getOrderNum());
-    }
 
     @Override
     public void validatePagination(int page, int size) {

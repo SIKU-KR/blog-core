@@ -6,11 +6,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import park.bumsiku.domain.dto.request.CommentRequest;
 import park.bumsiku.domain.dto.response.*;
-import park.bumsiku.domain.entity.Category;
 import park.bumsiku.domain.entity.Comment;
 import park.bumsiku.domain.entity.Post;
 import park.bumsiku.domain.entity.Tag;
-import park.bumsiku.repository.CategoryRepository;
 import park.bumsiku.repository.CommentRepository;
 import park.bumsiku.repository.PostRepository;
 import park.bumsiku.repository.TagRepository;
@@ -31,7 +29,6 @@ public class PublicService {
 
     private PostRepository postRepository;
     private CommentRepository commentRepository;
-    private CategoryRepository categoryRepository;
     private TagRepository tagRepository;
     private PostSortBuilder postSortBuilder;
 
@@ -46,15 +43,6 @@ public class PublicService {
         return buildPostListResponse(posts, totalElements, page, size);
     }
 
-    @LogExecutionTime
-    @Deprecated(forRemoval = true)
-    public PostListResponse getPostList(int categoryId, int page, int size, String sort) {
-        SortCriteria sortCriteria = postSortBuilder.buildSortCriteria(sort);
-        List<Post> posts = postRepository.findAllByCategoryId(categoryId, page, size, sortCriteria.jpqlOrderClause());
-        int totalElements = postRepository.countByCategoryId(categoryId);
-
-        return buildPostListResponse(posts, totalElements, page, size);
-    }
 
     @LogExecutionTime
     public PostResponse getPostById(int id) {
@@ -88,24 +76,6 @@ public class PublicService {
         return buildCommentResponse(saved);
     }
 
-    @LogExecutionTime
-    @Deprecated(forRemoval = true)
-    public List<CategoryResponse> getCategories() {
-        List<Category> categories = categoryRepository.findAll();
-
-        return categories.stream()
-                .map(cat -> {
-                    int postCount = postRepository.countByCategoryId(cat.getId());
-                    return CategoryResponse.builder()
-                            .id(cat.getId())
-                            .name(cat.getName())
-                            .order(cat.getOrdernum())
-                            .createdAt(cat.getCreatedAt())
-                            .postCount(postCount)
-                            .build();
-                })
-                .collect(Collectors.toList());
-    }
 
     @LogExecutionTime
     public List<TagResponse> getAllActiveTagsWithPosts() {
@@ -162,7 +132,6 @@ public class PublicService {
                 .title(post.getTitle())
                 .content(post.getContent())
                 .summary(post.getSummary())
-                .categoryId(post.getCategory() != null ? post.getCategory().getId() : null)
                 .tags(tagNames)
                 .views(post.getViews())
                 .createdAt(post.getCreatedAt().toString())

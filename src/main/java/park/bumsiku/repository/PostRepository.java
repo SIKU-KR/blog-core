@@ -47,18 +47,6 @@ public class PostRepository {
         return query.getResultList();
     }
 
-    public List<Post> findAllByCategoryId(int categoryId, int page, int size) {
-        return findAllByCategoryId(categoryId, page, size, "ORDER BY p.createdAt DESC");
-    }
-
-    public List<Post> findAllByCategoryId(int categoryId, int page, int size, String orderByClause) {
-        String jpql = "SELECT p FROM Post p WHERE p.category.id = :categoryId " + orderByClause;
-        TypedQuery<Post> query = entityManager.createQuery(jpql, Post.class);
-        query.setParameter("categoryId", categoryId);
-        query.setFirstResult(page * size);
-        query.setMaxResults(size);
-        return query.getResultList();
-    }
 
     public int countAll() {
         String jpql = "SELECT COUNT(p) FROM Post p";
@@ -66,12 +54,6 @@ public class PostRepository {
         return query.getSingleResult().intValue();
     }
 
-    public int countByCategoryId(int categoryId) {
-        String jpql = "SELECT COUNT(p) FROM Post p WHERE p.category.id = :categoryId";
-        TypedQuery<Long> query = entityManager.createQuery(jpql, Long.class);
-        query.setParameter("categoryId", categoryId);
-        return query.getSingleResult().intValue();
-    }
 
     public List<Post> findAllByTagName(String tagName, int page, int size) {
         return findAllByTagName(tagName, page, size, "ORDER BY p.createdAt DESC");

@@ -1,7 +1,9 @@
 package park.bumsiku.utils.validation;
 
 import org.springframework.web.multipart.MultipartFile;
-import park.bumsiku.domain.dto.request.*;
+import park.bumsiku.domain.dto.request.CommentRequest;
+import park.bumsiku.domain.dto.request.CreatePostRequest;
+import park.bumsiku.domain.dto.request.UpdatePostRequest;
 
 public interface ArgumentValidator {
 
@@ -9,7 +11,6 @@ public interface ArgumentValidator {
 
     void validateCommentId(String commentId);
 
-    void validateCategoryId(Integer id);
 
     void validatePagination(int page, int size);
 
@@ -17,9 +18,6 @@ public interface ArgumentValidator {
 
     void validatePostRequest(UpdatePostRequest request);
 
-    void validateCategoryRequest(CreateCategoryRequest request);
-
-    void validateCategoryRequest(UpdateCategoryRequest request);
 
     void validatePostIdAndCommentRequest(int postId, CommentRequest request);
 

@@ -10,21 +10,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 import park.bumsiku.domain.dto.request.CreatePostRequest;
-import park.bumsiku.domain.dto.request.UpdateCategoryRequest;
 import park.bumsiku.domain.dto.request.UpdatePostRequest;
 import park.bumsiku.domain.dto.response.PostResponse;
 import park.bumsiku.domain.dto.response.UploadImageResponse;
-import park.bumsiku.domain.entity.Category;
 import park.bumsiku.domain.entity.Comment;
 import park.bumsiku.domain.entity.Post;
-import park.bumsiku.repository.CategoryRepository;
 import park.bumsiku.repository.CommentRepository;
 import park.bumsiku.repository.ImageRepository;
 import park.bumsiku.repository.PostRepository;
 
 import java.io.InputStream;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -34,12 +30,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@Deprecated(forRemoval = true)
 @ExtendWith(MockitoExtension.class)
 public class PrivateServiceTest {
 
-    @Mock
-    private CategoryRepository categoryRepository;
 
     @Mock
     private CommentRepository commentRepository;
@@ -57,48 +50,34 @@ public class PrivateServiceTest {
     private PrivateService privateService;
 
     // Test data
-    private Category techCategory;
-    private Category lifeCategory;
     private LocalDateTime now;
 
     @BeforeEach
     void setUp() {
-        // Create test categories
         now = LocalDateTime.now();
-        techCategory = new Category(1, "Tech", 1, now);
-        lifeCategory = new Category(2, "Life", 2, now);
-        List<Category> categories = new ArrayList<>();
-        categories.add(techCategory);
-        categories.add(lifeCategory);
     }
 
     // Helper methods for creating test data
-    private Category createCategory(Integer id, String name, Integer orderNum) {
-        return new Category(id, name, orderNum, LocalDateTime.now());
-    }
-
-    private Post createPost(Integer id, String title, String content, String summary, Category category) {
+    private Post createPost(Integer id, String title, String content, String summary) {
         LocalDateTime now = LocalDateTime.now();
         return Post.builder()
                 .id(id)
                 .title(title)
                 .content(content)
                 .summary(summary)
-                .category(category)
                 .createdAt(now)
                 .updatedAt(now)
                 .state("published")
                 .build();
     }
 
-    private Post createPost(Integer id, String title, String content, String summary, Category category,
+    private Post createPost(Integer id, String title, String content, String summary,
                             LocalDateTime createdAt, LocalDateTime updatedAt) {
         return Post.builder()
                 .id(id)
                 .title(title)
                 .content(content)
                 .summary(summary)
-                .category(category)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .state("published")
@@ -123,39 +102,13 @@ public class PrivateServiceTest {
         assertEquals(post.getUpdatedAt().toString(), response.getUpdatedAt());
     }
 
-    private void verifyPostFields(Post post, Integer id, String title, String content, String summary, Category category) {
+    private void verifyPostFields(Post post, Integer id, String title, String content, String summary) {
         assertEquals(id, post.getId());
         assertEquals(title, post.getTitle());
         assertEquals(content, post.getContent());
         assertEquals(summary, post.getSummary());
-        assertEquals(category, post.getCategory());
     }
 
-    @Test
-    @DisplayName("updateCategory should insert or update category and return response")
-    void updateCategory_shouldInsertOrUpdateAndReturnResponse() {
-        // given
-        String updatedName = "Updated Tech";
-        UpdateCategoryRequest request = new UpdateCategoryRequest(updatedName, 3);
-
-        Category updatedCategory = new Category(techCategory.getId(), updatedName, 3, now);
-
-        // Mock repository behavior
-        when(categoryRepository.findById(techCategory.getId())).thenReturn(techCategory); // Mock findById to return the category
-        when(categoryRepository.update(any(Category.class))).thenReturn(updatedCategory); // Simulate successful update
-        // when
-        var result = privateService.updateCategory(techCategory.getId(), request);
-
-        // then
-        assertThat(result)
-                .isNotNull()
-                .extracting("id", "name", "order")
-                .containsExactly(
-                        techCategory.getId(),
-                        updatedName,
-                        3
-                );
-    }
 
     @Test
     @DisplayName("deleteComment should delete comment when comment exists")
@@ -167,7 +120,6 @@ public class PrivateServiceTest {
                 .title("Test Title")
                 .content("Test Content")
                 .summary("Test Summary")
-                .category(techCategory)
                 .state("published")
                 .build();
 
@@ -281,7 +233,6 @@ public class PrivateServiceTest {
                 .title("New Post")
                 .content("Content")
                 .summary("Summary")
-                .category(1)
                 .build();
 
         Post expectedPost = Post.builder()
@@ -289,7 +240,6 @@ public class PrivateServiceTest {
                 .title(request.getTitle())
                 .content(request.getContent())
                 .summary(request.getSummary())
-                .category(techCategory)
                 .createdAt(now)
                 .updatedAt(now)
                 .state("published")
@@ -297,7 +247,7 @@ public class PrivateServiceTest {
 
         // Mock repository behavior
         when(postRepository.insert(any(Post.class))).thenReturn(expectedPost);
-        when(categoryRepository.findById(techCategory.getId())).thenReturn(techCategory);
+
 
         // when
         PostResponse result = privateService.createPost(request);
@@ -327,7 +277,6 @@ public class PrivateServiceTest {
                 .title("Test Title")
                 .content("Test Content")
                 .summary("Test Summary")
-                .category(techCategory)
                 .state("published")
                 .build();
 
@@ -383,7 +332,6 @@ public class PrivateServiceTest {
                 .title("Original Title")
                 .content("Original Content")
                 .summary("Original Summary")
-                .category(techCategory)
                 .createdAt(now.minusHours(2))
                 .updatedAt(originalUpdatedAt)
                 .state("published")
@@ -394,7 +342,6 @@ public class PrivateServiceTest {
                 .title("Updated Title")
                 .content("Updated Content")
                 .summary("Updated Summary")
-                .category(lifeCategory.getId())
                 .build();
 
         // Create updated post
@@ -403,7 +350,6 @@ public class PrivateServiceTest {
                 .title(request.getTitle())
                 .content(request.getContent())
                 .summary(request.getSummary())
-                .category(lifeCategory)
                 .createdAt(post.getCreatedAt())
                 .updatedAt(now)
                 .state("published")
@@ -411,7 +357,7 @@ public class PrivateServiceTest {
 
         // Mock repository behavior
         when(postRepository.findById(postId)).thenReturn(post);
-        when(categoryRepository.findById(request.getCategory())).thenReturn(lifeCategory);
+
         doNothing().when(tagService).updatePostTags(any(Post.class), any());
         when(postRepository.update(any(Post.class))).thenReturn(updatedPost);
 
@@ -443,7 +389,6 @@ public class PrivateServiceTest {
                 .title("Updated Title")
                 .content("Updated Content")
                 .summary("Updated Summary")
-                .category(1)
                 .build();
 
         // Mock repository behavior

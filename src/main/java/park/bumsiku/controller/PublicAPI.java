@@ -39,7 +39,6 @@ public interface PublicAPI {
     @ApiResponse(responseCode = "400", description = "잘못된 요청 (페이지 또는 사이즈 파라미터 오류)")
     @GetMapping("/posts")
     Response<PostListResponse> getPosts(
-            @RequestParam(value = "category", required = false) Integer categoryId,
             @RequestParam(value = "tag", required = false) String tagName,
             @Parameter(description = "페이지 번호 (0부터 시작)")
             @RequestParam(defaultValue = "0") int page,
@@ -110,22 +109,6 @@ public interface PublicAPI {
             @RequestBody CommentRequest commentRequest
     );
 
-    @Operation(
-            summary = "카테고리 목록 조회",
-            description = "블로그에 등록된 모든 카테고리와 각 카테고리에 속한 게시글 수를 조회합니다."
-    )
-    @ApiResponse(
-            responseCode = "200",
-            description = "OK",
-            content = @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = Response.class)
-            )
-    )
-    @ApiResponse(responseCode = "500", description = "서버 오류")
-    @Deprecated(forRemoval = true)
-    @GetMapping("/categories")
-    Response<List<CategoryResponse>> getCategories();
 
     @Operation(
             summary = "게시글 조회수 증가",

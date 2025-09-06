@@ -68,7 +68,6 @@ public class ArgumentValidatorImplTest extends AbstractTestSupport {
                 .title("Valid Title")
                 .content("Valid content")
                 .summary("Valid summary")
-                .category(1)
                 .build();
         assertDoesNotThrow(() -> validator.validatePostRequest(validRequest));
 
@@ -80,7 +79,6 @@ public class ArgumentValidatorImplTest extends AbstractTestSupport {
                 .title("")
                 .content("Valid content")
                 .summary("Valid summary")
-                .category(1)
                 .build();
         assertThrows(IllegalArgumentException.class, () -> validator.validatePostRequest(invalidTitle));
 
@@ -89,7 +87,6 @@ public class ArgumentValidatorImplTest extends AbstractTestSupport {
                 .title("Valid Title")
                 .content("")
                 .summary("Valid summary")
-                .category(1)
                 .build();
         assertThrows(IllegalArgumentException.class, () -> validator.validatePostRequest(invalidContent));
 
@@ -98,7 +95,6 @@ public class ArgumentValidatorImplTest extends AbstractTestSupport {
                 .title("Valid Title")
                 .content("Valid content")
                 .summary("")
-                .category(1)
                 .build();
         assertThrows(IllegalArgumentException.class, () -> validator.validatePostRequest(invalidSummary));
 
@@ -118,7 +114,6 @@ public class ArgumentValidatorImplTest extends AbstractTestSupport {
                 .title("Valid Title")
                 .content("Valid content")
                 .summary("Valid summary")
-                .category(3)
                 .build();
         assertDoesNotThrow(() -> validator.validatePostRequest(validRequest));
 
@@ -193,7 +188,6 @@ public class ArgumentValidatorImplTest extends AbstractTestSupport {
                 .title("Valid Title")
                 .content("Valid content")
                 .summary("Valid summary")
-                .category(3)
                 .build();
         assertDoesNotThrow(() -> validator.validatePostIdAndPostRequest(1, validRequest));
 

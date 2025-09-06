@@ -1,6 +1,5 @@
 package park.bumsiku.integration;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,9 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import park.bumsiku.config.AbstractTestSupport;
 import park.bumsiku.domain.dto.request.CreatePostRequest;
 import park.bumsiku.domain.dto.request.UpdatePostRequest;
-import park.bumsiku.domain.entity.Category;
 import park.bumsiku.domain.entity.Post;
-import park.bumsiku.repository.CategoryRepository;
 import park.bumsiku.repository.PostRepository;
 import park.bumsiku.repository.TagRepository;
 
@@ -38,17 +35,8 @@ class AutoTagManagementTest extends AbstractTestSupport {
     private TagRepository tagRepository;
 
     @Autowired
-    private CategoryRepository categoryRepository;
-
-    @Autowired
     private PostRepository postRepository;
 
-    private Category testCategory;
-
-    @BeforeEach
-    void setUp() {
-        testCategory = categoryRepository.insert(new Category(null, "Tech", 1, null));
-    }
 
     @Test
     @DisplayName("POST /admin/posts - should auto-create tags and return post with tags")
@@ -58,7 +46,6 @@ class AutoTagManagementTest extends AbstractTestSupport {
                 .title("Test Post")
                 .content("Test content")
                 .summary("Test summary")
-                .category(testCategory.getId())
                 .tags(List.of("Spring", "Java", "TDD"))
                 .build();
 
@@ -86,7 +73,6 @@ class AutoTagManagementTest extends AbstractTestSupport {
                 .title("Original Post")
                 .content("Original content")
                 .summary("Original summary")
-                .category(testCategory)
                 .state("published")
                 .build();
         post = postRepository.insert(post);
@@ -96,7 +82,6 @@ class AutoTagManagementTest extends AbstractTestSupport {
                 .title("Test Post")
                 .content("Test content")
                 .summary("Test summary")
-                .category(testCategory.getId())
                 .tags(List.of("Spring", "Java", "TDD"))
                 .build();
 
@@ -110,7 +95,6 @@ class AutoTagManagementTest extends AbstractTestSupport {
                 .title("Updated Post")
                 .content("Updated content")
                 .summary("Updated summary")
-                .category(testCategory.getId())
                 .tags(List.of("Spring", "React")) // Java and TDD removed, React added
                 .build();
 
@@ -139,7 +123,6 @@ class AutoTagManagementTest extends AbstractTestSupport {
                 .title("Test Post")
                 .content("Test content")
                 .summary("Test summary")
-                .category(testCategory.getId())
                 .tags(List.of("Active", "InUse"))
                 .build();
 
@@ -166,7 +149,6 @@ class AutoTagManagementTest extends AbstractTestSupport {
                 .title("To Be Deleted")
                 .content("Content")
                 .summary("Summary")
-                .category(testCategory.getId())
                 .tags(List.of("UniqueTag1", "UniqueTag2"))
                 .build();
 
@@ -208,7 +190,6 @@ class AutoTagManagementTest extends AbstractTestSupport {
                 .title("Spring Post")
                 .content("Spring content")
                 .summary("Spring summary")
-                .category(testCategory.getId())
                 .tags(List.of("Spring", "Backend"))
                 .build();
 
@@ -216,7 +197,6 @@ class AutoTagManagementTest extends AbstractTestSupport {
                 .title("React Post")
                 .content("React content")
                 .summary("React summary")
-                .category(testCategory.getId())
                 .tags(List.of("React", "Frontend"))
                 .build();
 
