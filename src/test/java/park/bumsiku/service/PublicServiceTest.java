@@ -12,12 +12,14 @@ import park.bumsiku.domain.entity.Comment;
 import park.bumsiku.domain.entity.Post;
 import park.bumsiku.repository.CommentRepository;
 import park.bumsiku.repository.PostRepository;
+import park.bumsiku.repository.TagRepository;
 import park.bumsiku.utils.integration.DiscordWebhookCreator;
 import park.bumsiku.utils.sorting.SortCriteria;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -34,6 +36,9 @@ public class PublicServiceTest {
 
     @Mock
     private CommentRepository commentRepository;
+
+    @Mock
+    private TagRepository tagRepository;
 
 
     @Mock
@@ -268,6 +273,20 @@ public class PublicServiceTest {
         // then
         verify(postRepository).findAll(0, 5, "ORDER BY p.createdAt ASC");
         assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    public void throwTagNotFoundExceptionWhenTagDoesNotExistForGetPostsByTag() {
+        // given
+        String tagName = "unknown-tag";
+        when(tagRepository.findByName(tagName)).thenReturn(Optional.empty());
+
+        // then
+        assertThatThrownBy(() -> publicService.getPostsByTag(tagName, 0, 10, "createdAt,asc"))
+                .isInstanceOf(NoSuchElementException.class);
+
+        verify(postRepository, never()).findAllByTagName(anyString(), anyInt(), anyInt(), anyString());
+        verify(postRepository, never()).countByTagName(anyString());
     }
 
 
