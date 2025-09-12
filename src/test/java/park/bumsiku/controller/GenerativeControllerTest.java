@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.security.test.context.support.WithMockUser;
 import park.bumsiku.config.ClockConfig;
 import park.bumsiku.config.LoggingConfig;
 import park.bumsiku.config.SecurityConfig;
@@ -26,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = GptController.class)
 @Import({SecurityConfig.class, ClockConfig.class, LoggingConfig.class})
+@WithMockUser // secure /ai/** requires authentication
 class GenerativeControllerTest {
 
     @Autowired

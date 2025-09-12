@@ -4,6 +4,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import park.bumsiku.config.AbstractTestSupport;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -13,6 +14,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@WithMockUser // secure /ai/** requires authentication
 public class AiTest extends AbstractTestSupport {
 
     @Test
@@ -51,4 +53,3 @@ public class AiTest extends AbstractTestSupport {
                 .andExpect(jsonPath("$.error.message", notNullValue()));
     }
 }
-
