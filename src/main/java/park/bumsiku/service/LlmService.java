@@ -41,36 +41,46 @@ public class LlmService {
     }
 
     private SystemMessage getSystemMessageToSummarize() {
-        String msg = "당신은 주어진 한글 텍스트의 내용을 간결하게 요약하는 전문 요약가입니다.";
+        String msg = """
+                당신은 한국어 전문 요약가입니다.
+                목표: 사실 보존을 최우선으로 하되, 건조하지 않게 ‘부드러운 정보형’ 톤으로 요약합니다.
+                톤 가이드:
+                - 문장은 짧게, 구어체 한 끗는 허용하되 과한 감탄/수식은 금지
+                - 독자가 얻는 이점을 한 번은 직접적으로 언급
+                - 과장·추정 금지, 마케팅 문구 금지, 이모지 금지
+                형식:
+                - 2~3문장, 150자 이내
+                - 머리말/꼬리말/마크다운/따옴표 금지(요약문만 출력)
+                """;
         return new SystemMessage(msg);
     }
 
-    private UserMessage getUserMessageToSummarize(String summary, String text) {
+    private UserMessage getUserMessageToSummarize(String examples, String text) {
         String userMessageTemplate = """
-                ### 학습할 요약 예시 ###
+                [스타일 예시(참고용): 문체/압축만 참고, 내용 전이는 금지]
+                ----
                 {examples}
+                ----
                 
-                ---
+                [요약 지침]
+                1) 핵심 맥락 한 줄 후크 → 2) 변화/결과 → 3) 독자가 얻는 이점 순서 권장
+                2) 구체명사·수치·날짜는 보존. 군더더기는 제거.
+                3) 150자 초과 시 덜 중요한 수식·예시부터 걷어내세요.
                 
-                ### 실제 요약 작업 ###
-                위 예시들과 아래 지침을 참고하여 다음 텍스트를 요약해 주세요.
-                
-                **텍스트:**
+                [입력]
+                <<<
                 {text}
+                >>>
                 
-                **지침:**
-                - 가장 중요한 내용을 2-3개의 한글 문장으로 요약해 주세요.
-                - 전체 요약은 150자 이내로 작성해 주세요.
-                - 전문적이고 객관적인 톤을 유지해 주세요.
-                
-                **요약 결과:**
+                [출력]
+                - 요약문만 출력.
+                - 요약 부적합 시: '요약 불가: <이유>' 한 줄만.
                 """;
-
-        PromptTemplate promptTemplate = new PromptTemplate(userMessageTemplate);
-        return new UserMessage(promptTemplate.render(Map.of(
-                "examples", summary,
+        return new UserMessage(new PromptTemplate(userMessageTemplate).render(Map.of(
+                "examples", examples,
                 "text", text
         )));
     }
-
 }
+
+
