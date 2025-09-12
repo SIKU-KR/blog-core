@@ -32,20 +32,14 @@ public class PublicController implements PublicAPI {
     @GetMapping("/posts")
     @LogExecutionTime
     public Response<PostListResponse> getPosts(
-            @RequestParam(value = "category", required = false) Integer categoryId,
             @RequestParam(value = "tag", required = false) String tagName,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt,desc") String sort) {
         validator.validatePagination(page, size);
-        if (categoryId != null) {
-            validator.validateCategoryId(categoryId);
-        }
         PostListResponse result;
         if (tagName != null && !tagName.isBlank()) {
             result = service.getPostsByTag(tagName, page, size, sort);
-        } else if (categoryId != null) {
-            result = service.getPostList(categoryId, page, size, sort);
         } else {
             result = service.getPostList(page, size, sort);
         }
@@ -92,13 +86,6 @@ public class PublicController implements PublicAPI {
         return Response.success(result);
     }
 
-    @Override
-    @GetMapping("/categories")
-    @LogExecutionTime
-    @Deprecated(forRemoval = true)
-    public Response<List<CategoryResponse>> getCategories() {
-        throw new park.bumsiku.utils.exceptions.ResourceGoneException("Category API is deprecated and removed");
-    }
 
     @Override
     @PatchMapping("/posts/{postId}/views")

@@ -43,6 +43,7 @@ public class SecurityConfig {
                         .requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll()
                         .requestMatchers("/login").permitAll()
                         .requestMatchers("/admin/**").authenticated()
+                        .requestMatchers("/ai/**").authenticated()
                         .anyRequest().permitAll()
                 )
                 // 2) 인증 실패 시 401 응답

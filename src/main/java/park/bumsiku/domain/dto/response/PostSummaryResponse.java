@@ -19,23 +19,10 @@ public class PostSummaryResponse {
     private int id;
     private String title;
     private String summary;
-    private Integer categoryId;
     private List<String> tags;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Long views;
-
-    // JPQL Constructor Expression을 위한 생성자 (Repository에서만 사용)
-    public PostSummaryResponse(Integer id, String title, String summary, Integer categoryId,
-                               LocalDateTime createdAt, LocalDateTime updatedAt, Long views) {
-        this.id = id;
-        this.title = title;
-        this.summary = summary;
-        this.categoryId = categoryId;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.views = views;
-    }
 
     public static PostSummaryResponse from(Post post) {
         List<String> tagNames = post.getTags().stream()
@@ -46,7 +33,6 @@ public class PostSummaryResponse {
                 .id(post.getId())
                 .title(post.getTitle())
                 .summary(post.getSummary())
-                .categoryId(post.getCategory() != null ? post.getCategory().getId() : null)
                 .tags(tagNames)
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())

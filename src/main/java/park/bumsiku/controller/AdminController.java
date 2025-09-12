@@ -5,11 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import park.bumsiku.domain.dto.request.CreateCategoryRequest;
 import park.bumsiku.domain.dto.request.CreatePostRequest;
-import park.bumsiku.domain.dto.request.UpdateCategoryRequest;
 import park.bumsiku.domain.dto.request.UpdatePostRequest;
-import park.bumsiku.domain.dto.response.CategoryResponse;
 import park.bumsiku.domain.dto.response.PostResponse;
 import park.bumsiku.domain.dto.response.Response;
 import park.bumsiku.domain.dto.response.UploadImageResponse;
@@ -28,26 +25,6 @@ public class AdminController implements AdminAPI {
     private PrivateService service;
     private ArgumentValidator validator;
 
-    @Override
-    @PostMapping("/categories")
-    @LogExecutionTime
-    @Deprecated(forRemoval = true)
-    public Response<CategoryResponse> createCategory(
-            @RequestBody CreateCategoryRequest request
-    ) {
-        throw new park.bumsiku.utils.exceptions.ResourceGoneException("Category API is deprecated and removed");
-    }
-
-    @Override
-    @PutMapping("/categories/{id}")
-    @LogExecutionTime
-    @Deprecated(forRemoval = true)
-    public Response<CategoryResponse> updateCategory(
-            @PathVariable Integer id,
-            @RequestBody UpdateCategoryRequest request
-    ) {
-        throw new park.bumsiku.utils.exceptions.ResourceGoneException("Category API is deprecated and removed");
-    }
 
     @Override
     @DeleteMapping("/comments/{commentId}")

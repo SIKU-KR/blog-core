@@ -25,7 +25,5 @@ public class CreatePostRequest {
     @Size(min = 1, max = 200, message = "요약은 1자 이상 200자 이하로 입력해주세요")
     private String summary;
 
-    private Integer category;
-
     private List<String> tags;
 }

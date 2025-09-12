@@ -12,14 +12,15 @@ import park.bumsiku.config.ClockConfig;
 import park.bumsiku.config.LoggingConfig;
 import park.bumsiku.config.SecurityConfig;
 import park.bumsiku.domain.dto.request.CommentRequest;
-import park.bumsiku.domain.dto.response.*;
+import park.bumsiku.domain.dto.response.CommentResponse;
+import park.bumsiku.domain.dto.response.PostListResponse;
+import park.bumsiku.domain.dto.response.PostResponse;
+import park.bumsiku.domain.dto.response.PostSummaryResponse;
 import park.bumsiku.service.PublicService;
 import park.bumsiku.utils.integration.DiscordWebhookCreator;
 import park.bumsiku.utils.validation.ArgumentValidator;
 
-import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -97,38 +98,6 @@ public class PublicControllerTest {
                 .andExpect(jsonPath("$.data.content[1].title", is("Test Post 2")));
     }
 
-    @Test
-    public void testGetPosts_WithCategory_Success() throws Exception {
-        // Prepare test data
-        PostSummaryResponse post = PostSummaryResponse.builder()
-                .id(1)
-                .title("Test Post")
-                .summary("Summary")
-                .build();
-
-        List<PostSummaryResponse> posts = Collections.singletonList(post);
-        PostListResponse postListResponse = PostListResponse.builder()
-                .content(posts)
-                .totalElements(1)
-                .pageNumber(0)
-                .pageSize(10)
-                .build();
-
-        // Mock service response
-        when(publicService.getPostList(eq(1), anyInt(), anyInt(), anyString()))
-                .thenReturn(postListResponse);
-
-        // Perform request and verify
-        mockMvc.perform(get("/posts")
-                        .param("category", "1")
-                        .param("page", "0")
-                        .param("size", "10")
-                        .param("sort", "createdAt,desc"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.data.content", hasSize(1)))
-                .andExpect(jsonPath("$.data.content[0].title", is("Test Post")));
-    }
 
     @Test
     public void testGetPosts_InvalidPagination() throws Exception {
@@ -264,33 +233,6 @@ public class PublicControllerTest {
                 .andExpect(jsonPath("$.error.message", containsString("작성자 이름을 입력해주세요")));
     }
 
-    @Test
-    public void testGetCategories_Gone() throws Exception {
-        // Prepare test data
-        CategoryResponse category1 = CategoryResponse.builder()
-                .id(1)
-                .name("Category 1")
-                .order(1)
-                .createdAt(LocalDateTime.now())
-                .postCount(5)
-                .build();
-
-        CategoryResponse category2 = CategoryResponse.builder()
-                .id(2)
-                .name("Category 2")
-                .order(2)
-                .createdAt(LocalDateTime.now())
-                .postCount(3)
-                .build();
-
-        List<CategoryResponse> categories = Arrays.asList(category1, category2);
-
-        // Perform request and verify: endpoint deprecated
-        mockMvc.perform(get("/categories"))
-                .andExpect(status().isGone())
-                .andExpect(jsonPath("$.success", is(false)))
-                .andExpect(jsonPath("$.error.code", is(410)));
-    }
 
     // Additional tests for missing HTTP status codes
 
@@ -358,12 +300,5 @@ public class PublicControllerTest {
                 .andExpect(jsonPath("$.error.message", is("게시글을 찾을 수 없습니다")));
     }
 
-    @Test
-    public void testGetCategories_ServerError() throws Exception {
-        // Even if service would throw, endpoint returns 410 Gone
-        mockMvc.perform(get("/categories"))
-                .andExpect(status().isGone())
-                .andExpect(jsonPath("$.success", is(false)))
-                .andExpect(jsonPath("$.error.code", is(410)));
-    }
+
 }

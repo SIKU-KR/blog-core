@@ -13,18 +13,14 @@ import org.springframework.test.web.servlet.MockMvc;
 import park.bumsiku.config.ClockConfig;
 import park.bumsiku.config.LoggingConfig;
 import park.bumsiku.config.SecurityConfig;
-import park.bumsiku.domain.dto.request.CreateCategoryRequest;
 import park.bumsiku.domain.dto.request.CreatePostRequest;
-import park.bumsiku.domain.dto.request.UpdateCategoryRequest;
 import park.bumsiku.domain.dto.request.UpdatePostRequest;
-import park.bumsiku.domain.dto.response.CategoryResponse;
 import park.bumsiku.domain.dto.response.PostResponse;
 import park.bumsiku.domain.dto.response.UploadImageResponse;
 import park.bumsiku.service.PrivateService;
 import park.bumsiku.utils.integration.DiscordWebhookCreator;
 import park.bumsiku.utils.validation.ArgumentValidator;
 
-import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 
 import static org.hamcrest.Matchers.containsString;
@@ -55,62 +51,6 @@ public class AdminControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Test
-    @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testCreateCategory_Success() throws Exception {
-        // Prepare test data
-        CreateCategoryRequest request = CreateCategoryRequest.builder()
-                .name("New Category")
-                .orderNum(1)
-                .build();
-
-        CategoryResponse response = CategoryResponse.builder()
-                .id(1)
-                .name("New Category")
-                .order(1)
-                .createdAt(LocalDateTime.now())
-                .build();
-
-        // Mock service response
-        when(privateService.createCategory(any(CreateCategoryRequest.class))).thenReturn(response);
-
-        // Perform request and verify
-        mockMvc.perform(post("/admin/categories")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isGone())
-                .andExpect(jsonPath("$.success", is(false)))
-                .andExpect(jsonPath("$.error.code", is(410)));
-    }
-
-    @Test
-    @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testUpdateCategory_Success() throws Exception {
-        // Prepare test data
-        Integer categoryId = 1;
-        UpdateCategoryRequest request = UpdateCategoryRequest.builder()
-                .name("Updated Category")
-                .orderNum(1)
-                .build();
-
-        CategoryResponse response = CategoryResponse.builder()
-                .id(1)
-                .name("Updated Category")
-                .order(1)
-                .createdAt(LocalDateTime.now())
-                .build();
-
-        // Mock service response
-        when(privateService.updateCategory(eq(categoryId), any(UpdateCategoryRequest.class))).thenReturn(response);
-
-        // Perform request and verify
-        mockMvc.perform(put("/admin/categories/" + categoryId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isGone())
-                .andExpect(jsonPath("$.success", is(false)))
-                .andExpect(jsonPath("$.error.code", is(410)));
-    }
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
@@ -158,7 +98,6 @@ public class AdminControllerTest {
                 .title("New Post")
                 .content("Post Content")
                 .summary("Post Summary")
-                .category(1)
                 .build();
 
         PostResponse response = PostResponse.builder()
@@ -202,7 +141,6 @@ public class AdminControllerTest {
                 .title("Updated Post")
                 .content("Updated Content")
                 .summary("Updated Summary")
-                .category(1)
                 .build();
 
         PostResponse response = PostResponse.builder()
@@ -234,7 +172,6 @@ public class AdminControllerTest {
                 .title("Updated Post")
                 .content("Updated Content")
                 .summary("Updated Summary")
-                .category(1)
                 .build();
 
         // Mock service to throw exception
@@ -260,28 +197,6 @@ public class AdminControllerTest {
 
     // Tests for 400 Bad Request status codes
 
-    @Test
-    @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testUpdateCategory_BadRequest() throws Exception {
-        // Prepare invalid test data
-        Integer categoryId = 1;
-        UpdateCategoryRequest request = UpdateCategoryRequest.builder()
-                .name("") // Empty name is invalid
-                .orderNum(1)
-                .build();
-
-        // Mock validator to throw exception
-        doThrow(new IllegalArgumentException("카테고리 이름은 필수입니다"))
-                .when(privateService).updateCategory(eq(categoryId), any(UpdateCategoryRequest.class));
-
-        // Perform request and verify
-        mockMvc.perform(put("/admin/categories/" + categoryId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isGone())
-                .andExpect(jsonPath("$.success", is(false)))
-                .andExpect(jsonPath("$.error.code", is(410)));
-    }
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
@@ -330,7 +245,6 @@ public class AdminControllerTest {
                 .title("")  // Empty title is invalid
                 .content("Post Content")
                 .summary("Post Summary")
-                .category(1)
                 .build();
 
         // Mock service to throw exception
@@ -370,7 +284,6 @@ public class AdminControllerTest {
                 .title("")  // Empty title is invalid
                 .content("Updated Content")
                 .summary("Updated Summary")
-                .category(1)
                 .build();
 
         // Mock service to throw exception
@@ -421,28 +334,6 @@ public class AdminControllerTest {
 
     // Tests for 500 Server Error status codes
 
-    @Test
-    @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testUpdateCategory_ServerError() throws Exception {
-        // Prepare test data
-        Integer categoryId = 1;
-        UpdateCategoryRequest request = UpdateCategoryRequest.builder()
-                .name("Updated Category")
-                .orderNum(1)
-                .build();
-
-        // Mock service to throw runtime exception
-        when(privateService.updateCategory(eq(categoryId), any(UpdateCategoryRequest.class)))
-                .thenThrow(new RuntimeException("서버 내부 오류"));
-
-        // Perform request and verify
-        mockMvc.perform(put("/admin/categories/" + categoryId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isGone())
-                .andExpect(jsonPath("$.success", is(false)))
-                .andExpect(jsonPath("$.error.code", is(410)));
-    }
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
@@ -489,7 +380,6 @@ public class AdminControllerTest {
                 .title("New Post")
                 .content("Post Content")
                 .summary("Post Summary")
-                .category(1)
                 .build();
 
         // Mock service to throw runtime exception
@@ -527,7 +417,6 @@ public class AdminControllerTest {
                 .title("Updated Post")
                 .content("Updated Content")
                 .summary("Updated Summary")
-                .category(1)
                 .build();
 
         // Mock service to throw runtime exception

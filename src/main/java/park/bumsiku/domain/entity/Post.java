@@ -34,10 +34,6 @@ public class Post {
     @Column(nullable = false)
     private String state;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = true)
-    @JoinColumn(name = "category_id")
-    @Deprecated(forRemoval = true)
-    private Category category;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
@@ -72,11 +68,6 @@ public class Post {
     public void addTag(Tag tag) {
         this.tags.add(tag);
         tag.getPosts().add(this);
-    }
-
-    public void removeTag(Tag tag) {
-        this.tags.remove(tag);
-        tag.getPosts().remove(this);
     }
 
     public void clearTags() {

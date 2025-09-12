@@ -7,17 +7,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import park.bumsiku.domain.dto.request.CreateCategoryRequest;
 import park.bumsiku.domain.dto.request.CreatePostRequest;
-import park.bumsiku.domain.dto.request.UpdateCategoryRequest;
 import park.bumsiku.domain.dto.request.UpdatePostRequest;
-import park.bumsiku.domain.dto.response.CategoryResponse;
 import park.bumsiku.domain.dto.response.PostResponse;
 import park.bumsiku.domain.dto.response.UploadImageResponse;
-import park.bumsiku.domain.entity.Category;
 import park.bumsiku.domain.entity.Comment;
 import park.bumsiku.domain.entity.Post;
-import park.bumsiku.repository.CategoryRepository;
 import park.bumsiku.repository.CommentRepository;
 import park.bumsiku.repository.ImageRepository;
 import park.bumsiku.repository.PostRepository;
@@ -36,54 +31,11 @@ import java.util.UUID;
 @AllArgsConstructor
 public class PrivateService {
 
-    private CategoryRepository categoryRepository;
     private CommentRepository commentRepository;
     private PostRepository postRepository;
     private ImageRepository imageRepository;
     private TagService tagService;
 
-    @LogExecutionTime
-    @Deprecated(forRemoval = true)
-    public CategoryResponse createCategory(CreateCategoryRequest request) {
-        Category category = new Category();
-        category.setName(request.getName());
-        category.setOrdernum(request.getOrderNum());
-
-        Category createdCategory = categoryRepository.insert(category);
-
-        return CategoryResponse.builder()
-                .id(createdCategory.getId())
-                .name(createdCategory.getName())
-                .order(createdCategory.getOrdernum())
-                .createdAt(createdCategory.getCreatedAt())
-                .build();
-    }
-
-    @LogExecutionTime
-    @Deprecated(forRemoval = true)
-    public CategoryResponse updateCategory(Integer id, UpdateCategoryRequest request) {
-        Category existingCategory = categoryRepository.findById(id);
-
-        if (existingCategory == null) {
-            log.warn("Category not found with id: {}", id);
-            throw new NoSuchElementException("Category not found with id: " + id);
-        }
-
-        // Update the category
-        Category category = new Category();
-        category.setId(id);
-        category.setName(request.getName());
-        category.setOrdernum(request.getOrderNum());
-
-        Category updatedCategory = categoryRepository.update(category);
-
-        return CategoryResponse.builder()
-                .id(updatedCategory.getId())
-                .name(updatedCategory.getName())
-                .order(updatedCategory.getOrdernum())
-                .createdAt(updatedCategory.getCreatedAt())
-                .build();
-    }
 
     @LogExecutionTime
     public void deleteComment(String commentId) {
@@ -123,21 +75,10 @@ public class PrivateService {
 
     @LogExecutionTime
     public PostResponse createPost(CreatePostRequest request) {
-        Category category = null;
-        boolean categoryProvided = request.getCategory() != null;
-        if (categoryProvided) {
-            category = categoryRepository.findById(request.getCategory());
-            if (category == null) {
-                log.warn("Category not found with id: {}", request.getCategory());
-                throw new IllegalArgumentException("Category not found with id: " + request.getCategory());
-            }
-        }
-
         Post post = Post.builder()
                 .title(request.getTitle())
                 .content(request.getContent())
                 .summary(request.getSummary())
-                .category(category)
                 .state("published")
                 .build();
 
@@ -154,7 +95,6 @@ public class PrivateService {
                 .title(savedPost.getTitle())
                 .content(savedPost.getContent())
                 .summary(savedPost.getSummary())
-                .categoryId(savedPost.getCategory() != null ? savedPost.getCategory().getId() : null)
                 .tags(savedPost.getTags().stream().map(tag -> tag.getName()).toList())
                 .views(savedPost.getViews())
                 .createdAt(savedPost.getCreatedAt().toString())
@@ -195,23 +135,9 @@ public class PrivateService {
             throw new NoSuchElementException("Post not found with id: " + postId);
         }
 
-        Category category = null;
-        boolean categoryProvided = request.getCategory() != null;
-        if (categoryProvided) {
-            category = categoryRepository.findById(request.getCategory());
-            if (category == null) {
-                log.warn("Category not found with id: {}", request.getCategory());
-                throw new IllegalArgumentException("Category not found with id: " + request.getCategory());
-            }
-        }
-
         post.setTitle(request.getTitle());
         post.setContent(request.getContent());
         post.setSummary(request.getSummary());
-        // retain existing category if not provided in request
-        if (categoryProvided) {
-            post.setCategory(category);
-        }
         post.setUpdatedAt(LocalDateTime.now());
 
         // Update tags - this will automatically clean up orphaned tags
@@ -224,7 +150,6 @@ public class PrivateService {
                 .title(updatedPost.getTitle())
                 .content(updatedPost.getContent())
                 .summary(updatedPost.getSummary())
-                .categoryId(updatedPost.getCategory() != null ? updatedPost.getCategory().getId() : null)
                 .tags(updatedPost.getTags().stream().map(tag -> tag.getName()).toList())
                 .views(updatedPost.getViews())
                 .createdAt(updatedPost.getCreatedAt().toString())

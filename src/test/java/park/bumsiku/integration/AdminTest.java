@@ -8,14 +8,10 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.transaction.annotation.Transactional;
 import park.bumsiku.config.AbstractTestSupport;
-import park.bumsiku.domain.dto.request.CreateCategoryRequest;
 import park.bumsiku.domain.dto.request.CreatePostRequest;
-import park.bumsiku.domain.dto.request.UpdateCategoryRequest;
 import park.bumsiku.domain.dto.request.UpdatePostRequest;
-import park.bumsiku.domain.entity.Category;
 import park.bumsiku.domain.entity.Comment;
 import park.bumsiku.domain.entity.Post;
-import park.bumsiku.repository.CategoryRepository;
 import park.bumsiku.repository.CommentRepository;
 import park.bumsiku.repository.PostRepository;
 
@@ -32,13 +28,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 public class AdminTest extends AbstractTestSupport {
 
-    private final List<Category> categories = new ArrayList<>();
     private final List<Post> posts = new ArrayList<>();
     private final List<Comment> comments = new ArrayList<>();
     @Autowired
     private EntityManager entityManager;
-    @Autowired
-    private CategoryRepository categoryRepository;
     @Autowired
     private PostRepository postRepository;
     @Autowired
@@ -47,12 +40,10 @@ public class AdminTest extends AbstractTestSupport {
     @BeforeEach
     public void setup() {
         // Clear existing data
-        categories.clear();
         posts.clear();
         comments.clear();
 
         // Create test data
-        createTestCategories();
         createTestPosts();
         createTestComments();
 
@@ -60,29 +51,13 @@ public class AdminTest extends AbstractTestSupport {
         entityManager.flush();
     }
 
-    private void createTestCategories() {
-        Category category1 = Category.builder()
-                .name("Technology")
-                .ordernum(1)
-                .build();
-        Category category2 = Category.builder()
-                .name("Travel")
-                .ordernum(2)
-                .build();
-
-        categories.add(categoryRepository.insert(category1));
-        categories.add(categoryRepository.insert(category2));
-    }
-
     private void createTestPosts() {
         for (int i = 0; i < 5; i++) {
-            Category category = categories.get(i % 2);
             Post post = Post.builder()
                     .title("Test Post " + (i + 1))
                     .content("This is test content for post " + (i + 1))
                     .summary("Summary of test post " + (i + 1))
                     .state("published")
-                    .category(category)
                     .createdAt(LocalDateTime.now().minusDays(5 - i))
                     .updatedAt(LocalDateTime.now().minusDays(5 - i))
                     .build();
@@ -113,7 +88,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("New Test Post")
                 .content("This is content for the new test post")
                 .summary("Summary of the new test post")
-                .category(categoryRepository.findAll().get(0).getId())
+
                 .build();
 
         // Perform request and verify
@@ -138,7 +113,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("")
                 .content("This is content for the new test post")
                 .summary("Summary of the new test post")
-                .category(categories.get(0).getId())
+
                 .build();
 
         // Perform request and verify
@@ -166,7 +141,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title(longTitle)
                 .content("This is content for the new test post")
                 .summary("Summary of the new test post")
-                .category(categories.get(0).getId())
+
                 .build();
 
         // Perform request and verify
@@ -187,7 +162,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("New Test Post")
                 .content("")
                 .summary("Summary of the new test post")
-                .category(categories.get(0).getId())
+
                 .build();
 
         // Perform request and verify
@@ -215,7 +190,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("New Test Post")
                 .content(longContent)
                 .summary("Summary of the new test post")
-                .category(categories.get(0).getId())
+
                 .build();
 
         // Perform request and verify
@@ -236,7 +211,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("New Test Post")
                 .content("This is content for the new test post")
                 .summary("")
-                .category(categories.get(0).getId())
+
                 .build();
 
         // Perform request and verify
@@ -264,7 +239,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("New Test Post")
                 .content("This is content for the new test post")
                 .summary(longSummary)
-                .category(categories.get(0).getId())
+
                 .build();
 
         // Perform request and verify
@@ -279,33 +254,13 @@ public class AdminTest extends AbstractTestSupport {
 
 
     @Test
-    @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testAddPost_InvalidCategory() throws Exception {
-        // Prepare test data with invalid category
-        CreatePostRequest request = CreatePostRequest.builder()
-                .title("New Test Post")
-                .content("This is content for the new test post")
-                .summary("Summary of the new test post")
-                .category(9999) // Non-existent category ID
-                .build();
-
-        // Perform request and verify
-        mockMvc.perform(post("/admin/posts")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.success", is(false)))
-                .andExpect(jsonPath("$.error.code", is(400)));
-    }
-
-    @Test
     public void testAddPost_Unauthorized() throws Exception {
         // Prepare test data
         CreatePostRequest request = CreatePostRequest.builder()
                 .title("New Test Post")
                 .content("This is content for the new test post")
                 .summary("Summary of the new test post")
-                .category(categories.get(0).getId())
+
                 .build();
 
         // Perform request without authentication and verify
@@ -476,7 +431,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Test Post")
                 .content("This is updated content for the test post")
                 .summary("Updated summary of the test post")
-                .category(categories.get(1).getId())
+
                 .build();
 
         // Perform request and verify
@@ -498,7 +453,7 @@ public class AdminTest extends AbstractTestSupport {
         assert updatedPost.getTitle().equals("Updated Test Post");
         assert updatedPost.getContent().equals("This is updated content for the test post");
         assert updatedPost.getSummary().equals("Updated summary of the test post");
-        assert updatedPost.getCategory().getName().equals(categories.get(1).getName());
+
     }
 
     @Test
@@ -512,7 +467,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("")
                 .content("This is updated content for the test post")
                 .summary("Updated summary of the test post")
-                .category(categories.get(0).getId())
+
                 .build();
 
         // Perform request and verify
@@ -543,7 +498,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title(longTitle)
                 .content("This is updated content for the test post")
                 .summary("Updated summary of the test post")
-                .category(categories.get(0).getId())
+
                 .build();
 
         // Perform request and verify
@@ -567,7 +522,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Test Post")
                 .content("")
                 .summary("Updated summary of the test post")
-                .category(categories.get(0).getId())
+
                 .build();
 
         // Perform request and verify
@@ -598,7 +553,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Test Post")
                 .content(longContent)
                 .summary("Updated summary of the test post")
-                .category(categories.get(0).getId())
+
                 .build();
 
         // Perform request and verify
@@ -622,7 +577,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Test Post")
                 .content("This is updated content for the test post")
                 .summary("")
-                .category(categories.get(0).getId())
+
                 .build();
 
         // Perform request and verify
@@ -653,7 +608,6 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Test Post")
                 .content("This is updated content for the test post")
                 .summary(longSummary)
-                .category(categories.get(0).getId())
                 .build();
 
         // Perform request and verify
@@ -669,37 +623,12 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testUpdatePost_InvalidCategory() throws Exception {
-        // Get a valid post ID
-        int postId = posts.get(0).getId();
-
-        // Prepare test data with invalid category
-        UpdatePostRequest request = UpdatePostRequest.builder()
-                .title("Updated Test Post")
-                .content("This is updated content for the test post")
-                .summary("Updated summary of the test post")
-                .category(-1)
-                .build();
-
-        // Perform request and verify - this should fail because category -1 does not exist
-        mockMvc.perform(put("/admin/posts/" + postId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.success", is(false)))
-                .andExpect(jsonPath("$.error.code", is(400)))
-                .andExpect(jsonPath("$.error.message", containsString("Category not found with id: -1")));
-    }
-
-    @Test
-    @WithMockUser(username = "admin", roles = {"ADMIN"})
     public void testUpdatePost_InvalidId_Zero() throws Exception {
         // Prepare test data
         UpdatePostRequest request = UpdatePostRequest.builder()
                 .title("Updated Test Post")
                 .content("This is updated content for the test post")
                 .summary("Updated summary of the test post")
-                .category(categories.get(0).getId())
                 .build();
 
         // Perform request with zero ID and verify
@@ -720,7 +649,6 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Test Post")
                 .content("This is updated content for the test post")
                 .summary("Updated summary of the test post")
-                .category(categories.get(0).getId())
                 .build();
 
         // Perform request with negative ID and verify
@@ -741,7 +669,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Test Post")
                 .content("This is updated content for the test post")
                 .summary("Updated summary of the test post")
-                .category(categories.get(0).getId())
+
                 .build();
 
         // Perform request with non-numeric ID and verify
@@ -765,7 +693,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Test Post")
                 .content("This is updated content for the test post")
                 .summary("Updated summary of the test post")
-                .category(categories.get(0).getId())
+
                 .build();
 
         // Perform request and verify
@@ -788,7 +716,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Test Post")
                 .content("This is updated content for the test post")
                 .summary("Updated summary of the test post")
-                .category(categories.get(0).getId())
+
                 .build();
 
         // Perform request without authentication and verify
@@ -798,46 +726,6 @@ public class AdminTest extends AbstractTestSupport {
                 .andExpect(status().isUnauthorized());
     }
 
-    @Test
-    @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testAddCategory_Gone() throws Exception {
-        // Prepare test data for a new category
-        CreateCategoryRequest request = CreateCategoryRequest.builder()
-                .name("New Test Category")
-                .orderNum(3)
-                .build();
-
-        // Perform request and verify
-        mockMvc.perform(post("/admin/categories")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andDo(print())
-                .andExpect(status().isGone())
-                .andExpect(jsonPath("$.success", is(false)))
-                .andExpect(jsonPath("$.error.code", is(410)));
-    }
-
-    @Test
-    @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testUpdateCategory_Gone() throws Exception {
-        // Get an existing category ID
-        Integer categoryId = categories.get(0).getId();
-
-        // Prepare test data for updating the category
-        UpdateCategoryRequest request = UpdateCategoryRequest.builder()
-                .name("Updated Category Name")
-                .orderNum(10)
-                .build();
-
-        // Perform request and verify
-        mockMvc.perform(put("/admin/categories/" + categoryId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andDo(print())
-                .andExpect(status().isGone())
-                .andExpect(jsonPath("$.success", is(false)))
-                .andExpect(jsonPath("$.error.code", is(410)));
-    }
 
 //    @Test
 //    @WithMockUser(username = "admin", roles = {"ADMIN"})
@@ -861,63 +749,6 @@ public class AdminTest extends AbstractTestSupport {
 //                .andExpect(jsonPath("$.error.message", containsString("카테고리를 선택해주세요")));
 //    }
 
-    @Test
-    @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testUpdateCategory_NullOrderNum() throws Exception {
-        // Get an existing category ID
-        Integer categoryId = categories.get(0).getId();
-
-        // Create a JSON string with null orderNum
-        String requestJson = "{\"name\":\"Test Category\",\"orderNum\":null}";
-
-        // Perform request and verify
-        mockMvc.perform(put("/admin/categories/" + categoryId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJson))
-                .andExpect(status().isGone())
-                .andExpect(jsonPath("$.success", is(false)))
-                .andExpect(jsonPath("$.error.code", is(410)));
-    }
-
-
-    @Test
-    public void testUpdateCategory_Unauthorized() throws Exception {
-        // Get an existing category ID
-        Integer categoryId = categories.get(0).getId();
-
-        // Prepare test data
-        UpdateCategoryRequest request = UpdateCategoryRequest.builder()
-                .name("Updated Category Name")
-                .orderNum(10)
-                .build();
-
-        // Perform request without authentication and verify
-        mockMvc.perform(put("/admin/categories/" + categoryId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testUpdateCategory_InvalidId() throws Exception {
-        // Use a non-existent category ID
-        Integer nonExistentId = 9999;
-
-        // Prepare test data
-        UpdateCategoryRequest request = UpdateCategoryRequest.builder()
-                .name("Updated Category Name")
-                .orderNum(10)
-                .build();
-
-        // Perform request and verify
-        mockMvc.perform(put("/admin/categories/" + nonExistentId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isGone())
-                .andExpect(jsonPath("$.success", is(false)))
-                .andExpect(jsonPath("$.error.code", is(410)));
-    }
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
@@ -927,7 +758,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Post with Tags")
                 .content("This is content for post with tags")
                 .summary("Summary of post with tags")
-                .category(categories.get(0).getId())
+
                 .tags(List.of("Spring", "Java", "Backend"))
                 .build();
 
@@ -952,7 +783,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Post without Tags")
                 .content("This is content for post without tags")
                 .summary("Summary of post without tags")
-                .category(categories.get(0).getId())
+
                 .tags(List.of())
                 .build();
 
@@ -977,7 +808,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Post with New Tags")
                 .content("Updated content with new tags")
                 .summary("Updated summary with new tags")
-                .category(categories.get(0).getId())
+
                 .tags(List.of("React", "Frontend", "JavaScript"))
                 .build();
 
@@ -1005,7 +836,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Post without Tags")
                 .content("Updated content without tags")
                 .summary("Updated summary without tags")
-                .category(categories.get(0).getId())
+
                 .tags(List.of())
                 .build();
 

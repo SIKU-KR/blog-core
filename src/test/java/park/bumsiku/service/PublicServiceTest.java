@@ -6,27 +6,25 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import park.bumsiku.domain.dto.request.CommentRequest;
-import park.bumsiku.domain.dto.response.CategoryResponse;
 import park.bumsiku.domain.dto.response.CommentResponse;
 import park.bumsiku.domain.dto.response.PostResponse;
-import park.bumsiku.domain.entity.Category;
 import park.bumsiku.domain.entity.Comment;
 import park.bumsiku.domain.entity.Post;
-import park.bumsiku.repository.CategoryRepository;
 import park.bumsiku.repository.CommentRepository;
 import park.bumsiku.repository.PostRepository;
+import park.bumsiku.repository.TagRepository;
 import park.bumsiku.utils.integration.DiscordWebhookCreator;
 import park.bumsiku.utils.sorting.SortCriteria;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@Deprecated(forRemoval = true)
 @ExtendWith(MockitoExtension.class)
 public class PublicServiceTest {
 
@@ -40,7 +38,8 @@ public class PublicServiceTest {
     private CommentRepository commentRepository;
 
     @Mock
-    private CategoryRepository categoryRepository;
+    private TagRepository tagRepository;
+
 
     @Mock
     private DiscordWebhookCreator discord;
@@ -49,18 +48,12 @@ public class PublicServiceTest {
     private park.bumsiku.utils.sorting.PostSortBuilder postSortBuilder;
 
     private Post postMockData() {
-        Category mockCategory = Category.builder()
-                .id(1)
-                .name("Technology")
-                .ordernum(1)
-                .build();
         return Post.builder()
                 .id(1)
                 .title("Sample Post Title")
                 .content("This is a sample content for the post. Lorem ipsum dolor sit amet, consectetur adipiscing elit.")
                 .summary("Sample summary of the post")
                 .state("PUBLISHED")
-                .category(mockCategory)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .views(5L)
@@ -219,29 +212,6 @@ public class PublicServiceTest {
                 .isInstanceOf(NoSuchElementException.class);
     }
 
-    @Test
-    public void getCategoriesShouldReturnOrderedListOfCategoryResponse() {
-        // given
-        LocalDateTime now = LocalDateTime.now();
-        Category category1 = Category.builder().id(1).name("Tech").ordernum(1).createdAt(now).build();
-        Category category2 = Category.builder().id(2).name("Life").ordernum(2).createdAt(now).build();
-        List<Category> mockCategories = List.of(category1, category2);
-
-        when(categoryRepository.findAll()).thenReturn(mockCategories);
-
-        // when
-        List<CategoryResponse> result = publicService.getCategories();
-
-        // then
-        assertThat(result).isNotNull();
-        assertThat(result).hasSize(2);
-        assertThat(result)
-                .extracting("id", "name", "order")
-                .containsExactly(
-                        tuple(category1.getId(), category1.getName(), category1.getOrdernum()),
-                        tuple(category2.getId(), category2.getName(), category2.getOrdernum())
-                );
-    }
 
     @Test
     public void incrementPostViewsShouldIncreaseViewsCount() {
@@ -306,20 +276,18 @@ public class PublicServiceTest {
     }
 
     @Test
-    public void getPostListByCategoryShouldCallRepositoryWithViewsSort() {
+    public void throwTagNotFoundExceptionWhenTagDoesNotExistForGetPostsByTag() {
         // given
-        int categoryId = 1;
-        List<Post> postList = List.of(postMockData());
-        SortCriteria sortCriteria = new SortCriteria("views", "ASC", "ORDER BY p.views ASC");
-        when(postSortBuilder.buildSortCriteria("views,asc")).thenReturn(sortCriteria);
-        when(postRepository.findAllByCategoryId(categoryId, 0, 10, "ORDER BY p.views ASC")).thenReturn(postList);
-        when(postRepository.countByCategoryId(categoryId)).thenReturn(1);
-
-        // when
-        var result = publicService.getPostList(categoryId, 0, 10, "views,asc");
+        String tagName = "unknown-tag";
+        when(tagRepository.findByName(tagName)).thenReturn(Optional.empty());
 
         // then
-        verify(postRepository).findAllByCategoryId(categoryId, 0, 10, "ORDER BY p.views ASC");
-        assertThat(result.getContent()).hasSize(1);
+        assertThatThrownBy(() -> publicService.getPostsByTag(tagName, 0, 10, "createdAt,asc"))
+                .isInstanceOf(NoSuchElementException.class);
+
+        verify(postRepository, never()).findAllByTagName(anyString(), anyInt(), anyInt(), anyString());
+        verify(postRepository, never()).countByTagName(anyString());
     }
+
+
 }
