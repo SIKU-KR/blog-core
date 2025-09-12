@@ -70,11 +70,6 @@ public class Post {
         tag.getPosts().add(this);
     }
 
-    public void removeTag(Tag tag) {
-        this.tags.remove(tag);
-        tag.getPosts().remove(this);
-    }
-
     public void clearTags() {
         for (Tag tag : this.tags) {
             tag.getPosts().remove(this);

@@ -24,17 +24,6 @@ public class PostSummaryResponse {
     private LocalDateTime updatedAt;
     private Long views;
 
-    // JPQL Constructor Expression을 위한 생성자 (Repository에서만 사용)
-    public PostSummaryResponse(Integer id, String title, String summary,
-                               LocalDateTime createdAt, LocalDateTime updatedAt, Long views) {
-        this.id = id;
-        this.title = title;
-        this.summary = summary;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.views = views;
-    }
-
     public static PostSummaryResponse from(Post post) {
         List<String> tagNames = post.getTags().stream()
                 .map(Tag::getName)
