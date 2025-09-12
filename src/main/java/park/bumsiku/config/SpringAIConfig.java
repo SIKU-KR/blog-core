@@ -12,8 +12,8 @@ public class SpringAIConfig {
     @Bean
     public ChatClient openAiChatClient(OpenAiChatModel chatModel) {
         OpenAiChatOptions defaultOptions = OpenAiChatOptions.builder()
-                .model("gpt-5-mini")
-                .temperature(1.0)
+                .model("gpt-4.1-nano")
+                .temperature(0.5)
                 .build();
 
         return ChatClient.builder(chatModel)
