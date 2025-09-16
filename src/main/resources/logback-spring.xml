@@ -29,7 +29,7 @@
             <format>
                 <label>
                     <pattern>
-                        app=blog-server,env=${spring.profiles.active:-local},level=%level,logger=%logger{20},host=${HOSTNAME:-localhost}
+                        app=blog-server,env=${spring.profiles.active:-local},level=%level,logger=%logger{20},host=${HOSTNAME:-localhost},requestId=%X{requestId}
                     </pattern>
                 </label>
                 <message>
