@@ -2,8 +2,8 @@ name: SonarQube Analysis
 
 on:
   pull_request:
-    branches: [ main, master ]
-    types: [ opened, synchronize ]
+    branches:
+      - main
 
 jobs:
   sonarqube:
@@ -14,10 +14,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          # SonarQube의 New Code 감지를 위해 전체 히스토리를 가져옵니다.
           fetch-depth: 0
 
-      # 1. SonarQube 스캔 실행
+      # 1. SonarQube 스캔 실행 (브랜치 분석으로 변경)
       - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@master
         env:
@@ -25,23 +24,23 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
           args: >
-            -Dsonar.projectKey=blog-core
-            -Dsonar.pullrequest.key=${{ github.event.pull_request.number }}
-            -Dsonar.pullrequest.branch=${{ github.head_ref }}
-            -Dsonar.pullrequest.base=${{ github.base_ref }}
+            -Dsonar.projectKey=your-project-key
+            # 'pullrequest' 관련 속성을 모두 제거하고 'branch.name'을 사용합니다.
+            -Dsonar.branch.name=${{ github.head_ref }} 
             -Dsonar.scm.revision=${{ github.event.pull_request.head.sha }}
 
-      # 2. API를 통해 결과 조회 및 PR에 댓글 작성
+      # 2. API를 통해 결과 조회 및 PR에 댓글 작성 (API 호출 부분 수정)
       - name: Check SonarQube Quality Gate and Comment on PR
         uses: actions/github-script@v6
         env:
-          # 스크립트 내에서 사용할 환경변수
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          BRANCH_NAME: ${{ github.head_ref }}
+          PROJECT_KEY: blog-core
         with:
           script: |
-            const { SONAR_TOKEN, SONAR_HOST_URL, PR_NUMBER } = process.env;
+            const { SONAR_TOKEN, SONAR_HOST_URL, PR_NUMBER, BRANCH_NAME, PROJECT_KEY } = process.env;
 
             // 잠시 대기 (SonarQube 서버 처리 시간 확보)
             await new Promise(r => setTimeout(r, 5000));
@@ -53,7 +52,10 @@ jobs:
                 headers: { 'Authorization': `Bearer ${SONAR_TOKEN}` }
               });
               if (!response.ok) {
-                throw new Error(`Failed to fetch SonarQube API: ${url}. Status: ${response.status}`);
+                console.error(`Failed to fetch SonarQube API: ${url}. Status: ${response.status}`);
+                const errorBody = await response.text();
+                console.error(`Response body: ${errorBody}`);
+                throw new Error(`Failed to fetch SonarQube API. Status: ${response.status}`);
               }
               return response.json();
             };
@@ -62,7 +64,7 @@ jobs:
             console.log('Waiting for SonarQube analysis to complete...');
             const taskUrl = `${SONAR_HOST_URL}/api/ce/task?id=${process.env.SONAR_SCANNER_CE_TASK_ID}`;
             let task;
-            const timeout = 60000; // 60초 타임아웃
+            const timeout = 120000; // 2분 타임아웃
             const startTime = Date.now();
             while (Date.now() - startTime < timeout) {
                 task = await fetchSonar(`ce/task?id=${process.env.SONAR_SCANNER_CE_TASK_ID}`);
@@ -70,22 +72,22 @@ jobs:
                     console.log(`SonarQube task finished with status: ${task.task.status}`);
                     break;
                 }
-                await new Promise(r => setTimeout(r, 2000)); // 2초마다 재시도
+                await new Promise(r => setTimeout(r, 5000)); // 5초마다 재시도
             }
             
-            if (task.task.status !== 'SUCCESS') {
-              core.setFailed(`SonarQube analysis failed with status: ${task.task.status}`);
+            if (!task || task.task.status !== 'SUCCESS') {
+              core.setFailed(`SonarQube analysis did not complete successfully. Status: ${task?.task?.status || 'Unknown'}`);
               return;
             }
 
-            // --- Step 2: 분석 결과(Quality Gate) 조회 ---
-            console.log('Fetching analysis results...');
-            const analysis = await fetchSonar(`qualitygates/project_status?analysisId=${task.task.analysisId}`);
+            // --- Step 2: 분석 결과(Quality Gate) 조회 (API 엔드포인트 수정) ---
+            console.log('Fetching analysis results for branch...');
+            const analysis = await fetchSonar(`qualitygates/project_status?projectKey=${PROJECT_KEY}&branch=${BRANCH_NAME}`);
             const { status, conditions } = analysis.projectStatus;
 
             // --- Step 3: 결과를 Markdown 형식으로 가공 ---
             let comment = `### SonarQube 분석 결과 🤖\n\n`;
-            comment += `**Quality Gate: ${status === 'OK' ? '✅ 통과' : '❌ 실패'}**\n\n`;
+            comment += `**Quality Gate (\`${BRANCH_NAME}\` 브랜치): ${status === 'OK' ? '✅ 통과' : '❌ 실패'}**\n\n`;
             comment += '| Metric | Value | Status |\n';
             comment += '|---|---|---|\n';
             
@@ -94,7 +96,7 @@ jobs:
               comment += `| ${cond.metricKey.replace(/_/g, ' ')} | \`${cond.actualValue}\` | ${icon} ${cond.status} |\n`;
             });
             
-            comment += `\n[🔗 SonarQube 대시보드에서 전체 결과 보기](${SONAR_HOST_URL}/dashboard?id=your-project-key&pullRequest=${PR_NUMBER})\n`;
+            comment += `\n[🔗 SonarQube 대시보드에서 전체 결과 보기](${SONAR_HOST_URL}/dashboard?id=${PROJECT_KEY}&branch=${BRANCH_NAME})\n`;
 
             // --- Step 4: PR에 댓글 작성 ---
             await github.rest.issues.createComment({
