@@ -24,8 +24,7 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
           args: >
-            -Dsonar.projectKey=your-project-key
-            # 'pullrequest' 관련 속성을 모두 제거하고 'branch.name'을 사용합니다.
+            -Dsonar.projectKey=blog-core
             -Dsonar.branch.name=${{ github.head_ref }} 
             -Dsonar.scm.revision=${{ github.event.pull_request.head.sha }}
 
