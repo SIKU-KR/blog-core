@@ -1,0 +1,105 @@
+name: SonarQube Analysis
+
+on:
+  pull_request:
+    branches: [ main, master ]
+    types: [ opened, synchronize ]
+
+jobs:
+  sonarqube:
+    name: SonarQube Scan & Comment
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          # SonarQube의 New Code 감지를 위해 전체 히스토리를 가져옵니다.
+          fetch-depth: 0
+
+      # 1. SonarQube 스캔 실행
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.projectKey=blog-core
+            -Dsonar.pullrequest.key=${{ github.event.pull_request.number }}
+            -Dsonar.pullrequest.branch=${{ github.head_ref }}
+            -Dsonar.pullrequest.base=${{ github.base_ref }}
+            -Dsonar.scm.revision=${{ github.event.pull_request.head.sha }}
+
+      # 2. API를 통해 결과 조회 및 PR에 댓글 작성
+      - name: Check SonarQube Quality Gate and Comment on PR
+        uses: actions/github-script@v6
+        env:
+          # 스크립트 내에서 사용할 환경변수
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        with:
+          script: |
+            const { SONAR_TOKEN, SONAR_HOST_URL, PR_NUMBER } = process.env;
+
+            // 잠시 대기 (SonarQube 서버 처리 시간 확보)
+            await new Promise(r => setTimeout(r, 5000));
+
+            // --- 헬퍼 함수 정의 ---
+            const fetchSonar = async (endpoint) => {
+              const url = `${SONAR_HOST_URL}/api/${endpoint}`;
+              const response = await fetch(url, {
+                headers: { 'Authorization': `Bearer ${SONAR_TOKEN}` }
+              });
+              if (!response.ok) {
+                throw new Error(`Failed to fetch SonarQube API: ${url}. Status: ${response.status}`);
+              }
+              return response.json();
+            };
+
+            // --- Step 1: 분석 리포트(ceTask)가 처리 완료될 때까지 대기 ---
+            console.log('Waiting for SonarQube analysis to complete...');
+            const taskUrl = `${SONAR_HOST_URL}/api/ce/task?id=${process.env.SONAR_SCANNER_CE_TASK_ID}`;
+            let task;
+            const timeout = 60000; // 60초 타임아웃
+            const startTime = Date.now();
+            while (Date.now() - startTime < timeout) {
+                task = await fetchSonar(`ce/task?id=${process.env.SONAR_SCANNER_CE_TASK_ID}`);
+                if (task.task.status === 'SUCCESS' || task.task.status === 'FAILED' || task.task.status === 'CANCELED') {
+                    console.log(`SonarQube task finished with status: ${task.task.status}`);
+                    break;
+                }
+                await new Promise(r => setTimeout(r, 2000)); // 2초마다 재시도
+            }
+            
+            if (task.task.status !== 'SUCCESS') {
+              core.setFailed(`SonarQube analysis failed with status: ${task.task.status}`);
+              return;
+            }
+
+            // --- Step 2: 분석 결과(Quality Gate) 조회 ---
+            console.log('Fetching analysis results...');
+            const analysis = await fetchSonar(`qualitygates/project_status?analysisId=${task.task.analysisId}`);
+            const { status, conditions } = analysis.projectStatus;
+
+            // --- Step 3: 결과를 Markdown 형식으로 가공 ---
+            let comment = `### SonarQube 분석 결과 🤖\n\n`;
+            comment += `**Quality Gate: ${status === 'OK' ? '✅ 통과' : '❌ 실패'}**\n\n`;
+            comment += '| Metric | Value | Status |\n';
+            comment += '|---|---|---|\n';
+            
+            conditions.forEach(cond => {
+              const icon = cond.status === 'OK' ? '✅' : '❌';
+              comment += `| ${cond.metricKey.replace(/_/g, ' ')} | \`${cond.actualValue}\` | ${icon} ${cond.status} |\n`;
+            });
+            
+            comment += `\n[🔗 SonarQube 대시보드에서 전체 결과 보기](${SONAR_HOST_URL}/dashboard?id=your-project-key&pullRequest=${PR_NUMBER})\n`;
+
+            // --- Step 4: PR에 댓글 작성 ---
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: PR_NUMBER,
+              body: comment,
+            });
