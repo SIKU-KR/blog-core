@@ -18,10 +18,9 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static park.bumsiku.support.TestFixtures.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static park.bumsiku.support.TestFixtures.buildComment;
+import static park.bumsiku.support.TestFixtures.buildPost;
 
 @Transactional
 public class PublicTest extends AbstractTestSupport {
@@ -48,7 +47,7 @@ public class PublicTest extends AbstractTestSupport {
         for (int i = 0; i < 15; i++) {
             // 조회수를 다양하게 설정 (인덱스가 높을수록 조회수도 높게)
             final int index = i + 1;
-            final long views = (long) (index * 10);
+            final long views = index * 10;
             final LocalDateTime timestamp = LocalDateTime.now().minusDays(15 - i);
             Post post = buildPost(builder -> builder
                     .id(null)

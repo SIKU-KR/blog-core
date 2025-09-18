@@ -3,8 +3,8 @@ package park.bumsiku.integration;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
-import park.bumsiku.config.AbstractTestSupport;
 import org.springframework.security.test.context.support.WithMockUser;
+import park.bumsiku.config.AbstractTestSupport;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
