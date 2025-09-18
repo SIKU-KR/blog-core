@@ -62,8 +62,6 @@ public class TagService {
                 .collect(Collectors.toList());
     }
 
-    @LogExecutionTime
-    @Transactional
     public Set<Tag> findOrCreateTags(List<String> tagNames) {
         List<String> inputNames = safeTagNames(tagNames);
         if (inputNames.isEmpty()) {
