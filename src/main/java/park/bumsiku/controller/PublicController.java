@@ -126,4 +126,12 @@ public class PublicController implements PublicAPI {
         List<TagResponse> tags = service.getAllActiveTagsWithPosts();
         return Response.success(tags);
     }
+
+    @Override
+    @GetMapping("/sitemap")
+    @LogExecutionTime
+    public Response<List<String>> getSitemapPaths() {
+        List<String> paths = service.getCanonicalPaths();
+        return Response.success(paths);
+    }
 }

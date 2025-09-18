@@ -24,6 +24,7 @@ public class PostSummaryResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Long views;
+    private String canonicalPath;
 
     public static PostSummaryResponse from(Post post) {
         List<String> tagNames = post.getTags().stream()
@@ -39,6 +40,7 @@ public class PostSummaryResponse {
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .views(post.getViews())
+                .canonicalPath("/posts/" + post.getSlug())
                 .build();
     }
 }

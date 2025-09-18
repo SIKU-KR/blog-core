@@ -159,4 +159,12 @@ public interface PublicAPI {
     Response<List<TagResponse>> getTags();
 
     // 이전: /posts/by-tag는 /posts?tag= 로 통합되었습니다.
+
+    @Operation(
+            summary = "사이트맵용 게시글 경로 제공",
+            description = "slug 기반 게시글 URL 경로 목록을 반환합니다."
+    )
+    @ApiResponse(responseCode = "200", description = "OK")
+    @GetMapping("/sitemap")
+    Response<List<String>> getSitemapPaths();
 }

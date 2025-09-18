@@ -103,6 +103,7 @@ public class PrivateService {
                 .views(savedPost.getViews())
                 .createdAt(savedPost.getCreatedAt().toString())
                 .updatedAt(savedPost.getUpdatedAt().toString())
+                .canonicalPath("/posts/" + savedPost.getSlug())
                 .build();
     }
 
@@ -162,6 +163,7 @@ public class PrivateService {
                 .views(updatedPost.getViews())
                 .createdAt(updatedPost.getCreatedAt().toString())
                 .updatedAt(updatedPost.getUpdatedAt().toString())
+                .canonicalPath("/posts/" + updatedPost.getSlug())
                 .build();
     }
 

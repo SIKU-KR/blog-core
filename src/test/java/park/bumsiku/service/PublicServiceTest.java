@@ -116,10 +116,11 @@ public class PublicServiceTest {
         // then
         assertThat(postResponse)
                 .isNotNull()
-                .extracting("id", "slug", "title", "content")
+                .extracting("id", "slug", "canonicalPath", "title", "content")
                 .containsExactly(
                         mockPost.getId(),
                         mockPost.getSlug(),
+                        "/posts/" + mockPost.getSlug(),
                         mockPost.getTitle(),
                         mockPost.getContent()
                 );
@@ -151,6 +152,15 @@ public class PublicServiceTest {
 
         assertThatThrownBy(() -> publicService.resolveSlugById(555))
                 .isInstanceOf(NoSuchElementException.class);
+    }
+
+    @Test
+    public void getCanonicalPathsShouldReturnSlugPaths() {
+        when(postRepository.findAllSlugs()).thenReturn(List.of("sample-post-title", "another-slug"));
+
+        List<String> paths = publicService.getCanonicalPaths();
+
+        assertThat(paths).containsExactly("/posts/sample-post-title", "/posts/another-slug");
     }
 
     @Test

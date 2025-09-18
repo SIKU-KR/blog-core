@@ -58,6 +58,12 @@ public class PostRepository {
         return query.getSingleResult() > 0;
     }
 
+    public List<String> findAllSlugs() {
+        String jpql = "SELECT p.slug FROM Post p ORDER BY p.updatedAt DESC";
+        TypedQuery<String> query = entityManager.createQuery(jpql, String.class);
+        return query.getResultList();
+    }
+
     public List<Post> findAll(int page, int size, String orderByClause) {
         String jpql = "SELECT p FROM Post p " + orderByClause;
         TypedQuery<Post> query = entityManager.createQuery(jpql, Post.class);

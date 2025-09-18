@@ -18,6 +18,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -48,6 +49,7 @@ public class PublicTest extends AbstractTestSupport {
             Long views = (long) ((i + 1) * 10);
             Post post = Post.builder()
                     .title("Test Post " + (i + 1))
+                    .slug("test-post-" + (i + 1))
                     .content("This is test content for post " + (i + 1))
                     .summary("Summary of test post " + (i + 1))
                     .state("published")
@@ -136,23 +138,21 @@ public class PublicTest extends AbstractTestSupport {
 
 
     @Test
-    public void testGetPostByIdSuccess() throws Exception {
-        int existingPostId = posts.get(0).getId();
+    public void testGetPostBySlugSuccess() throws Exception {
+        String existingSlug = posts.get(0).getSlug();
 
-        mockMvc.perform(get("/posts/{postId}", existingPostId)
+        mockMvc.perform(get("/posts/{slug}", existingSlug)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.data.id", is(existingPostId)))
+                .andExpect(jsonPath("$.data.slug", is(existingSlug)))
                 .andExpect(jsonPath("$.data.title", startsWith("Test Post")))
                 .andExpect(jsonPath("$.data.content", startsWith("This is test content")));
     }
 
     @Test
-    public void testGetPostByIdNotFound() throws Exception {
-        int nonExistentPostId = 9999;
-
-        mockMvc.perform(get("/posts/{postId}", nonExistentPostId)
+    public void testGetPostBySlugNotFound() throws Exception {
+        mockMvc.perform(get("/posts/{slug}", "missing-slug")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success", is(false)))
@@ -161,15 +161,23 @@ public class PublicTest extends AbstractTestSupport {
     }
 
     @Test
-    public void testGetPostByIdInvalid() throws Exception {
-        int invalidPostId = 0;
-
-        mockMvc.perform(get("/posts/{postId}", invalidPostId)
+    public void testGetPostBySlugInvalid() throws Exception {
+        mockMvc.perform(get("/posts/{slug}", "Invalid Slug!")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.error.code", is(400)))
-                .andExpect(jsonPath("$.error.message", containsString("게시글 ID는 1 이상이어야 합니다")));
+                .andExpect(jsonPath("$.error.message", containsString("유효한 슬러그")));
+    }
+
+    @Test
+    public void testGetPostByIdRedirectsToSlug() throws Exception {
+        Post post = posts.get(0);
+
+        mockMvc.perform(get("/posts/id/{postId}", post.getId())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isMovedPermanently())
+                .andExpect(header().string("Location", "/posts/" + post.getSlug()));
     }
 
     @Test

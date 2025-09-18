@@ -122,6 +122,13 @@ public class PublicService {
         return post.getSlug();
     }
 
+    @LogExecutionTime
+    public List<String> getCanonicalPaths() {
+        return postRepository.findAllSlugs().stream()
+                .map(slug -> "/posts/" + slug)
+                .toList();
+    }
+
     private Post requirePostById(int id) {
         Post post = postRepository.findById(id);
         if (post == null) {
@@ -154,6 +161,7 @@ public class PublicService {
                 .views(post.getViews())
                 .createdAt(post.getCreatedAt().toString())
                 .updatedAt(post.getUpdatedAt().toString())
+                .canonicalPath("/posts/" + post.getSlug())
                 .build();
     }
 

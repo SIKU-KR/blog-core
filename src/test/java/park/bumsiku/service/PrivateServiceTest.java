@@ -259,9 +259,10 @@ public class PrivateServiceTest {
         // Verify response is not null and has expected values
         assertThat(result)
                 .isNotNull()
-                .extracting("slug", "title", "content")
+                .extracting("slug", "canonicalPath", "title", "content")
                 .containsExactly(
                         request.getSlug(),
+                        "/posts/" + request.getSlug(),
                         request.getTitle(),
                         request.getContent()
                 );
@@ -393,10 +394,11 @@ public class PrivateServiceTest {
         // Verify response
         assertThat(result)
                 .isNotNull()
-                .extracting("id", "slug", "title", "content")
+                .extracting("id", "slug", "canonicalPath", "title", "content")
                 .containsExactly(
                         postId,
                         request.getSlug(),
+                        "/posts/" + request.getSlug(),
                         request.getTitle(),
                         request.getContent()
                 );

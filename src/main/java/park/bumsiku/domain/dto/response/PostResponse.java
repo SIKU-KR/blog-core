@@ -19,4 +19,5 @@ public class PostResponse {
     private String createdAt;
     private String updatedAt;
     private Long views;
+    private String canonicalPath;
 }

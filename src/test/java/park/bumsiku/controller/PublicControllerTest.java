@@ -124,6 +124,7 @@ public class PublicControllerTest {
                 .slug("test-post")
                 .title("Test Post")
                 .content("Test Content")
+                .canonicalPath("/posts/test-post")
                 .createdAt("2023-01-01T12:00:00")
                 .updatedAt("2023-01-01T12:00:00")
                 .build();
@@ -136,6 +137,7 @@ public class PublicControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.data.slug", is("test-post")))
+                .andExpect(jsonPath("$.data.canonicalPath", is("/posts/test-post")))
                 .andExpect(jsonPath("$.data.title", is("Test Post")))
                 .andExpect(jsonPath("$.data.content", is("Test Content")));
     }
@@ -257,6 +259,17 @@ public class PublicControllerTest {
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.error.code", is(400)))
                 .andExpect(jsonPath("$.error.message", containsString("유효한 슬러그를 입력해주세요")));
+    }
+
+    @Test
+    public void testGetSitemap_ReturnsSlugPaths() throws Exception {
+        when(publicService.getCanonicalPaths()).thenReturn(List.of("/posts/test-post", "/posts/another"));
+
+        mockMvc.perform(get("/sitemap"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data[0]", is("/posts/test-post")))
+                .andExpect(jsonPath("$.data[1]", is("/posts/another")));
     }
 
     @Test
