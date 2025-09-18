@@ -45,6 +45,17 @@ public class PublicService {
 
 
     @LogExecutionTime
+    public PostResponse getPostBySlug(String slug) {
+        Post post = postRepository.findBySlug(slug);
+        if (post == null) {
+            log.warn("Post with slug {} not found", slug);
+            throw new NoSuchElementException("Post not found");
+        }
+        return buildPostResponse(post);
+    }
+
+
+    @LogExecutionTime
     public PostResponse getPostById(int id) {
         Post post = requirePostById(id);
         return buildPostResponse(post);
@@ -103,6 +114,12 @@ public class PublicService {
         Post post = requirePostById(id);
         post.setViews(post.getViews() + 1);
         postRepository.update(post);
+    }
+
+    @LogExecutionTime
+    public String resolveSlugById(int id) {
+        Post post = requirePostById(id);
+        return String.valueOf(post.getId());
     }
 
     private Post requirePostById(int id) {

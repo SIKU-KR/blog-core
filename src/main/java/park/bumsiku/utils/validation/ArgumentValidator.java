@@ -9,6 +9,8 @@ public interface ArgumentValidator {
 
     void validatePostId(int postId);
 
+    void validateSlug(String slug);
+
     void validateCommentId(String commentId);
 
 

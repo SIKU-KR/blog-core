@@ -35,6 +35,14 @@ public class PostRepository {
         return entityManager.find(Post.class, id);
     }
 
+    public Post findBySlug(String slug) {
+        String jpql = "SELECT p FROM Post p WHERE p.slug = :slug";
+        TypedQuery<Post> query = entityManager.createQuery(jpql, Post.class);
+        query.setParameter("slug", slug);
+        List<Post> result = query.getResultList();
+        return result.isEmpty() ? null : result.get(0);
+    }
+
     public List<Post> findAll(int page, int size, String orderByClause) {
         String jpql = "SELECT p FROM Post p " + orderByClause;
         TypedQuery<Post> query = entityManager.createQuery(jpql, Post.class);

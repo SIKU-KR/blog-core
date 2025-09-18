@@ -50,6 +50,7 @@ public class PublicServiceTest {
     private Post postMockData() {
         return Post.builder()
                 .id(1)
+                .slug("sample-post-title")
                 .title("Sample Post Title")
                 .content("This is a sample content for the post. Lorem ipsum dolor sit amet, consectetur adipiscing elit.")
                 .summary("Sample summary of the post")
@@ -103,35 +104,52 @@ public class PublicServiceTest {
     }
 
     @Test
-    public void createAndReturnPostResponseObjectFromMockedPost() {
+    public void createAndReturnPostResponseObjectFromMockedPostSlug() {
         // given
         Post mockPost = postMockData();
-        int postId = mockPost.getId();
 
-        when(postRepository.findById(postId)).thenReturn(mockPost);
+        when(postRepository.findBySlug("sample-post-title")).thenReturn(mockPost);
 
         // when
-        PostResponse postResponse = publicService.getPostById(postId);
+        PostResponse postResponse = publicService.getPostBySlug("sample-post-title");
 
         // then
         assertThat(postResponse)
                 .isNotNull()
-                .extracting("id", "title", "content")
+                .extracting("id", "slug", "title", "content")
                 .containsExactly(
                         mockPost.getId(),
+                        mockPost.getSlug(),
                         mockPost.getTitle(),
                         mockPost.getContent()
                 );
     }
 
     @Test
-    public void throwPostNotFoundExceptionWhenRepositoryReturnsNullPostForGetPostById() {
+    public void throwPostNotFoundExceptionWhenRepositoryReturnsNullPostForGetPostBySlug() {
         // given
-        int postId = 111;
-        when(postRepository.findById(postId)).thenReturn(null);
+        when(postRepository.findBySlug("missing-slug")).thenReturn(null);
 
         // then
-        assertThatThrownBy(() -> publicService.getPostById(postId))
+        assertThatThrownBy(() -> publicService.getPostBySlug("missing-slug"))
+                .isInstanceOf(NoSuchElementException.class);
+    }
+
+    @Test
+    public void resolveSlugByIdShouldReturnSlug() {
+        Post post = postMockData();
+        when(postRepository.findById(post.getId())).thenReturn(post);
+
+        String slug = publicService.resolveSlugById(post.getId());
+
+        assertThat(slug).isEqualTo(post.getSlug());
+    }
+
+    @Test
+    public void resolveSlugByIdShouldThrowWhenPostMissing() {
+        when(postRepository.findById(555)).thenReturn(null);
+
+        assertThatThrownBy(() -> publicService.resolveSlugById(555))
                 .isInstanceOf(NoSuchElementException.class);
     }
 

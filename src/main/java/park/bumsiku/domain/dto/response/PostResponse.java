@@ -11,6 +11,7 @@ import java.util.List;
 @ToString(exclude = "content")
 public class PostResponse {
     private int id;
+    private String slug;
     private String title;
     private String content;
     private String summary;

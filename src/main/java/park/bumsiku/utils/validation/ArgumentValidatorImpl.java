@@ -85,6 +85,10 @@ public class ArgumentValidatorImpl implements ArgumentValidator {
     }
 
     @Override
+    public void validateSlug(String slug) {
+    }
+
+    @Override
     public void validateCommentId(String commentId) {
         if (commentId == null) {
             throw new IllegalArgumentException("댓글 ID는 1 이상이어야 합니다");

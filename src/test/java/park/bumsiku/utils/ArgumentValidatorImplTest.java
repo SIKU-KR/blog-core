@@ -50,6 +50,14 @@ public class ArgumentValidatorImplTest extends AbstractTestSupport {
 
 
     @Test
+    void testValidateSlug() {
+        assertDoesNotThrow(() -> validator.validateSlug("valid-slug"));
+        assertThrows(IllegalArgumentException.class, () -> validator.validateSlug("Invalid Slug!"));
+        assertThrows(IllegalArgumentException.class, () -> validator.validateSlug(""));
+    }
+
+
+    @Test
     void testValidatePagination() {
         // Valid pagination
         assertDoesNotThrow(() -> validator.validatePagination(0, 10));

@@ -23,6 +23,9 @@ public class Post {
     @Column(nullable = false)
     private String title;
 
+    @Column(nullable = false, unique = true)
+    private String slug;
+
     @Lob
     @Column(nullable = false)
     private String content;

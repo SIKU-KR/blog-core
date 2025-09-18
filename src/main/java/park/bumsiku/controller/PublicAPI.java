@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 import park.bumsiku.domain.dto.request.CommentRequest;
@@ -62,9 +63,20 @@ public interface PublicAPI {
     )
     @ApiResponse(responseCode = "400", description = "잘못된 요청 (ID 형식 오류)")
     @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")
-    @GetMapping("/posts/{postId}")
-    Response<PostResponse> getPostById(
-            @Parameter(description = "조회할 게시글 ID")
+    @GetMapping("/posts/{slug}")
+    Response<PostResponse> getPostBySlug(
+            @Parameter(description = "조회할 게시글 슬러그")
+            @PathVariable("slug") String slug
+    );
+
+    @Operation(
+            summary = "ID 기반 게시글 URL 301 리다이렉션",
+            description = "기존 ID 기반 URL을 slug 기반 URL로 영구 리다이렉션합니다."
+    )
+    @ApiResponse(responseCode = "301", description = "Moved Permanently - slug 기반 URL로 리다이렉션")
+    @GetMapping("/posts/id/{postId}")
+    ResponseEntity<Void> redirectPostById(
+            @Parameter(description = "리다이렉션할 게시글 ID")
             @PathVariable("postId") int postId
     );
 

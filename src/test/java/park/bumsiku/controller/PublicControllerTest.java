@@ -117,10 +117,11 @@ public class PublicControllerTest {
     }
 
     @Test
-    public void testGetPostById_Success() throws Exception {
+    public void testGetPostBySlug_Success() throws Exception {
         // Prepare test data
         PostResponse postResponse = PostResponse.builder()
                 .id(1)
+                .slug("test-post")
                 .title("Test Post")
                 .content("Test Content")
                 .createdAt("2023-01-01T12:00:00")
@@ -128,28 +129,38 @@ public class PublicControllerTest {
                 .build();
 
         // Mock service response
-        when(publicService.getPostById(1)).thenReturn(postResponse);
+        when(publicService.getPostBySlug("test-post")).thenReturn(postResponse);
 
         // Perform request and verify
-        mockMvc.perform(get("/posts/1"))
+        mockMvc.perform(get("/posts/test-post"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.data.id", is(1)))
+                .andExpect(jsonPath("$.data.slug", is("test-post")))
                 .andExpect(jsonPath("$.data.title", is("Test Post")))
                 .andExpect(jsonPath("$.data.content", is("Test Content")));
     }
 
     @Test
-    public void testGetPostById_NotFound() throws Exception {
+    public void testGetPostBySlug_NotFound() throws Exception {
         // Mock service to throw exception
-        when(publicService.getPostById(999)).thenThrow(new NoSuchElementException("게시글을 찾을 수 없습니다"));
+        when(publicService.getPostBySlug("missing-slug"))
+                .thenThrow(new NoSuchElementException("게시글을 찾을 수 없습니다"));
 
         // Perform request and verify
-        mockMvc.perform(get("/posts/999"))
+        mockMvc.perform(get("/posts/missing-slug"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.error.code", is(404)))
                 .andExpect(jsonPath("$.error.message", is("게시글을 찾을 수 없습니다")));
+    }
+
+    @Test
+    public void testGetPostByIdRedirectsToSlug() throws Exception {
+        when(publicService.resolveSlugById(1)).thenReturn("test-post");
+
+        mockMvc.perform(get("/posts/id/1"))
+                .andExpect(status().isMovedPermanently())
+                .andExpect(header().string("Location", "/posts/test-post"));
     }
 
     @Test
@@ -237,17 +248,15 @@ public class PublicControllerTest {
     // Additional tests for missing HTTP status codes
 
     @Test
-    public void testGetPostById_BadRequest() throws Exception {
-        // Mock service to throw exception
-        when(publicService.getPostById(eq(-1)))
-                .thenThrow(new IllegalArgumentException("게시글 ID는 양수여야 합니다"));
+    public void testGetPostBySlug_BadRequest() throws Exception {
+        doThrow(new IllegalArgumentException("유효한 슬러그를 입력해주세요"))
+                .when(validator).validateSlug("Invalid Slug!");
 
-        // Perform request and verify
-        mockMvc.perform(get("/posts/-1"))
+        mockMvc.perform(get("/posts/Invalid Slug!"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.error.code", is(400)))
-                .andExpect(jsonPath("$.error.message", containsString("게시글 ID는 양수여야 합니다")));
+                .andExpect(jsonPath("$.error.message", containsString("유효한 슬러그를 입력해주세요")));
     }
 
     @Test

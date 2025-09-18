@@ -2,6 +2,9 @@ package park.bumsiku.controller;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 import park.bumsiku.domain.dto.request.CommentRequest;
@@ -47,16 +50,32 @@ public class PublicController implements PublicAPI {
     }
 
     @Override
-    @GetMapping("/posts/{postId}")
+    @GetMapping("/posts/{slug}")
     @LogExecutionTime
-    public Response<PostResponse> getPostById(
+    public Response<PostResponse> getPostBySlug(
+            @PathVariable("slug") String slug) {
+
+        validator.validateSlug(slug);
+
+        PostResponse result = service.getPostBySlug(slug);
+
+        return Response.success(result);
+    }
+
+    @Override
+    @GetMapping("/posts/id/{postId}")
+    @LogExecutionTime
+    public ResponseEntity<Void> redirectPostById(
             @PathVariable("postId") int postId) {
 
         validator.validatePostId(postId);
 
-        PostResponse result = service.getPostById(postId);
+        service.resolveSlugById(postId);
 
-        return Response.success(result);
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.LOCATION, "/posts/" + postId);
+
+        return new ResponseEntity<>(headers, HttpStatus.MOVED_PERMANENTLY);
     }
 
     @Override

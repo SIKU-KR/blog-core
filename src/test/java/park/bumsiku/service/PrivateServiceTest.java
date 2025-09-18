@@ -233,10 +233,12 @@ public class PrivateServiceTest {
                 .title("New Post")
                 .content("Content")
                 .summary("Summary")
+                .slug("new-post")
                 .build();
 
         Post expectedPost = Post.builder()
                 .id(1)
+                .slug("new-post")
                 .title(request.getTitle())
                 .content(request.getContent())
                 .summary(request.getSummary())
@@ -256,8 +258,9 @@ public class PrivateServiceTest {
         // Verify response is not null and has expected values
         assertThat(result)
                 .isNotNull()
-                .extracting("title", "content")
+                .extracting("slug", "title", "content")
                 .containsExactly(
+                        request.getSlug(),
                         request.getTitle(),
                         request.getContent()
                 );
@@ -274,6 +277,7 @@ public class PrivateServiceTest {
         int postId = 1;
         Post post = Post.builder()
                 .id(postId)
+                .slug("test-title")
                 .title("Test Title")
                 .content("Test Content")
                 .summary("Test Summary")
@@ -342,11 +346,13 @@ public class PrivateServiceTest {
                 .title("Updated Title")
                 .content("Updated Content")
                 .summary("Updated Summary")
+                .slug("updated-title")
                 .build();
 
         // Create updated post
         Post updatedPost = Post.builder()
                 .id(postId)
+                .slug("updated-title")
                 .title(request.getTitle())
                 .content(request.getContent())
                 .summary(request.getSummary())
@@ -368,9 +374,10 @@ public class PrivateServiceTest {
         // Verify response
         assertThat(result)
                 .isNotNull()
-                .extracting("id", "title", "content")
+                .extracting("id", "slug", "title", "content")
                 .containsExactly(
                         postId,
+                        request.getSlug(),
                         request.getTitle(),
                         request.getContent()
                 );
@@ -389,6 +396,7 @@ public class PrivateServiceTest {
                 .title("Updated Title")
                 .content("Updated Content")
                 .summary("Updated Summary")
+                .slug("updated-title")
                 .build();
 
         // Mock repository behavior
