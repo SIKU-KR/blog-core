@@ -117,6 +117,7 @@ public class PrivateServiceTest {
         // Create a post
         Post post = Post.builder()
                 .id(1)
+                .slug("test-title")
                 .title("Test Title")
                 .content("Test Content")
                 .summary("Test Summary")
@@ -270,6 +271,24 @@ public class PrivateServiceTest {
     }
 
     @Test
+    @DisplayName("createPost should reject duplicate slug")
+    void createPost_duplicateSlug_shouldThrowException() {
+        CreatePostRequest request = CreatePostRequest.builder()
+                .title("New Post")
+                .content("Content")
+                .summary("Summary")
+                .slug("new-post")
+                .build();
+
+        when(postRepository.existsBySlug("new-post")).thenReturn(true);
+
+        assertThatThrownBy(() -> privateService.createPost(request))
+                .isInstanceOf(IllegalArgumentException.class);
+
+        verify(postRepository, never()).insert(any(Post.class));
+    }
+
+    @Test
     @DisplayName("deletePost should delete post and related data when post exists")
     void deletePost_whenPostExists_shouldDeletePostAndRelatedData() {
         // given
@@ -385,6 +404,35 @@ public class PrivateServiceTest {
         // Verify the mocks were called
         verify(postRepository).findById(postId);
         verify(postRepository).update(any(Post.class));
+    }
+
+    @Test
+    @DisplayName("updatePost should reject duplicate slug from other posts")
+    void updatePost_duplicateSlug_shouldThrowException() {
+        int postId = 1;
+        Post post = Post.builder()
+                .id(postId)
+                .slug("original")
+                .title("Original Title")
+                .content("Original Content")
+                .summary("Original Summary")
+                .state("published")
+                .build();
+
+        UpdatePostRequest request = UpdatePostRequest.builder()
+                .title("Updated Title")
+                .content("Updated Content")
+                .summary("Updated Summary")
+                .slug("existing-slug")
+                .build();
+
+        when(postRepository.findById(postId)).thenReturn(post);
+        when(postRepository.existsBySlugExcludingId("existing-slug", postId)).thenReturn(true);
+
+        assertThatThrownBy(() -> privateService.updatePost(postId, request))
+                .isInstanceOf(IllegalArgumentException.class);
+
+        verify(postRepository, never()).update(any(Post.class));
     }
 
     @Test

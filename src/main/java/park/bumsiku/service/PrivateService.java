@@ -75,8 +75,11 @@ public class PrivateService {
 
     @LogExecutionTime
     public PostResponse createPost(CreatePostRequest request) {
+        ensureSlugUnique(request.getSlug(), null);
+
         Post post = Post.builder()
                 .title(request.getTitle())
+                .slug(request.getSlug())
                 .content(request.getContent())
                 .summary(request.getSummary())
                 .state("published")
@@ -92,6 +95,7 @@ public class PrivateService {
 
         return PostResponse.builder()
                 .id(savedPost.getId())
+                .slug(savedPost.getSlug())
                 .title(savedPost.getTitle())
                 .content(savedPost.getContent())
                 .summary(savedPost.getSummary())
@@ -135,7 +139,10 @@ public class PrivateService {
             throw new NoSuchElementException("Post not found with id: " + postId);
         }
 
+        ensureSlugUnique(request.getSlug(), postId);
+
         post.setTitle(request.getTitle());
+        post.setSlug(request.getSlug());
         post.setContent(request.getContent());
         post.setSummary(request.getSummary());
         post.setUpdatedAt(LocalDateTime.now());
@@ -147,6 +154,7 @@ public class PrivateService {
 
         return PostResponse.builder()
                 .id(updatedPost.getId())
+                .slug(updatedPost.getSlug())
                 .title(updatedPost.getTitle())
                 .content(updatedPost.getContent())
                 .summary(updatedPost.getSummary())
@@ -155,5 +163,14 @@ public class PrivateService {
                 .createdAt(updatedPost.getCreatedAt().toString())
                 .updatedAt(updatedPost.getUpdatedAt().toString())
                 .build();
+    }
+
+    private void ensureSlugUnique(String slug, Integer excludePostId) {
+        boolean exists = excludePostId == null
+                ? postRepository.existsBySlug(slug)
+                : postRepository.existsBySlugExcludingId(slug, excludePostId);
+        if (exists) {
+            throw new IllegalArgumentException("이미 사용 중인 슬러그입니다");
+        }
     }
 }

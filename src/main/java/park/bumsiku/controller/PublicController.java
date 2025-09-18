@@ -70,10 +70,10 @@ public class PublicController implements PublicAPI {
 
         validator.validatePostId(postId);
 
-        service.resolveSlugById(postId);
+        String slug = service.resolveSlugById(postId);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set(HttpHeaders.LOCATION, "/posts/" + postId);
+        headers.set(HttpHeaders.LOCATION, "/posts/" + slug);
 
         return new ResponseEntity<>(headers, HttpStatus.MOVED_PERMANENTLY);
     }

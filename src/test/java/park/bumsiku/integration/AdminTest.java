@@ -55,6 +55,7 @@ public class AdminTest extends AbstractTestSupport {
         for (int i = 0; i < 5; i++) {
             Post post = Post.builder()
                     .title("Test Post " + (i + 1))
+                    .slug("test-post-" + (i + 1))
                     .content("This is test content for post " + (i + 1))
                     .summary("Summary of test post " + (i + 1))
                     .state("published")
@@ -88,6 +89,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("New Test Post")
                 .content("This is content for the new test post")
                 .summary("Summary of the new test post")
+                .slug("new-test-post")
 
                 .build();
 
@@ -113,6 +115,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("")
                 .content("This is content for the new test post")
                 .summary("Summary of the new test post")
+                .slug("new-test-post-empty-title")
 
                 .build();
 
@@ -141,6 +144,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title(longTitle)
                 .content("This is content for the new test post")
                 .summary("Summary of the new test post")
+                .slug("new-test-post-long-title")
 
                 .build();
 
@@ -162,6 +166,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("New Test Post")
                 .content("")
                 .summary("Summary of the new test post")
+                .slug("new-test-post-empty-content")
 
                 .build();
 
@@ -190,6 +195,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("New Test Post")
                 .content(longContent)
                 .summary("Summary of the new test post")
+                .slug("new-test-post-long-content")
 
                 .build();
 
@@ -211,6 +217,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("New Test Post")
                 .content("This is content for the new test post")
                 .summary("")
+                .slug("new-test-post-empty-summary")
 
                 .build();
 
@@ -239,6 +246,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("New Test Post")
                 .content("This is content for the new test post")
                 .summary(longSummary)
+                .slug("new-test-post-long-summary")
 
                 .build();
 
@@ -260,6 +268,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("New Test Post")
                 .content("This is content for the new test post")
                 .summary("Summary of the new test post")
+                .slug("new-test-post-unauthorized")
 
                 .build();
 
@@ -431,6 +440,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Test Post")
                 .content("This is updated content for the test post")
                 .summary("Updated summary of the test post")
+                .slug("updated-post-1")
 
                 .build();
 
@@ -467,6 +477,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("")
                 .content("This is updated content for the test post")
                 .summary("Updated summary of the test post")
+                .slug("updated-post-2")
 
                 .build();
 
@@ -498,6 +509,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title(longTitle)
                 .content("This is updated content for the test post")
                 .summary("Updated summary of the test post")
+                .slug("updated-post-3")
 
                 .build();
 
@@ -522,6 +534,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Test Post")
                 .content("")
                 .summary("Updated summary of the test post")
+                .slug("updated-post-4")
 
                 .build();
 
@@ -553,6 +566,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Test Post")
                 .content(longContent)
                 .summary("Updated summary of the test post")
+                .slug("updated-post-5")
 
                 .build();
 
@@ -577,6 +591,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Test Post")
                 .content("This is updated content for the test post")
                 .summary("")
+                .slug("updated-post-6")
 
                 .build();
 
@@ -608,6 +623,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Test Post")
                 .content("This is updated content for the test post")
                 .summary(longSummary)
+                .slug("updated-post-7")
                 .build();
 
         // Perform request and verify
@@ -629,6 +645,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Test Post")
                 .content("This is updated content for the test post")
                 .summary("Updated summary of the test post")
+                .slug("updated-post-8")
                 .build();
 
         // Perform request with zero ID and verify
@@ -649,6 +666,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Test Post")
                 .content("This is updated content for the test post")
                 .summary("Updated summary of the test post")
+                .slug("updated-post-9")
                 .build();
 
         // Perform request with negative ID and verify
@@ -669,6 +687,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Test Post")
                 .content("This is updated content for the test post")
                 .summary("Updated summary of the test post")
+                .slug("updated-post-10")
 
                 .build();
 
@@ -693,6 +712,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Test Post")
                 .content("This is updated content for the test post")
                 .summary("Updated summary of the test post")
+                .slug("updated-post-11")
 
                 .build();
 
@@ -716,6 +736,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Test Post")
                 .content("This is updated content for the test post")
                 .summary("Updated summary of the test post")
+                .slug("updated-post-12")
 
                 .build();
 
@@ -758,6 +779,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Post with Tags")
                 .content("This is content for post with tags")
                 .summary("Summary of post with tags")
+                .slug("post-with-tags")
 
                 .tags(List.of("Spring", "Java", "Backend"))
                 .build();
@@ -783,6 +805,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Post without Tags")
                 .content("This is content for post without tags")
                 .summary("Summary of post without tags")
+                .slug("post-without-tags")
 
                 .tags(List.of())
                 .build();
@@ -808,6 +831,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Post with New Tags")
                 .content("Updated content with new tags")
                 .summary("Updated summary with new tags")
+                .slug("updated-post-13")
 
                 .tags(List.of("React", "Frontend", "JavaScript"))
                 .build();
@@ -836,6 +860,7 @@ public class AdminTest extends AbstractTestSupport {
                 .title("Updated Post without Tags")
                 .content("Updated content without tags")
                 .summary("Updated summary without tags")
+                .slug("updated-post-14")
 
                 .tags(List.of())
                 .build();

@@ -119,7 +119,7 @@ public class PublicService {
     @LogExecutionTime
     public String resolveSlugById(int id) {
         Post post = requirePostById(id);
-        return String.valueOf(post.getId());
+        return post.getSlug();
     }
 
     private Post requirePostById(int id) {
@@ -146,6 +146,7 @@ public class PublicService {
 
         return PostResponse.builder()
                 .id(post.getId())
+                .slug(post.getSlug())
                 .title(post.getTitle())
                 .content(post.getContent())
                 .summary(post.getSummary())

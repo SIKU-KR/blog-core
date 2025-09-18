@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 @Builder
 public class PostSummaryResponse {
     private int id;
+    private String slug;
     private String title;
     private String summary;
     private List<String> tags;
@@ -31,6 +32,7 @@ public class PostSummaryResponse {
 
         return PostSummaryResponse.builder()
                 .id(post.getId())
+                .slug(post.getSlug())
                 .title(post.getTitle())
                 .summary(post.getSummary())
                 .tags(tagNames)

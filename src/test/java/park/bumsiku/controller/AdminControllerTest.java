@@ -98,10 +98,12 @@ public class AdminControllerTest {
                 .title("New Post")
                 .content("Post Content")
                 .summary("Post Summary")
+                .slug("new-post")
                 .build();
 
         PostResponse response = PostResponse.builder()
                 .id(1)
+                .slug("new-post")
                 .title("New Post")
                 .content("Post Content")
                 .createdAt("2023-01-01T12:00:00")
@@ -141,10 +143,12 @@ public class AdminControllerTest {
                 .title("Updated Post")
                 .content("Updated Content")
                 .summary("Updated Summary")
+                .slug("updated-post")
                 .build();
 
         PostResponse response = PostResponse.builder()
                 .id(1)
+                .slug("updated-post")
                 .title("Updated Post")
                 .content("Updated Content")
                 .createdAt("2023-01-01T12:00:00")
@@ -172,6 +176,7 @@ public class AdminControllerTest {
                 .title("Updated Post")
                 .content("Updated Content")
                 .summary("Updated Summary")
+                .slug("updated-post")
                 .build();
 
         // Mock service to throw exception
@@ -245,6 +250,7 @@ public class AdminControllerTest {
                 .title("")  // Empty title is invalid
                 .content("Post Content")
                 .summary("Post Summary")
+                .slug("invalid-title")
                 .build();
 
         // Mock service to throw exception
@@ -380,6 +386,7 @@ public class AdminControllerTest {
                 .title("New Post")
                 .content("Post Content")
                 .summary("Post Summary")
+                .slug("new-post")
                 .build();
 
         // Mock service to throw runtime exception
@@ -417,6 +424,7 @@ public class AdminControllerTest {
                 .title("Updated Post")
                 .content("Updated Content")
                 .summary("Updated Summary")
+                .slug("updated-post")
                 .build();
 
         // Mock service to throw runtime exception

@@ -46,6 +46,7 @@ class AutoTagManagementTest extends AbstractTestSupport {
                 .title("Test Post")
                 .content("Test content")
                 .summary("Test summary")
+                .slug("test-post")
                 .tags(List.of("Spring", "Java", "TDD"))
                 .build();
 
@@ -71,6 +72,7 @@ class AutoTagManagementTest extends AbstractTestSupport {
         // Create initial post with tags
         Post post = Post.builder()
                 .title("Original Post")
+                .slug("original-post")
                 .content("Original content")
                 .summary("Original summary")
                 .state("published")
@@ -82,6 +84,7 @@ class AutoTagManagementTest extends AbstractTestSupport {
                 .title("Test Post")
                 .content("Test content")
                 .summary("Test summary")
+                .slug("test-post-for-update")
                 .tags(List.of("Spring", "Java", "TDD"))
                 .build();
 
@@ -95,6 +98,7 @@ class AutoTagManagementTest extends AbstractTestSupport {
                 .title("Updated Post")
                 .content("Updated content")
                 .summary("Updated summary")
+                .slug("updated-post-slug")
                 .tags(List.of("Spring", "React")) // Java and TDD removed, React added
                 .build();
 
@@ -123,6 +127,7 @@ class AutoTagManagementTest extends AbstractTestSupport {
                 .title("Test Post")
                 .content("Test content")
                 .summary("Test summary")
+                .slug("test-post-tags")
                 .tags(List.of("Active", "InUse"))
                 .build();
 
@@ -149,6 +154,7 @@ class AutoTagManagementTest extends AbstractTestSupport {
                 .title("To Be Deleted")
                 .content("Content")
                 .summary("Summary")
+                .slug("to-be-deleted")
                 .tags(List.of("UniqueTag1", "UniqueTag2"))
                 .build();
 
@@ -190,6 +196,7 @@ class AutoTagManagementTest extends AbstractTestSupport {
                 .title("Spring Post")
                 .content("Spring content")
                 .summary("Spring summary")
+                .slug("spring-post")
                 .tags(List.of("Spring", "Backend"))
                 .build();
 
@@ -197,6 +204,7 @@ class AutoTagManagementTest extends AbstractTestSupport {
                 .title("React Post")
                 .content("React content")
                 .summary("React summary")
+                .slug("react-post")
                 .tags(List.of("React", "Frontend"))
                 .build();
 

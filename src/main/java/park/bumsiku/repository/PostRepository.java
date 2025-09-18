@@ -43,6 +43,21 @@ public class PostRepository {
         return result.isEmpty() ? null : result.get(0);
     }
 
+    public boolean existsBySlug(String slug) {
+        String jpql = "SELECT COUNT(p) FROM Post p WHERE p.slug = :slug";
+        TypedQuery<Long> query = entityManager.createQuery(jpql, Long.class);
+        query.setParameter("slug", slug);
+        return query.getSingleResult() > 0;
+    }
+
+    public boolean existsBySlugExcludingId(String slug, int id) {
+        String jpql = "SELECT COUNT(p) FROM Post p WHERE p.slug = :slug AND p.id <> :id";
+        TypedQuery<Long> query = entityManager.createQuery(jpql, Long.class);
+        query.setParameter("slug", slug);
+        query.setParameter("id", id);
+        return query.getSingleResult() > 0;
+    }
+
     public List<Post> findAll(int page, int size, String orderByClause) {
         String jpql = "SELECT p FROM Post p " + orderByClause;
         TypedQuery<Post> query = entityManager.createQuery(jpql, Post.class);
