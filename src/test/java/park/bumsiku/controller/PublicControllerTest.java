@@ -20,7 +20,6 @@ import park.bumsiku.service.PublicService;
 import park.bumsiku.utils.integration.DiscordWebhookCreator;
 import park.bumsiku.utils.validation.ArgumentValidator;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -32,6 +31,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static park.bumsiku.support.TestFixtures.*;
 
 @WebMvcTest(PublicController.class)
 @Import({SecurityConfig.class, ClockConfig.class, LoggingConfig.class})
@@ -62,19 +62,19 @@ public class PublicControllerTest {
     @Test
     public void testGetPosts_Success() throws Exception {
         // Prepare test data
-        PostSummaryResponse post1 = PostSummaryResponse.builder()
+        PostSummaryResponse post1 = PostSummaryResponse.from(buildPost(builder -> builder
                 .id(1)
+                .slug("test-post-1")
                 .title("Test Post 1")
-                .summary("Summary 1")
-                .build();
+                .summary("Summary 1")));
 
-        PostSummaryResponse post2 = PostSummaryResponse.builder()
+        PostSummaryResponse post2 = PostSummaryResponse.from(buildPost(builder -> builder
                 .id(2)
+                .slug("test-post-2")
                 .title("Test Post 2")
-                .summary("Summary 2")
-                .build();
+                .summary("Summary 2")));
 
-        List<PostSummaryResponse> posts = Arrays.asList(post1, post2);
+        List<PostSummaryResponse> posts = List.of(post1, post2);
         PostListResponse postListResponse = PostListResponse.builder()
                 .content(posts)
                 .totalElements(2)
@@ -94,8 +94,8 @@ public class PublicControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.data.content", hasSize(2)))
-                .andExpect(jsonPath("$.data.content[0].title", is("Test Post 1")))
-                .andExpect(jsonPath("$.data.content[1].title", is("Test Post 2")));
+                .andExpect(jsonPath("$.data.content[0].title", is(post1.getTitle())))
+                .andExpect(jsonPath("$.data.content[1].title", is(post2.getTitle())));
     }
 
 
@@ -119,15 +119,11 @@ public class PublicControllerTest {
     @Test
     public void testGetPostBySlug_Success() throws Exception {
         // Prepare test data
-        PostResponse postResponse = PostResponse.builder()
+        PostResponse postResponse = buildPostResponse(builder -> builder
                 .id(1)
                 .slug("test-post")
                 .title("Test Post")
-                .content("Test Content")
-                .canonicalPath("/posts/test-post")
-                .createdAt("2023-01-01T12:00:00")
-                .updatedAt("2023-01-01T12:00:00")
-                .build();
+                .content("Test Content"));
 
         // Mock service response
         when(publicService.getPostBySlug("test-post")).thenReturn(postResponse);
@@ -168,21 +164,10 @@ public class PublicControllerTest {
     @Test
     public void testGetCommentsByPostId_Success() throws Exception {
         // Prepare test data
-        CommentResponse comment1 = CommentResponse.builder()
-                .id(1)
-                .authorName("Author 1")
-                .content("Comment 1")
-                .createdAt("2023-01-01T12:00:00")
-                .build();
-
-        CommentResponse comment2 = CommentResponse.builder()
-                .id(2)
-                .authorName("Author 2")
-                .content("Comment 2")
-                .createdAt("2023-01-01T12:00:00")
-                .build();
-
-        List<CommentResponse> comments = Arrays.asList(comment1, comment2);
+        List<CommentResponse> comments = List.of(
+                buildCommentResponse(builder -> builder.authorName("Author 1").content("Comment 1")),
+                buildCommentResponse(builder -> builder.authorName("Author 2").content("Comment 2"))
+        );
 
         // Mock service response
         when(publicService.getCommentsById(1)).thenReturn(comments);
@@ -192,24 +177,22 @@ public class PublicControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.data", hasSize(2)))
-                .andExpect(jsonPath("$.data[0].authorName", is("Author 1")))
-                .andExpect(jsonPath("$.data[1].authorName", is("Author 2")));
+                .andExpect(jsonPath("$.data[0].authorName", is(comments.get(0).getAuthorName())))
+                .andExpect(jsonPath("$.data[1].authorName", is(comments.get(1).getAuthorName())));
     }
 
     @Test
     public void testPostComment_Success() throws Exception {
         // Prepare test data
-        CommentRequest commentRequest = CommentRequest.builder()
+        CommentRequest commentRequest = buildCommentRequest(builder -> builder
                 .author("Test Author")
-                .content("Test Comment")
-                .build();
+                .content("Test Comment"));
 
-        CommentResponse commentResponse = CommentResponse.builder()
+        CommentResponse commentResponse = buildCommentResponse(builder -> builder
                 .id(1)
                 .authorName("Test Author")
                 .content("Test Comment")
-                .createdAt("2023-01-01T12:00:00")
-                .build();
+                .createdAt("2023-01-01T12:00:00"));
 
         // Mock service response
         when(publicService.createComment(eq(1), any(CommentRequest.class))).thenReturn(commentResponse);
@@ -227,10 +210,9 @@ public class PublicControllerTest {
     @Test
     public void testPostComment_InvalidRequest() throws Exception {
         // Prepare invalid test data (empty author)
-        CommentRequest commentRequest = CommentRequest.builder()
+        CommentRequest commentRequest = buildCommentRequest(builder -> builder
                 .author("")
-                .content("Test Comment")
-                .build();
+                .content("Test Comment"));
 
         // Mock service to throw exception
         doThrow(new IllegalArgumentException("작성자 이름을 입력해주세요"))
@@ -303,10 +285,9 @@ public class PublicControllerTest {
     @Test
     public void testPostComment_NotFound() throws Exception {
         // Prepare test data
-        CommentRequest commentRequest = CommentRequest.builder()
+        CommentRequest commentRequest = buildCommentRequest(builder -> builder
                 .author("Test Author")
-                .content("Test Comment")
-                .build();
+                .content("Test Comment"));
 
         // Mock service to throw exception
         when(publicService.createComment(eq(999), any(CommentRequest.class)))

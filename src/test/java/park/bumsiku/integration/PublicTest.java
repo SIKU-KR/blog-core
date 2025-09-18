@@ -21,6 +21,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static park.bumsiku.support.TestFixtures.*;
 
 @Transactional
 public class PublicTest extends AbstractTestSupport {
@@ -46,17 +47,19 @@ public class PublicTest extends AbstractTestSupport {
     private void createTestPosts() {
         for (int i = 0; i < 15; i++) {
             // 조회수를 다양하게 설정 (인덱스가 높을수록 조회수도 높게)
-            Long views = (long) ((i + 1) * 10);
-            Post post = Post.builder()
-                    .title("Test Post " + (i + 1))
-                    .slug("test-post-" + (i + 1))
-                    .content("This is test content for post " + (i + 1))
-                    .summary("Summary of test post " + (i + 1))
-                    .state("published")
-                    .createdAt(LocalDateTime.now().minusDays(15 - i))
-                    .updatedAt(LocalDateTime.now().minusDays(15 - i))
+            final int index = i + 1;
+            final long views = (long) (index * 10);
+            final LocalDateTime timestamp = LocalDateTime.now().minusDays(15 - i);
+            Post post = buildPost(builder -> builder
+                    .id(null)
+                    .title("Test Post " + index)
+                    .slug("test-post-" + index)
+                    .content("This is test content for post " + index)
+                    .summary("Summary of test post " + index)
+                    .createdAt(timestamp)
+                    .updatedAt(timestamp)
                     .views(views)
-                    .build();
+            );
             posts.add(postRepository.insert(post));
         }
     }
@@ -64,24 +67,25 @@ public class PublicTest extends AbstractTestSupport {
     private void createTestComments() {
         for (int i = 0; i < 5; i++) {
             Post post = posts.get(i);
+            final int postIndex = i + 1;
 
             for (int j = 0; j < 3; j++) {
-                Comment comment = Comment.builder()
-                        .post(post)
-                        .authorName("Commenter " + (j + 1))
-                        .content("This is comment " + (j + 1) + " for post " + (i + 1))
-                        .build();
+                final int commentIndex = j + 1;
+                Comment comment = buildComment(post, builder -> builder
+                        .authorName("Commenter " + commentIndex)
+                        .content("This is comment " + commentIndex + " for post " + postIndex)
+                );
                 comments.add(commentRepository.save(comment));
             }
         }
 
         for (int i = 10; i < 15; i++) {
             Post post = posts.get(i);
-            Comment comment = Comment.builder()
-                    .post(post)
+            final int postIndex = i + 1;
+            Comment comment = buildComment(post, builder -> builder
                     .authorName("Single Commenter")
-                    .content("This is the only comment for post " + (i + 1))
-                    .build();
+                    .content("This is the only comment for post " + postIndex)
+            );
             comments.add(commentRepository.save(comment));
         }
     }

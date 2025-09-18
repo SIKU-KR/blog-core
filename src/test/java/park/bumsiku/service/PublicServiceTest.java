@@ -5,7 +5,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import park.bumsiku.domain.dto.request.CommentRequest;
 import park.bumsiku.domain.dto.response.CommentResponse;
 import park.bumsiku.domain.dto.response.PostResponse;
 import park.bumsiku.domain.entity.Comment;
@@ -16,7 +15,6 @@ import park.bumsiku.repository.TagRepository;
 import park.bumsiku.utils.integration.DiscordWebhookCreator;
 import park.bumsiku.utils.sorting.SortCriteria;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -24,6 +22,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static park.bumsiku.support.TestFixtures.*;
 
 @ExtendWith(MockitoExtension.class)
 public class PublicServiceTest {
@@ -47,41 +46,16 @@ public class PublicServiceTest {
     @Mock
     private park.bumsiku.utils.sorting.PostSortBuilder postSortBuilder;
 
-    private Post postMockData() {
-        return Post.builder()
-                .id(1)
-                .slug("sample-post-title")
-                .title("Sample Post Title")
-                .content("This is a sample content for the post. Lorem ipsum dolor sit amet, consectetur adipiscing elit.")
-                .summary("Sample summary of the post")
-                .state("PUBLISHED")
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .views(5L)
-                .build();
-    }
-
-
-    private List<Comment> commentMockData() {
-        Post post = postMockData();
-        return List.of(
-                Comment.builder().id(1L).post(post).authorName("Alice").content("정말 좋은 포스트네요!").createdAt(LocalDateTime.now()).build(),
-                Comment.builder().id(2L).post(post).authorName("Bob").content("유익한 정보 감사합니다.").createdAt(LocalDateTime.now()).build(),
-                Comment.builder().id(3L).post(post).authorName("Charlie").content("더 많은 글 기대할게요.").createdAt(LocalDateTime.now()).build()
-        );
-    }
-
-    private CommentRequest commentRequestMockData() {
-        return CommentRequest.builder()
-                .author("peter")
-                .content("content of mock comment request")
-                .build();
-    }
-
     @Test
     public void returnPostSummaryListResponseWithMockedData() {
         // given
-        List<Post> postList = List.of(postMockData());
+        Post mockPost = buildPost(builder -> builder
+                .slug("sample-post-title")
+                .title("Sample Post Title")
+                .summary("Sample summary of the post")
+                .content("This is a sample content for the post. Lorem ipsum dolor sit amet, consectetur adipiscing elit.")
+                .views(5L));
+        List<Post> postList = List.of(mockPost);
         SortCriteria sortCriteria = new SortCriteria("createdAt", "ASC", "ORDER BY p.createdAt ASC");
         when(postSortBuilder.buildSortCriteria("asc")).thenReturn(sortCriteria);
         when(postRepository.findAll(0, 10, "ORDER BY p.createdAt ASC")).thenReturn(postList);
@@ -96,7 +70,7 @@ public class PublicServiceTest {
                 .hasSize(1)
                 .extracting("title", "summary")
                 .containsExactly(
-                        tuple("Sample Post Title", "Sample summary of the post")
+                        tuple(mockPost.getTitle(), mockPost.getSummary())
                 );
         assertThat(result.getPageSize()).isNotNull().isEqualTo(10);
         assertThat(result.getPageNumber()).isNotNull().isEqualTo(0);
@@ -106,7 +80,12 @@ public class PublicServiceTest {
     @Test
     public void createAndReturnPostResponseObjectFromMockedPostSlug() {
         // given
-        Post mockPost = postMockData();
+        Post mockPost = buildPost(builder -> builder
+                .slug("sample-post-title")
+                .title("Sample Post Title")
+                .content("This is a sample content for the post. Lorem ipsum dolor sit amet, consectetur adipiscing elit.")
+                .summary("Sample summary of the post")
+                .views(5L));
 
         when(postRepository.findBySlug("sample-post-title")).thenReturn(mockPost);
 
@@ -138,7 +117,7 @@ public class PublicServiceTest {
 
     @Test
     public void resolveSlugByIdShouldReturnSlug() {
-        Post post = postMockData();
+        Post post = buildPost(builder -> builder.views(5L));
         when(postRepository.findById(post.getId())).thenReturn(post);
 
         String slug = publicService.resolveSlugById(post.getId());
@@ -166,14 +145,31 @@ public class PublicServiceTest {
     @Test
     public void createAndReturnListOfCommentResponse() {
         // given
-        List<Comment> commentList = commentMockData();
-        Post post = postMockData();
+        Post post = buildPost();
+        List<CommentResponse> expected = List.of(
+                CommentResponse.builder().authorName("Alice").content("정말 좋은 포스트네요!").build(),
+                CommentResponse.builder().authorName("Bob").content("유익한 정보 감사합니다.").build(),
+                CommentResponse.builder().authorName("Charlie").content("더 많은 글 기대할게요.").build()
+        );
+        List<Comment> commentList = List.of(
+                buildComment(post, builder -> builder.id(1L).authorName("Alice").content("정말 좋은 포스트네요!")),
+                buildComment(post, builder -> builder.id(2L).authorName("Bob").content("유익한 정보 감사합니다.")),
+                buildComment(post, builder -> builder.id(3L).authorName("Charlie").content("더 많은 글 기대할게요."))
+        );
 
-        when(postRepository.findById(post.getId())).thenReturn(post);
+        commentList.forEach(comment -> {
+            assertThat(comment).isNotNull();
+            assertThat(comment.getCreatedAt()).isNotNull();
+        });
+
+        Integer postId = post.getId();
+        assertThat(postId).isNotNull();
+
+        when(postRepository.findById(postId)).thenReturn(post);
         when(commentRepository.findAllByPost(post)).thenReturn(commentList);
 
         // when
-        List<CommentResponse> result = publicService.getCommentsById(post.getId());
+        List<CommentResponse> result = publicService.getCommentsById(postId);
 
         // then
         assertThat(result)
@@ -181,9 +177,9 @@ public class PublicServiceTest {
                 .hasSize(3)
                 .extracting("authorName", "content")
                 .containsExactly(
-                        tuple(commentList.get(0).getAuthorName(), commentList.get(0).getContent()),
-                        tuple(commentList.get(1).getAuthorName(), commentList.get(1).getContent()),
-                        tuple(commentList.get(2).getAuthorName(), commentList.get(2).getContent())
+                        tuple(expected.get(0).getAuthorName(), expected.get(0).getContent()),
+                        tuple(expected.get(1).getAuthorName(), expected.get(1).getContent()),
+                        tuple(expected.get(2).getAuthorName(), expected.get(2).getContent())
                 );
     }
 
@@ -201,19 +197,18 @@ public class PublicServiceTest {
     @Test
     public void createAndReturnCommentResponse() {
         // given
-        CommentRequest commentRequest = commentRequestMockData();
-        Post post = postMockData();
+        var commentRequest = buildCommentRequest(builder -> builder
+                .author("peter")
+                .content("content of mock comment request"));
+        Post post = buildPost();
 
         when(postRepository.findById(post.getId())).thenReturn(post);
         when(commentRepository.save(any(Comment.class)))
-                .thenReturn(Comment.builder()
+                .thenReturn(buildComment(post, builder -> builder
                         .id(1L)
-                        .post(post)
                         .authorName(commentRequest.getAuthor())
                         .content(commentRequest.getContent())
-                        .createdAt(LocalDateTime.now())
-                        .build()
-                );
+                ));
 
         // when
         CommentResponse result = publicService.createComment(post.getId(), commentRequest);
@@ -232,7 +227,9 @@ public class PublicServiceTest {
     public void throwPostNotFoundExceptionWhenRepositoryReturnsNullPostForCreateComment() {
         // given
         int postId = 111;
-        CommentRequest commentRequest = commentRequestMockData();
+        var commentRequest = buildCommentRequest(builder -> builder
+                .author("peter")
+                .content("content of mock comment request"));
         when(postRepository.findById(postId)).thenReturn(null);
 
         // then
@@ -244,7 +241,7 @@ public class PublicServiceTest {
     @Test
     public void incrementPostViewsShouldIncreaseViewsCount() {
         // given
-        Post post = postMockData();
+        Post post = buildPost(builder -> builder.views(5L));
         Long initialViews = post.getViews();
         when(postRepository.findById(post.getId())).thenReturn(post);
 
@@ -271,7 +268,7 @@ public class PublicServiceTest {
     @Test
     public void getPostListShouldCallRepositoryWithViewsSortDesc() {
         // given
-        List<Post> postList = List.of(postMockData());
+        List<Post> postList = List.of(buildPost(builder -> builder.views(5L)));
         SortCriteria sortCriteria = new SortCriteria("views", "DESC", "ORDER BY p.views DESC");
         when(postSortBuilder.buildSortCriteria("views,desc")).thenReturn(sortCriteria);
         when(postRepository.findAll(0, 10, "ORDER BY p.views DESC")).thenReturn(postList);
@@ -289,7 +286,7 @@ public class PublicServiceTest {
     @Test
     public void getPostListShouldCallRepositoryWithCreatedAtSortAsc() {
         // given
-        List<Post> postList = List.of(postMockData());
+        List<Post> postList = List.of(buildPost());
         SortCriteria sortCriteria = new SortCriteria("createdAt", "ASC", "ORDER BY p.createdAt ASC");
         when(postSortBuilder.buildSortCriteria("createdAt,asc")).thenReturn(sortCriteria);
         when(postRepository.findAll(0, 5, "ORDER BY p.createdAt ASC")).thenReturn(postList);
