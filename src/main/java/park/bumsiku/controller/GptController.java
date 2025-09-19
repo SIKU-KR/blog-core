@@ -35,6 +35,8 @@ public class GptController implements GenerativeApi {
     }
 
     @Override
+    @PostMapping("/slug")
+    @LogExecutionTime
     public Response<SlugGenerationResponse> generateSummary(SlugGenerationRequest request) {
         String slug = llmService.generateSlug(request.getTitle(), request.getText());
         SlugGenerationResponse payload = SlugGenerationResponse.builder()
