@@ -44,6 +44,6 @@ public interface GenerativeApi {
             )
     )
     @PostMapping("/ai/slug")
-    Response<SlugGenerationResponse> generateSummary(@RequestBody SlugGenerationRequest request);
+    Response<SlugGenerationResponse> generateSlug(@RequestBody SlugGenerationRequest request);
 
 }
