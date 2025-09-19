@@ -55,20 +55,23 @@ public class PublicController implements PublicAPI {
     public Object getPostBySlugOrRedirect(
             @PathVariable("slug") String slug) {
 
-        // 숫자인 경우 리다이렉트
         if (slug.matches("\\d+")) {
-            int postId = Integer.parseInt(slug);
-            validator.validatePostId(postId);
-            String resolvedSlug = service.resolveSlugById(postId);
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.set(HttpHeaders.LOCATION, "/posts/" + resolvedSlug);
-            return new ResponseEntity<>(headers, HttpStatus.MOVED_PERMANENTLY);
+            return redirectToSlug(slug);
         }
 
         validator.validateSlug(slug);
         PostResponse result = service.getPostBySlug(slug);
         return Response.success(result);
+    }
+
+    private ResponseEntity<Object> redirectToSlug(String slug) {
+        int postId = Integer.parseInt(slug);
+        validator.validatePostId(postId);
+        String resolvedSlug = service.resolveSlugById(postId);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.LOCATION, "/posts/" + resolvedSlug);
+        return new ResponseEntity<>(headers, HttpStatus.MOVED_PERMANENTLY);
     }
 
 
