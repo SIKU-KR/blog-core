@@ -177,7 +177,7 @@ public class PublicTest extends AbstractTestSupport {
     public void testGetPostByIdRedirectsToSlug() throws Exception {
         Post post = posts.get(0);
 
-        mockMvc.perform(get("/posts/id/{postId}", post.getId())
+        mockMvc.perform(get("/posts/{postId}", post.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isMovedPermanently())
                 .andExpect(header().string("Location", "/posts/" + post.getSlug()));

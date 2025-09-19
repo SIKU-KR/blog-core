@@ -50,8 +50,8 @@ public interface PublicAPI {
     );
 
     @Operation(
-            summary = "특정 게시글 조회",
-            description = "ID를 이용하여 특정 게시글 상세 정보를 조회합니다."
+            summary = "특정 게시글 조회 또는 리다이렉션",
+            description = "슬러그로 게시글을 조회하거나, 숫자 ID인 경우 슬러그 기반 URL로 리다이렉션합니다."
     )
     @ApiResponse(
             responseCode = "200",
@@ -61,24 +61,15 @@ public interface PublicAPI {
                     schema = @Schema(implementation = Response.class)
             )
     )
+    @ApiResponse(responseCode = "301", description = "Moved Permanently - 숫자 ID인 경우 슬러그 기반 URL로 리다이렉션")
     @ApiResponse(responseCode = "400", description = "잘못된 요청 (ID 형식 오류)")
     @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")
     @GetMapping("/posts/{slug}")
-    Response<PostResponse> getPostBySlug(
-            @Parameter(description = "조회할 게시글 슬러그")
+    Object getPostBySlugOrRedirect(
+            @Parameter(description = "조회할 게시글 슬러그 또는 ID")
             @PathVariable("slug") String slug
     );
 
-    @Operation(
-            summary = "ID 기반 게시글 URL 301 리다이렉션",
-            description = "기존 ID 기반 URL을 slug 기반 URL로 영구 리다이렉션합니다."
-    )
-    @ApiResponse(responseCode = "301", description = "Moved Permanently - slug 기반 URL로 리다이렉션")
-    @GetMapping("/posts/id/{postId}")
-    ResponseEntity<Void> redirectPostById(
-            @Parameter(description = "리다이렉션할 게시글 ID")
-            @PathVariable("postId") int postId
-    );
 
     @Operation(
             summary = "특정 게시글의 댓글 목록 조회",

@@ -156,7 +156,7 @@ public class PublicControllerTest {
     public void testGetPostByIdRedirectsToSlug() throws Exception {
         when(publicService.resolveSlugById(1)).thenReturn("test-post");
 
-        mockMvc.perform(get("/posts/id/1"))
+        mockMvc.perform(get("/posts/1"))
                 .andExpect(status().isMovedPermanently())
                 .andExpect(header().string("Location", "/posts/test-post"));
     }
