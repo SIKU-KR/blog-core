@@ -24,20 +24,10 @@ public class LlmService {
     @LogExecutionTime
     @Transactional
     public String generateSummary(String text) {
-        List<String> summaries = postRepository.findRecentSummaries(5);
-        String examples = getSummaryExampleString(summaries);
         SystemMessage systemMessage = getSystemMessageToSummarize();
-        UserMessage userMessage = getUserMessageToSummarize(examples, text);
+        UserMessage userMessage = getUserMessageToSummarize(text);
 
-        return chatClient.prompt()
-                .messages(systemMessage, userMessage)
-                .call().content();
-    }
-
-    private String getSummaryExampleString(List<String> summaries) {
-        return summaries.stream()
-                .map(s -> "\"" + s + "\"")
-                .collect(Collectors.joining(", "));
+        return chatClient.prompt().messages(systemMessage, userMessage).call().content();
     }
 
     private SystemMessage getSystemMessageToSummarize() {
@@ -55,7 +45,7 @@ public class LlmService {
         return new SystemMessage(msg);
     }
 
-    private UserMessage getUserMessageToSummarize(String examples, String text) {
+    private UserMessage getUserMessageToSummarize(String text) {
         String userMessageTemplate = """
                 [요약할 원문]
                 <<<
@@ -64,10 +54,7 @@ public class LlmService {
                 
                 [요약 결과]
                 """;
-        return new UserMessage(new PromptTemplate(userMessageTemplate).render(Map.of(
-                "examples", examples,
-                "text", text
-        )));
+        return new UserMessage(new PromptTemplate(userMessageTemplate).render(Map.of("text", text)));
     }
 }
 
