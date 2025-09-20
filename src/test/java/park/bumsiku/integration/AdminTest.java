@@ -27,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static park.bumsiku.support.TestFixtures.*;
 
 @Transactional
-public class AdminTest extends AbstractTestSupport {
+class AdminTest extends AbstractTestSupport {
 
     private final List<Post> posts = new ArrayList<>();
     private final List<Comment> comments = new ArrayList<>();
@@ -39,7 +39,7 @@ public class AdminTest extends AbstractTestSupport {
     private CommentRepository commentRepository;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         // Clear existing data
         posts.clear();
         comments.clear();
@@ -87,7 +87,7 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testAddPost_Success() throws Exception {
+    void testAddPost_Success() throws Exception {
         // Prepare test data
         CreatePostRequest request = buildCreatePostRequest(builder -> builder
                 .title("New Test Post")
@@ -111,7 +111,7 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testAddPost_EmptyTitle() throws Exception {
+    void testAddPost_EmptyTitle() throws Exception {
         // Prepare test data with empty title
         CreatePostRequest request = buildCreatePostRequest(builder -> builder
                 .title("")
@@ -131,7 +131,7 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testAddPost_TitleTooLong() throws Exception {
+    void testAddPost_TitleTooLong() throws Exception {
         // Create a title longer than 100 characters
         StringBuilder titleBuilder = new StringBuilder();
         for (int i = 0; i < 11; i++) {
@@ -158,7 +158,7 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testAddPost_EmptyContent() throws Exception {
+    void testAddPost_EmptyContent() throws Exception {
         // Prepare test data with empty content
         CreatePostRequest request = buildCreatePostRequest(builder -> builder
                 .title("New Test Post")
@@ -178,7 +178,7 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testAddPost_ContentTooLong() throws Exception {
+    void testAddPost_ContentTooLong() throws Exception {
         // Create content longer than 10000 characters
         StringBuilder contentBuilder = new StringBuilder();
         for (int i = 0; i < 1001; i++) {
@@ -205,7 +205,7 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testAddPost_EmptySummary() throws Exception {
+    void testAddPost_EmptySummary() throws Exception {
         // Prepare test data with empty summary
         CreatePostRequest request = buildCreatePostRequest(builder -> builder
                 .title("New Test Post")
@@ -225,7 +225,7 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testAddPost_SummaryTooLong() throws Exception {
+    void testAddPost_SummaryTooLong() throws Exception {
         // Create summary longer than 200 characters
         StringBuilder summaryBuilder = new StringBuilder();
         for (int i = 0; i < 21; i++) {
@@ -252,7 +252,7 @@ public class AdminTest extends AbstractTestSupport {
 
 
     @Test
-    public void testAddPost_Unauthorized() throws Exception {
+    void testAddPost_Unauthorized() throws Exception {
         // Prepare test data
         CreatePostRequest request = buildCreatePostRequest(builder -> builder
                 .title("New Test Post")
@@ -269,7 +269,7 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testDeleteComment_Success() throws Exception {
+    void testDeleteComment_Success() throws Exception {
         // Get a valid comment ID
         Long commentId = comments.get(0).getId();
 
@@ -287,7 +287,7 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testDeleteComment_InvalidId_NonNumeric() throws Exception {
+    void testDeleteComment_InvalidId_NonNumeric() throws Exception {
         // Perform request with non-numeric ID and verify
         mockMvc.perform(delete("/admin/comments/abc"))
                 .andExpect(status().isBadRequest())
@@ -298,7 +298,7 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testDeleteComment_InvalidId_Zero() throws Exception {
+    void testDeleteComment_InvalidId_Zero() throws Exception {
         // Perform request with zero ID and verify
         mockMvc.perform(delete("/admin/comments/0"))
                 .andExpect(status().isBadRequest())
@@ -309,7 +309,7 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testDeleteComment_InvalidId_Negative() throws Exception {
+    void testDeleteComment_InvalidId_Negative() throws Exception {
         // Perform request with negative ID and verify
         mockMvc.perform(delete("/admin/comments/-1"))
                 .andExpect(status().isBadRequest())
@@ -320,7 +320,7 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testDeleteComment_NonExistentId() throws Exception {
+    void testDeleteComment_NonExistentId() throws Exception {
         // Use a non-existent comment ID (assuming IDs are sequential)
         Long nonExistentId = comments.get(comments.size() - 1).getId() + 1000;
 
@@ -333,7 +333,7 @@ public class AdminTest extends AbstractTestSupport {
     }
 
     @Test
-    public void testDeleteComment_Unauthorized() throws Exception {
+    void testDeleteComment_Unauthorized() throws Exception {
         // Get a valid comment ID
         Long commentId = comments.get(0).getId();
 
@@ -344,7 +344,7 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testDeletePost_Success() throws Exception {
+    void testDeletePost_Success() throws Exception {
         // Get a valid post ID
         int postId = posts.get(0).getId();
 
@@ -362,7 +362,7 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testDeletePost_InvalidId_Zero() throws Exception {
+    void testDeletePost_InvalidId_Zero() throws Exception {
         // Perform request with zero ID and verify
         mockMvc.perform(delete("/admin/posts/0"))
                 .andExpect(status().isBadRequest())
@@ -373,7 +373,7 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testDeletePost_InvalidId_Negative() throws Exception {
+    void testDeletePost_InvalidId_Negative() throws Exception {
         // Perform request with negative ID and verify
         mockMvc.perform(delete("/admin/posts/-1"))
                 .andExpect(status().isBadRequest())
@@ -384,7 +384,7 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testDeletePost_InvalidId_NonNumeric() throws Exception {
+    void testDeletePost_InvalidId_NonNumeric() throws Exception {
         // Perform request with non-numeric ID and verify
         mockMvc.perform(delete("/admin/posts/abc"))
                 .andDo(print())
@@ -395,7 +395,7 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testDeletePost_NonExistentId() throws Exception {
+    void testDeletePost_NonExistentId() throws Exception {
         // Use a non-existent post ID (assuming IDs are sequential)
         int nonExistentId = posts.get(posts.size() - 1).getId() + 1000;
 
@@ -408,7 +408,7 @@ public class AdminTest extends AbstractTestSupport {
     }
 
     @Test
-    public void testDeletePost_Unauthorized() throws Exception {
+    void testDeletePost_Unauthorized() throws Exception {
         // Get a valid post ID
         int postId = posts.get(0).getId();
 
@@ -419,7 +419,7 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testUpdatePost_Success() throws Exception {
+    void testUpdatePost_Success() throws Exception {
         // Get a valid post ID
         int postId = posts.get(0).getId();
 
@@ -454,7 +454,7 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testUpdatePost_EmptyTitle() throws Exception {
+    void testUpdatePost_EmptyTitle() throws Exception {
         // Get a valid post ID
         int postId = posts.get(0).getId();
 
@@ -477,7 +477,7 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testUpdatePost_TitleTooLong() throws Exception {
+    void testUpdatePost_TitleTooLong() throws Exception {
         // Get a valid post ID
         int postId = posts.get(0).getId();
 
@@ -507,7 +507,7 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testUpdatePost_EmptyContent() throws Exception {
+    void testUpdatePost_EmptyContent() throws Exception {
         // Get a valid post ID
         int postId = posts.get(0).getId();
 
@@ -530,7 +530,7 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testUpdatePost_ContentTooLong() throws Exception {
+    void testUpdatePost_ContentTooLong() throws Exception {
         // Get a valid post ID
         int postId = posts.get(0).getId();
 
@@ -560,7 +560,7 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testUpdatePost_EmptySummary() throws Exception {
+    void testUpdatePost_EmptySummary() throws Exception {
         // Get a valid post ID
         int postId = posts.get(0).getId();
 
@@ -583,7 +583,7 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testUpdatePost_SummaryTooLong() throws Exception {
+    void testUpdatePost_SummaryTooLong() throws Exception {
         // Get a valid post ID
         int postId = posts.get(0).getId();
 
@@ -614,7 +614,7 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testUpdatePost_InvalidId_Zero() throws Exception {
+    void testUpdatePost_InvalidId_Zero() throws Exception {
         // Prepare test data
         UpdatePostRequest request = buildUpdatePostRequest(builder -> builder
                 .title("Updated Test Post")
@@ -634,7 +634,7 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testUpdatePost_InvalidId_Negative() throws Exception {
+    void testUpdatePost_InvalidId_Negative() throws Exception {
         // Prepare test data
         UpdatePostRequest request = buildUpdatePostRequest(builder -> builder
                 .title("Updated Test Post")
@@ -654,7 +654,7 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testUpdatePost_InvalidId_NonNumeric() throws Exception {
+    void testUpdatePost_InvalidId_NonNumeric() throws Exception {
         // Prepare test data
         UpdatePostRequest request = buildUpdatePostRequest(builder -> builder
                 .title("Updated Test Post")
@@ -674,7 +674,7 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testUpdatePost_NonExistentId() throws Exception {
+    void testUpdatePost_NonExistentId() throws Exception {
         // Use a non-existent post ID (assuming IDs are sequential)
         int nonExistentId = posts.get(posts.size() - 1).getId() + 1000;
 
@@ -696,7 +696,7 @@ public class AdminTest extends AbstractTestSupport {
     }
 
     @Test
-    public void testUpdatePost_Unauthorized() throws Exception {
+    void testUpdatePost_Unauthorized() throws Exception {
         // Get a valid post ID
         int postId = posts.get(0).getId();
 
@@ -740,7 +740,7 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testAddPost_WithTags_Success() throws Exception {
+    void testAddPost_WithTags_Success() throws Exception {
         // Prepare test data with tags
         var request = buildCreatePostRequest(builder -> builder
                 .title("Post with Tags")
@@ -764,7 +764,7 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testAddPost_EmptyTags_Success() throws Exception {
+    void testAddPost_EmptyTags_Success() throws Exception {
         // Prepare test data with empty tags list
         var request = buildCreatePostRequest(builder -> builder
                 .title("Post without Tags")
@@ -785,7 +785,7 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testEditPost_UpdateTags_Success() throws Exception {
+    void testEditPost_UpdateTags_Success() throws Exception {
         // Get an existing post ID
         int postId = posts.get(0).getId();
 
@@ -812,7 +812,7 @@ public class AdminTest extends AbstractTestSupport {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testEditPost_ClearTags_Success() throws Exception {
+    void testEditPost_ClearTags_Success() throws Exception {
         // Get an existing post ID
         int postId = posts.get(0).getId();
 

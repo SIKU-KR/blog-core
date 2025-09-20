@@ -8,7 +8,7 @@ import org.springframework.validation.beanvalidation.MethodValidationPostProcess
 @TestConfiguration
 public class MethodValidationTestConfig {
     @Bean
-    public MethodValidationPostProcessor methodValidationPostProcessor() {
+    MethodValidationPostProcessor methodValidationPostProcessor() {
         return new MethodValidationPostProcessor();
     }
 }

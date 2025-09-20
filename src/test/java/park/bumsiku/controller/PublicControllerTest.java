@@ -35,7 +35,7 @@ import static park.bumsiku.support.TestFixtures.*;
 
 @WebMvcTest(PublicController.class)
 @Import({SecurityConfig.class, ClockConfig.class, LoggingConfig.class})
-public class PublicControllerTest {
+class PublicControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -53,14 +53,14 @@ public class PublicControllerTest {
     private ObjectMapper objectMapper;
 
     @Test
-    public void testRedirectToSwagger() throws Exception {
+    void testRedirectToSwagger() throws Exception {
         mockMvc.perform(get("/"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/swagger-ui/index.html"));
     }
 
     @Test
-    public void testGetPosts_Success() throws Exception {
+    void testGetPosts_Success() throws Exception {
         // Prepare test data
         PostSummaryResponse post1 = PostSummaryResponse.from(buildPost(builder -> builder
                 .id(1)
@@ -100,7 +100,7 @@ public class PublicControllerTest {
 
 
     @Test
-    public void testGetPosts_InvalidPagination() throws Exception {
+    void testGetPosts_InvalidPagination() throws Exception {
         // Mock validator to throw exception
         doThrow(new IllegalArgumentException("페이지 번호는 0 이상이어야 합니다"))
                 .when(publicService).getPostList(eq(-1), anyInt(), anyString());
@@ -117,7 +117,7 @@ public class PublicControllerTest {
     }
 
     @Test
-    public void testGetPostBySlug_Success() throws Exception {
+    void testGetPostBySlug_Success() throws Exception {
         // Prepare test data
         PostResponse postResponse = buildPostResponse(builder -> builder
                 .id(1)
@@ -139,7 +139,7 @@ public class PublicControllerTest {
     }
 
     @Test
-    public void testGetPostBySlug_NotFound() throws Exception {
+    void testGetPostBySlug_NotFound() throws Exception {
         // Mock service to throw exception
         when(publicService.getPostBySlug("missing-slug"))
                 .thenThrow(new NoSuchElementException("게시글을 찾을 수 없습니다"));
@@ -153,7 +153,7 @@ public class PublicControllerTest {
     }
 
     @Test
-    public void testGetPostByIdRedirectsToSlug() throws Exception {
+    void testGetPostByIdRedirectsToSlug() throws Exception {
         when(publicService.resolveSlugById(1)).thenReturn("test-post");
 
         mockMvc.perform(get("/posts/1"))
@@ -162,7 +162,7 @@ public class PublicControllerTest {
     }
 
     @Test
-    public void testGetCommentsByPostId_Success() throws Exception {
+    void testGetCommentsByPostId_Success() throws Exception {
         // Prepare test data
         List<CommentResponse> comments = List.of(
                 buildCommentResponse(builder -> builder.authorName("Author 1").content("Comment 1")),
@@ -182,7 +182,7 @@ public class PublicControllerTest {
     }
 
     @Test
-    public void testPostComment_Success() throws Exception {
+    void testPostComment_Success() throws Exception {
         // Prepare test data
         CommentRequest commentRequest = buildCommentRequest(builder -> builder
                 .author("Test Author")
@@ -208,7 +208,7 @@ public class PublicControllerTest {
     }
 
     @Test
-    public void testPostComment_InvalidRequest() throws Exception {
+    void testPostComment_InvalidRequest() throws Exception {
         // Prepare invalid test data (empty author)
         CommentRequest commentRequest = buildCommentRequest(builder -> builder
                 .author("")
@@ -232,7 +232,7 @@ public class PublicControllerTest {
     // Additional tests for missing HTTP status codes
 
     @Test
-    public void testGetPostBySlug_BadRequest() throws Exception {
+    void testGetPostBySlug_BadRequest() throws Exception {
         doThrow(new IllegalArgumentException("유효한 슬러그를 입력해주세요"))
                 .when(validator).validateSlug("Invalid Slug!");
 
@@ -244,7 +244,7 @@ public class PublicControllerTest {
     }
 
     @Test
-    public void testGetSitemap_ReturnsSlugPaths() throws Exception {
+    void testGetSitemap_ReturnsSlugPaths() throws Exception {
         when(publicService.getCanonicalPaths()).thenReturn(List.of("/posts/test-post", "/posts/another"));
 
         mockMvc.perform(get("/sitemap"))
@@ -255,7 +255,7 @@ public class PublicControllerTest {
     }
 
     @Test
-    public void testGetCommentsByPostId_BadRequest() throws Exception {
+    void testGetCommentsByPostId_BadRequest() throws Exception {
         // Mock service to throw exception
         when(publicService.getCommentsById(eq(-1)))
                 .thenThrow(new IllegalArgumentException("게시글 ID는 양수여야 합니다"));
@@ -269,7 +269,7 @@ public class PublicControllerTest {
     }
 
     @Test
-    public void testGetCommentsByPostId_NotFound() throws Exception {
+    void testGetCommentsByPostId_NotFound() throws Exception {
         // Mock service to throw exception
         when(publicService.getCommentsById(eq(999)))
                 .thenThrow(new NoSuchElementException("게시글을 찾을 수 없습니다"));
@@ -283,7 +283,7 @@ public class PublicControllerTest {
     }
 
     @Test
-    public void testPostComment_NotFound() throws Exception {
+    void testPostComment_NotFound() throws Exception {
         // Prepare test data
         CommentRequest commentRequest = buildCommentRequest(builder -> builder
                 .author("Test Author")

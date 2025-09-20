@@ -15,7 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WithMockUser // secure /ai/** requires authentication
-public class AiTest extends AbstractTestSupport {
+class AiTest extends AbstractTestSupport {
 
     @Test
     @DisplayName("[IT] POST /ai/summary - success")

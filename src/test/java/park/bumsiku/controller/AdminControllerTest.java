@@ -35,7 +35,7 @@ import static park.bumsiku.support.TestFixtures.*;
 
 @WebMvcTest(AdminController.class)
 @Import({SecurityConfig.class, ClockConfig.class, LoggingConfig.class})
-public class AdminControllerTest {
+class AdminControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -55,7 +55,7 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testDeleteComment_Success() throws Exception {
+    void testDeleteComment_Success() throws Exception {
         // Mock service response - void method
         doNothing().when(privateService).deleteComment("1");
 
@@ -67,7 +67,7 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testAddImage_Success() throws Exception {
+    void testAddImage_Success() throws Exception {
         // Prepare test data
         MockMultipartFile imageFile = new MockMultipartFile(
                 "image",
@@ -93,7 +93,7 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testAddPost_Success() throws Exception {
+    void testAddPost_Success() throws Exception {
         // Prepare test data
         CreatePostRequest request = buildCreatePostRequest(builder -> builder
                 .title("New Post")
@@ -122,7 +122,7 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testDeletePost_Success() throws Exception {
+    void testDeletePost_Success() throws Exception {
         // Mock service response - void method
         doNothing().when(privateService).deletePost(1);
 
@@ -134,7 +134,7 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testEditPost_Success() throws Exception {
+    void testEditPost_Success() throws Exception {
         // Prepare test data
         UpdatePostRequest request = buildUpdatePostRequest(builder -> builder
                 .title("Updated Post")
@@ -163,7 +163,7 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testEditPost_NotFound() throws Exception {
+    void testEditPost_NotFound() throws Exception {
         // Prepare test data
         UpdatePostRequest request = buildUpdatePostRequest(builder -> builder
                 .title("Updated Post")
@@ -186,7 +186,7 @@ public class AdminControllerTest {
     }
 
     @Test
-    public void testAdminEndpoint_Unauthorized() throws Exception {
+    void testAdminEndpoint_Unauthorized() throws Exception {
         // Test without authentication
         mockMvc.perform(get("/admin/posts/1"))
                 .andExpect(status().isUnauthorized());
@@ -197,7 +197,7 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testDeleteComment_BadRequest() throws Exception {
+    void testDeleteComment_BadRequest() throws Exception {
         // Mock service to throw exception
         doThrow(new IllegalArgumentException("유효하지 않은 댓글 ID입니다"))
                 .when(privateService).deleteComment("invalid");
@@ -212,7 +212,7 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testAddImage_BadRequest() throws Exception {
+    void testAddImage_BadRequest() throws Exception {
         // Prepare empty file
         MockMultipartFile emptyFile = new MockMultipartFile(
                 "image",
@@ -236,7 +236,7 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testAddPost_BadRequest() throws Exception {
+    void testAddPost_BadRequest() throws Exception {
         // Prepare invalid test data
         CreatePostRequest request = buildCreatePostRequest(builder -> builder
                 .title("")
@@ -260,7 +260,7 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testDeletePost_BadRequest() throws Exception {
+    void testDeletePost_BadRequest() throws Exception {
         // Mock service to throw exception
         doThrow(new IllegalArgumentException("유효하지 않은 게시글 ID입니다"))
                 .when(privateService).deletePost(-1);
@@ -275,7 +275,7 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testEditPost_BadRequest() throws Exception {
+    void testEditPost_BadRequest() throws Exception {
         // Prepare invalid test data
         UpdatePostRequest request = buildUpdatePostRequest(builder -> builder
                 .title("")
@@ -300,7 +300,7 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testDeleteComment_NotFound() throws Exception {
+    void testDeleteComment_NotFound() throws Exception {
         // Mock service to throw exception
         doThrow(new NoSuchElementException("댓글을 찾을 수 없습니다"))
                 .when(privateService).deleteComment("999");
@@ -315,7 +315,7 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testDeletePost_NotFound() throws Exception {
+    void testDeletePost_NotFound() throws Exception {
         // Mock service to throw exception
         doThrow(new NoSuchElementException("게시글을 찾을 수 없습니다"))
                 .when(privateService).deletePost(999);
@@ -333,7 +333,7 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testDeleteComment_ServerError() throws Exception {
+    void testDeleteComment_ServerError() throws Exception {
         // Mock service to throw runtime exception
         doThrow(new RuntimeException("서버 내부 오류"))
                 .when(privateService).deleteComment("1");
@@ -347,7 +347,7 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testAddImage_ServerError() throws Exception {
+    void testAddImage_ServerError() throws Exception {
         // Prepare test data
         MockMultipartFile imageFile = new MockMultipartFile(
                 "image",
@@ -370,7 +370,7 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testAddPost_ServerError() throws Exception {
+    void testAddPost_ServerError() throws Exception {
         // Prepare test data
         CreatePostRequest request = buildCreatePostRequest(builder -> builder
                 .title("New Post")
@@ -393,7 +393,7 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testDeletePost_ServerError() throws Exception {
+    void testDeletePost_ServerError() throws Exception {
         // Mock service to throw runtime exception
         doThrow(new RuntimeException("서버 내부 오류"))
                 .when(privateService).deletePost(1);
@@ -407,7 +407,7 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testEditPost_ServerError() throws Exception {
+    void testEditPost_ServerError() throws Exception {
         // Prepare test data
         UpdatePostRequest request = buildUpdatePostRequest(builder -> builder
                 .title("Updated Post")

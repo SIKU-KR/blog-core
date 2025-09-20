@@ -47,7 +47,7 @@ public class PublicServiceTest {
     private park.bumsiku.utils.sorting.PostSortBuilder postSortBuilder;
 
     @Test
-    public void returnPostSummaryListResponseWithMockedData() {
+    void returnPostSummaryListResponseWithMockedData() {
         // given
         Post mockPost = buildPost(builder -> builder
                 .slug("sample-post-title")
@@ -78,7 +78,7 @@ public class PublicServiceTest {
     }
 
     @Test
-    public void createAndReturnPostResponseObjectFromMockedPostSlug() {
+    void createAndReturnPostResponseObjectFromMockedPostSlug() {
         // given
         Post mockPost = buildPost(builder -> builder
                 .slug("sample-post-title")
@@ -106,7 +106,7 @@ public class PublicServiceTest {
     }
 
     @Test
-    public void throwPostNotFoundExceptionWhenRepositoryReturnsNullPostForGetPostBySlug() {
+    void throwPostNotFoundExceptionWhenRepositoryReturnsNullPostForGetPostBySlug() {
         // given
         when(postRepository.findBySlug("missing-slug")).thenReturn(null);
 
@@ -116,7 +116,7 @@ public class PublicServiceTest {
     }
 
     @Test
-    public void resolveSlugByIdShouldReturnSlug() {
+    void resolveSlugByIdShouldReturnSlug() {
         Post post = buildPost(builder -> builder.views(5L));
         when(postRepository.findById(post.getId())).thenReturn(post);
 
@@ -126,7 +126,7 @@ public class PublicServiceTest {
     }
 
     @Test
-    public void resolveSlugByIdShouldThrowWhenPostMissing() {
+    void resolveSlugByIdShouldThrowWhenPostMissing() {
         when(postRepository.findById(555)).thenReturn(null);
 
         assertThatThrownBy(() -> publicService.resolveSlugById(555))
@@ -134,7 +134,7 @@ public class PublicServiceTest {
     }
 
     @Test
-    public void getCanonicalPathsShouldReturnSlugPaths() {
+    void getCanonicalPathsShouldReturnSlugPaths() {
         when(postRepository.findAllSlugs()).thenReturn(List.of("sample-post-title", "another-slug"));
 
         List<String> paths = publicService.getCanonicalPaths();
@@ -143,7 +143,7 @@ public class PublicServiceTest {
     }
 
     @Test
-    public void createAndReturnListOfCommentResponse() {
+    void createAndReturnListOfCommentResponse() {
         // given
         Post post = buildPost();
         List<CommentResponse> expected = List.of(
@@ -184,7 +184,7 @@ public class PublicServiceTest {
     }
 
     @Test
-    public void throwPostNotFoundExceptionWhenRepositoryReturnsNullPostForGetCommentsById() {
+    void throwPostNotFoundExceptionWhenRepositoryReturnsNullPostForGetCommentsById() {
         // given
         int postId = 111;
         when(postRepository.findById(postId)).thenReturn(null);
@@ -195,7 +195,7 @@ public class PublicServiceTest {
     }
 
     @Test
-    public void createAndReturnCommentResponse() {
+    void createAndReturnCommentResponse() {
         // given
         var commentRequest = buildCommentRequest(builder -> builder
                 .author("peter")
@@ -224,7 +224,7 @@ public class PublicServiceTest {
     }
 
     @Test
-    public void throwPostNotFoundExceptionWhenRepositoryReturnsNullPostForCreateComment() {
+    void throwPostNotFoundExceptionWhenRepositoryReturnsNullPostForCreateComment() {
         // given
         int postId = 111;
         var commentRequest = buildCommentRequest(builder -> builder
@@ -239,7 +239,7 @@ public class PublicServiceTest {
 
 
     @Test
-    public void incrementPostViewsShouldIncreaseViewsCount() {
+    void incrementPostViewsShouldIncreaseViewsCount() {
         // given
         Post post = buildPost(builder -> builder.views(5L));
         Long initialViews = post.getViews();
@@ -254,7 +254,7 @@ public class PublicServiceTest {
     }
 
     @Test
-    public void throwPostNotFoundExceptionWhenRepositoryReturnsNullPostForIncrementPostViews() {
+    void throwPostNotFoundExceptionWhenRepositoryReturnsNullPostForIncrementPostViews() {
         // given
         int postId = 999;
         when(postRepository.findById(postId)).thenReturn(null);
@@ -266,7 +266,7 @@ public class PublicServiceTest {
     }
 
     @Test
-    public void getPostListShouldCallRepositoryWithViewsSortDesc() {
+    void getPostListShouldCallRepositoryWithViewsSortDesc() {
         // given
         List<Post> postList = List.of(buildPost(builder -> builder.views(5L)));
         SortCriteria sortCriteria = new SortCriteria("views", "DESC", "ORDER BY p.views DESC");
@@ -284,7 +284,7 @@ public class PublicServiceTest {
     }
 
     @Test
-    public void getPostListShouldCallRepositoryWithCreatedAtSortAsc() {
+    void getPostListShouldCallRepositoryWithCreatedAtSortAsc() {
         // given
         List<Post> postList = List.of(buildPost());
         SortCriteria sortCriteria = new SortCriteria("createdAt", "ASC", "ORDER BY p.createdAt ASC");
@@ -301,7 +301,7 @@ public class PublicServiceTest {
     }
 
     @Test
-    public void throwTagNotFoundExceptionWhenTagDoesNotExistForGetPostsByTag() {
+    void throwTagNotFoundExceptionWhenTagDoesNotExistForGetPostsByTag() {
         // given
         String tagName = "unknown-tag";
         when(tagRepository.findByName(tagName)).thenReturn(Optional.empty());

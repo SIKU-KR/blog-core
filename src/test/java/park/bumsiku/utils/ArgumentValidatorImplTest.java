@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Import(MethodValidationTestConfig.class)
-public class ArgumentValidatorImplTest extends AbstractTestSupport {
+class ArgumentValidatorImplTest extends AbstractTestSupport {
 
     private ArgumentValidator validator;
 
