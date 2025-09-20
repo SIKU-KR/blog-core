@@ -31,8 +31,8 @@ public class LoggingFilter extends OncePerRequestFilter {
         }
 
         long startTime = System.currentTimeMillis();
-
-        try (MdcCloseable ignored = MdcCloseable.create()) {
+        MdcCloseable mdc = MdcCloseable.create();
+        try {
             MdcUtils.setupMdc();
             filterChain.doFilter(request, response);
         } finally {
@@ -49,6 +49,8 @@ public class LoggingFilter extends OncePerRequestFilter {
                 log.info("HTTP Request Completed - {} {} - Status: {} - Duration: {}ms",
                         request.getMethod(), request.getRequestURI(), status, duration);
             }
+
+            mdc.close();
         }
     }
 
