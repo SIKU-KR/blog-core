@@ -2,6 +2,9 @@ package park.bumsiku.controller;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 import park.bumsiku.domain.dto.request.CommentRequest;
@@ -47,17 +50,30 @@ public class PublicController implements PublicAPI {
     }
 
     @Override
-    @GetMapping("/posts/{postId}")
+    @GetMapping(value = "/posts/{slug}")
     @LogExecutionTime
-    public Response<PostResponse> getPostById(
-            @PathVariable("postId") int postId) {
+    public Object getPostBySlugOrRedirect(
+            @PathVariable("slug") String slug) {
 
-        validator.validatePostId(postId);
+        if (slug.matches("\\d+")) {
+            return redirectToSlug(slug);
+        }
 
-        PostResponse result = service.getPostById(postId);
-
+        validator.validateSlug(slug);
+        PostResponse result = service.getPostBySlug(slug);
         return Response.success(result);
     }
+
+    private ResponseEntity<Object> redirectToSlug(String slug) {
+        int postId = Integer.parseInt(slug);
+        validator.validatePostId(postId);
+        String resolvedSlug = service.resolveSlugById(postId);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.LOCATION, "/posts/" + resolvedSlug);
+        return new ResponseEntity<>(headers, HttpStatus.MOVED_PERMANENTLY);
+    }
+
 
     @Override
     @GetMapping("/comments/{postId}")
@@ -106,5 +122,13 @@ public class PublicController implements PublicAPI {
     public Response<List<TagResponse>> getTags() {
         List<TagResponse> tags = service.getAllActiveTagsWithPosts();
         return Response.success(tags);
+    }
+
+    @Override
+    @GetMapping("/sitemap")
+    @LogExecutionTime
+    public Response<List<String>> getSitemapPaths() {
+        List<String> paths = service.getCanonicalPaths();
+        return Response.success(paths);
     }
 }

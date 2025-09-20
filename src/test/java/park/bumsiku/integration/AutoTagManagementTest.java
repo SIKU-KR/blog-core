@@ -10,9 +10,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import park.bumsiku.config.AbstractTestSupport;
-import park.bumsiku.domain.dto.request.CreatePostRequest;
-import park.bumsiku.domain.dto.request.UpdatePostRequest;
-import park.bumsiku.domain.entity.Post;
 import park.bumsiku.repository.PostRepository;
 import park.bumsiku.repository.TagRepository;
 
@@ -24,6 +21,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static park.bumsiku.support.TestFixtures.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -42,12 +40,12 @@ class AutoTagManagementTest extends AbstractTestSupport {
     @DisplayName("POST /admin/posts - should auto-create tags and return post with tags")
     @WithMockUser
     void createPost_shouldAutoCreateTagsAndReturnPostWithTags() throws Exception {
-        CreatePostRequest request = CreatePostRequest.builder()
+        var request = buildCreatePostRequest(builder -> builder
                 .title("Test Post")
                 .content("Test content")
                 .summary("Test summary")
-                .tags(List.of("Spring", "Java", "TDD"))
-                .build();
+                .slug("test-post")
+                .tags(List.of("Spring", "Java", "TDD")));
 
         mockMvc.perform(post("/admin/posts")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -69,21 +67,21 @@ class AutoTagManagementTest extends AbstractTestSupport {
     @WithMockUser
     void updatePost_shouldUpdateTagsAndCleanupOrphanedTags() throws Exception {
         // Create initial post with tags
-        Post post = Post.builder()
+        var post = buildPost(builder -> builder
+                .id(null)
                 .title("Original Post")
+                .slug("original-post")
                 .content("Original content")
-                .summary("Original summary")
-                .state("published")
-                .build();
+                .summary("Original summary"));
         post = postRepository.insert(post);
 
         // Create initial tags through API
-        CreatePostRequest createRequest = CreatePostRequest.builder()
+        var createRequest = buildCreatePostRequest(builder -> builder
                 .title("Test Post")
                 .content("Test content")
                 .summary("Test summary")
-                .tags(List.of("Spring", "Java", "TDD"))
-                .build();
+                .slug("test-post-for-update")
+                .tags(List.of("Spring", "Java", "TDD")));
 
         mockMvc.perform(post("/admin/posts")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -91,12 +89,12 @@ class AutoTagManagementTest extends AbstractTestSupport {
                 .andExpect(status().isOk());
 
         // Update post with different tags
-        UpdatePostRequest updateRequest = UpdatePostRequest.builder()
+        var updateRequest = buildUpdatePostRequest(builder -> builder
                 .title("Updated Post")
                 .content("Updated content")
                 .summary("Updated summary")
-                .tags(List.of("Spring", "React")) // Java and TDD removed, React added
-                .build();
+                .slug("updated-post-slug")
+                .tags(List.of("Spring", "React")));
 
         mockMvc.perform(put("/admin/posts/{postId}", post.getId())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -119,12 +117,12 @@ class AutoTagManagementTest extends AbstractTestSupport {
     @WithMockUser
     void getTags_shouldOnlyReturnTagsWithPosts() throws Exception {
         // Create a post with tags
-        CreatePostRequest createRequest = CreatePostRequest.builder()
+        var createRequest = buildCreatePostRequest(builder -> builder
                 .title("Test Post")
                 .content("Test content")
                 .summary("Test summary")
-                .tags(List.of("Active", "InUse"))
-                .build();
+                .slug("test-post-tags")
+                .tags(List.of("Active", "InUse")));
 
         mockMvc.perform(post("/admin/posts")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -145,12 +143,12 @@ class AutoTagManagementTest extends AbstractTestSupport {
     @WithMockUser
     void deletePost_shouldCleanupOrphanedTags() throws Exception {
         // Create a post with unique tags
-        CreatePostRequest createRequest = CreatePostRequest.builder()
+        var createRequest = buildCreatePostRequest(builder -> builder
                 .title("To Be Deleted")
                 .content("Content")
                 .summary("Summary")
-                .tags(List.of("UniqueTag1", "UniqueTag2"))
-                .build();
+                .slug("to-be-deleted")
+                .tags(List.of("UniqueTag1", "UniqueTag2")));
 
         String response = mockMvc.perform(post("/admin/posts")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -168,7 +166,7 @@ class AutoTagManagementTest extends AbstractTestSupport {
         assertThat(tagRepository.findByName("UniqueTag2")).isPresent();
 
         // Since we need the actual post ID, let's find it
-        Post createdPost = postRepository.findAll(0, 1, "ORDER BY p.createdAt DESC").get(0);
+        var createdPost = postRepository.findAll(0, 1, "ORDER BY p.createdAt DESC").get(0);
 
         // Delete the post
         mockMvc.perform(delete("/admin/posts/{postId}", createdPost.getId())
@@ -186,19 +184,19 @@ class AutoTagManagementTest extends AbstractTestSupport {
     @WithMockUser
     void getPostsByTag_shouldFilterPostsByTag() throws Exception {
         // Create posts with different tags
-        CreatePostRequest post1 = CreatePostRequest.builder()
+        var post1 = buildCreatePostRequest(builder -> builder
                 .title("Spring Post")
                 .content("Spring content")
                 .summary("Spring summary")
-                .tags(List.of("Spring", "Backend"))
-                .build();
+                .slug("spring-post")
+                .tags(List.of("Spring", "Backend")));
 
-        CreatePostRequest post2 = CreatePostRequest.builder()
+        var post2 = buildCreatePostRequest(builder -> builder
                 .title("React Post")
                 .content("React content")
                 .summary("React summary")
-                .tags(List.of("React", "Frontend"))
-                .build();
+                .slug("react-post")
+                .tags(List.of("React", "Frontend")));
 
         mockMvc.perform(post("/admin/posts")
                         .contentType(MediaType.APPLICATION_JSON)

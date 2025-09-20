@@ -20,7 +20,6 @@ import park.bumsiku.service.PublicService;
 import park.bumsiku.utils.integration.DiscordWebhookCreator;
 import park.bumsiku.utils.validation.ArgumentValidator;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -32,10 +31,11 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static park.bumsiku.support.TestFixtures.*;
 
 @WebMvcTest(PublicController.class)
 @Import({SecurityConfig.class, ClockConfig.class, LoggingConfig.class})
-public class PublicControllerTest {
+class PublicControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -53,28 +53,28 @@ public class PublicControllerTest {
     private ObjectMapper objectMapper;
 
     @Test
-    public void testRedirectToSwagger() throws Exception {
+    void testRedirectToSwagger() throws Exception {
         mockMvc.perform(get("/"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/swagger-ui/index.html"));
     }
 
     @Test
-    public void testGetPosts_Success() throws Exception {
+    void testGetPosts_Success() throws Exception {
         // Prepare test data
-        PostSummaryResponse post1 = PostSummaryResponse.builder()
+        PostSummaryResponse post1 = PostSummaryResponse.from(buildPost(builder -> builder
                 .id(1)
+                .slug("test-post-1")
                 .title("Test Post 1")
-                .summary("Summary 1")
-                .build();
+                .summary("Summary 1")));
 
-        PostSummaryResponse post2 = PostSummaryResponse.builder()
+        PostSummaryResponse post2 = PostSummaryResponse.from(buildPost(builder -> builder
                 .id(2)
+                .slug("test-post-2")
                 .title("Test Post 2")
-                .summary("Summary 2")
-                .build();
+                .summary("Summary 2")));
 
-        List<PostSummaryResponse> posts = Arrays.asList(post1, post2);
+        List<PostSummaryResponse> posts = List.of(post1, post2);
         PostListResponse postListResponse = PostListResponse.builder()
                 .content(posts)
                 .totalElements(2)
@@ -94,13 +94,13 @@ public class PublicControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.data.content", hasSize(2)))
-                .andExpect(jsonPath("$.data.content[0].title", is("Test Post 1")))
-                .andExpect(jsonPath("$.data.content[1].title", is("Test Post 2")));
+                .andExpect(jsonPath("$.data.content[0].title", is(post1.getTitle())))
+                .andExpect(jsonPath("$.data.content[1].title", is(post2.getTitle())));
     }
 
 
     @Test
-    public void testGetPosts_InvalidPagination() throws Exception {
+    void testGetPosts_InvalidPagination() throws Exception {
         // Mock validator to throw exception
         doThrow(new IllegalArgumentException("페이지 번호는 0 이상이어야 합니다"))
                 .when(publicService).getPostList(eq(-1), anyInt(), anyString());
@@ -117,35 +117,35 @@ public class PublicControllerTest {
     }
 
     @Test
-    public void testGetPostById_Success() throws Exception {
+    void testGetPostBySlug_Success() throws Exception {
         // Prepare test data
-        PostResponse postResponse = PostResponse.builder()
+        PostResponse postResponse = buildPostResponse(builder -> builder
                 .id(1)
+                .slug("test-post")
                 .title("Test Post")
-                .content("Test Content")
-                .createdAt("2023-01-01T12:00:00")
-                .updatedAt("2023-01-01T12:00:00")
-                .build();
+                .content("Test Content"));
 
         // Mock service response
-        when(publicService.getPostById(1)).thenReturn(postResponse);
+        when(publicService.getPostBySlug("test-post")).thenReturn(postResponse);
 
         // Perform request and verify
-        mockMvc.perform(get("/posts/1"))
+        mockMvc.perform(get("/posts/test-post"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.data.id", is(1)))
+                .andExpect(jsonPath("$.data.slug", is("test-post")))
+                .andExpect(jsonPath("$.data.canonicalPath", is("/posts/test-post")))
                 .andExpect(jsonPath("$.data.title", is("Test Post")))
                 .andExpect(jsonPath("$.data.content", is("Test Content")));
     }
 
     @Test
-    public void testGetPostById_NotFound() throws Exception {
+    void testGetPostBySlug_NotFound() throws Exception {
         // Mock service to throw exception
-        when(publicService.getPostById(999)).thenThrow(new NoSuchElementException("게시글을 찾을 수 없습니다"));
+        when(publicService.getPostBySlug("missing-slug"))
+                .thenThrow(new NoSuchElementException("게시글을 찾을 수 없습니다"));
 
         // Perform request and verify
-        mockMvc.perform(get("/posts/999"))
+        mockMvc.perform(get("/posts/missing-slug"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.error.code", is(404)))
@@ -153,23 +153,21 @@ public class PublicControllerTest {
     }
 
     @Test
-    public void testGetCommentsByPostId_Success() throws Exception {
+    void testGetPostByIdRedirectsToSlug() throws Exception {
+        when(publicService.resolveSlugById(1)).thenReturn("test-post");
+
+        mockMvc.perform(get("/posts/1"))
+                .andExpect(status().isMovedPermanently())
+                .andExpect(header().string("Location", "/posts/test-post"));
+    }
+
+    @Test
+    void testGetCommentsByPostId_Success() throws Exception {
         // Prepare test data
-        CommentResponse comment1 = CommentResponse.builder()
-                .id(1)
-                .authorName("Author 1")
-                .content("Comment 1")
-                .createdAt("2023-01-01T12:00:00")
-                .build();
-
-        CommentResponse comment2 = CommentResponse.builder()
-                .id(2)
-                .authorName("Author 2")
-                .content("Comment 2")
-                .createdAt("2023-01-01T12:00:00")
-                .build();
-
-        List<CommentResponse> comments = Arrays.asList(comment1, comment2);
+        List<CommentResponse> comments = List.of(
+                buildCommentResponse(builder -> builder.authorName("Author 1").content("Comment 1")),
+                buildCommentResponse(builder -> builder.authorName("Author 2").content("Comment 2"))
+        );
 
         // Mock service response
         when(publicService.getCommentsById(1)).thenReturn(comments);
@@ -179,24 +177,22 @@ public class PublicControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.data", hasSize(2)))
-                .andExpect(jsonPath("$.data[0].authorName", is("Author 1")))
-                .andExpect(jsonPath("$.data[1].authorName", is("Author 2")));
+                .andExpect(jsonPath("$.data[0].authorName", is(comments.get(0).getAuthorName())))
+                .andExpect(jsonPath("$.data[1].authorName", is(comments.get(1).getAuthorName())));
     }
 
     @Test
-    public void testPostComment_Success() throws Exception {
+    void testPostComment_Success() throws Exception {
         // Prepare test data
-        CommentRequest commentRequest = CommentRequest.builder()
+        CommentRequest commentRequest = buildCommentRequest(builder -> builder
                 .author("Test Author")
-                .content("Test Comment")
-                .build();
+                .content("Test Comment"));
 
-        CommentResponse commentResponse = CommentResponse.builder()
+        CommentResponse commentResponse = buildCommentResponse(builder -> builder
                 .id(1)
                 .authorName("Test Author")
                 .content("Test Comment")
-                .createdAt("2023-01-01T12:00:00")
-                .build();
+                .createdAt("2023-01-01T12:00:00"));
 
         // Mock service response
         when(publicService.createComment(eq(1), any(CommentRequest.class))).thenReturn(commentResponse);
@@ -212,12 +208,11 @@ public class PublicControllerTest {
     }
 
     @Test
-    public void testPostComment_InvalidRequest() throws Exception {
+    void testPostComment_InvalidRequest() throws Exception {
         // Prepare invalid test data (empty author)
-        CommentRequest commentRequest = CommentRequest.builder()
+        CommentRequest commentRequest = buildCommentRequest(builder -> builder
                 .author("")
-                .content("Test Comment")
-                .build();
+                .content("Test Comment"));
 
         // Mock service to throw exception
         doThrow(new IllegalArgumentException("작성자 이름을 입력해주세요"))
@@ -237,21 +232,30 @@ public class PublicControllerTest {
     // Additional tests for missing HTTP status codes
 
     @Test
-    public void testGetPostById_BadRequest() throws Exception {
-        // Mock service to throw exception
-        when(publicService.getPostById(eq(-1)))
-                .thenThrow(new IllegalArgumentException("게시글 ID는 양수여야 합니다"));
+    void testGetPostBySlug_BadRequest() throws Exception {
+        doThrow(new IllegalArgumentException("유효한 슬러그를 입력해주세요"))
+                .when(validator).validateSlug("Invalid Slug!");
 
-        // Perform request and verify
-        mockMvc.perform(get("/posts/-1"))
+        mockMvc.perform(get("/posts/Invalid Slug!"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.error.code", is(400)))
-                .andExpect(jsonPath("$.error.message", containsString("게시글 ID는 양수여야 합니다")));
+                .andExpect(jsonPath("$.error.message", containsString("유효한 슬러그를 입력해주세요")));
     }
 
     @Test
-    public void testGetCommentsByPostId_BadRequest() throws Exception {
+    void testGetSitemap_ReturnsSlugPaths() throws Exception {
+        when(publicService.getCanonicalPaths()).thenReturn(List.of("/posts/test-post", "/posts/another"));
+
+        mockMvc.perform(get("/sitemap"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data[0]", is("/posts/test-post")))
+                .andExpect(jsonPath("$.data[1]", is("/posts/another")));
+    }
+
+    @Test
+    void testGetCommentsByPostId_BadRequest() throws Exception {
         // Mock service to throw exception
         when(publicService.getCommentsById(eq(-1)))
                 .thenThrow(new IllegalArgumentException("게시글 ID는 양수여야 합니다"));
@@ -265,7 +269,7 @@ public class PublicControllerTest {
     }
 
     @Test
-    public void testGetCommentsByPostId_NotFound() throws Exception {
+    void testGetCommentsByPostId_NotFound() throws Exception {
         // Mock service to throw exception
         when(publicService.getCommentsById(eq(999)))
                 .thenThrow(new NoSuchElementException("게시글을 찾을 수 없습니다"));
@@ -279,12 +283,11 @@ public class PublicControllerTest {
     }
 
     @Test
-    public void testPostComment_NotFound() throws Exception {
+    void testPostComment_NotFound() throws Exception {
         // Prepare test data
-        CommentRequest commentRequest = CommentRequest.builder()
+        CommentRequest commentRequest = buildCommentRequest(builder -> builder
                 .author("Test Author")
-                .content("Test Comment")
-                .build();
+                .content("Test Comment"));
 
         // Mock service to throw exception
         when(publicService.createComment(eq(999), any(CommentRequest.class)))

@@ -31,10 +31,11 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static park.bumsiku.support.TestFixtures.*;
 
 @WebMvcTest(AdminController.class)
 @Import({SecurityConfig.class, ClockConfig.class, LoggingConfig.class})
-public class AdminControllerTest {
+class AdminControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -54,7 +55,7 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testDeleteComment_Success() throws Exception {
+    void testDeleteComment_Success() throws Exception {
         // Mock service response - void method
         doNothing().when(privateService).deleteComment("1");
 
@@ -66,7 +67,7 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testAddImage_Success() throws Exception {
+    void testAddImage_Success() throws Exception {
         // Prepare test data
         MockMultipartFile imageFile = new MockMultipartFile(
                 "image",
@@ -92,21 +93,19 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testAddPost_Success() throws Exception {
+    void testAddPost_Success() throws Exception {
         // Prepare test data
-        CreatePostRequest request = CreatePostRequest.builder()
+        CreatePostRequest request = buildCreatePostRequest(builder -> builder
                 .title("New Post")
                 .content("Post Content")
                 .summary("Post Summary")
-                .build();
+                .slug("new-post"));
 
-        PostResponse response = PostResponse.builder()
+        PostResponse response = buildPostResponse(builder -> builder
                 .id(1)
+                .slug("new-post")
                 .title("New Post")
-                .content("Post Content")
-                .createdAt("2023-01-01T12:00:00")
-                .updatedAt("2023-01-01T12:00:00")
-                .build();
+                .content("Post Content"));
 
         // Mock service response
         when(privateService.createPost(any(CreatePostRequest.class))).thenReturn(response);
@@ -123,7 +122,7 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testDeletePost_Success() throws Exception {
+    void testDeletePost_Success() throws Exception {
         // Mock service response - void method
         doNothing().when(privateService).deletePost(1);
 
@@ -135,21 +134,19 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testEditPost_Success() throws Exception {
+    void testEditPost_Success() throws Exception {
         // Prepare test data
-        UpdatePostRequest request = UpdatePostRequest.builder()
+        UpdatePostRequest request = buildUpdatePostRequest(builder -> builder
                 .title("Updated Post")
                 .content("Updated Content")
                 .summary("Updated Summary")
-                .build();
+                .slug("updated-post"));
 
-        PostResponse response = PostResponse.builder()
+        PostResponse response = buildPostResponse(builder -> builder
                 .id(1)
+                .slug("updated-post")
                 .title("Updated Post")
-                .content("Updated Content")
-                .createdAt("2023-01-01T12:00:00")
-                .updatedAt("2023-01-01T12:00:00")
-                .build();
+                .content("Updated Content"));
 
         // Mock service response
         when(privateService.updatePost(eq(1), any(UpdatePostRequest.class))).thenReturn(response);
@@ -166,13 +163,13 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testEditPost_NotFound() throws Exception {
+    void testEditPost_NotFound() throws Exception {
         // Prepare test data
-        UpdatePostRequest request = UpdatePostRequest.builder()
+        UpdatePostRequest request = buildUpdatePostRequest(builder -> builder
                 .title("Updated Post")
                 .content("Updated Content")
                 .summary("Updated Summary")
-                .build();
+                .slug("updated-post"));
 
         // Mock service to throw exception
         when(privateService.updatePost(eq(999), any(UpdatePostRequest.class)))
@@ -189,7 +186,7 @@ public class AdminControllerTest {
     }
 
     @Test
-    public void testAdminEndpoint_Unauthorized() throws Exception {
+    void testAdminEndpoint_Unauthorized() throws Exception {
         // Test without authentication
         mockMvc.perform(get("/admin/posts/1"))
                 .andExpect(status().isUnauthorized());
@@ -200,7 +197,7 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testDeleteComment_BadRequest() throws Exception {
+    void testDeleteComment_BadRequest() throws Exception {
         // Mock service to throw exception
         doThrow(new IllegalArgumentException("유효하지 않은 댓글 ID입니다"))
                 .when(privateService).deleteComment("invalid");
@@ -215,7 +212,7 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testAddImage_BadRequest() throws Exception {
+    void testAddImage_BadRequest() throws Exception {
         // Prepare empty file
         MockMultipartFile emptyFile = new MockMultipartFile(
                 "image",
@@ -239,13 +236,13 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testAddPost_BadRequest() throws Exception {
+    void testAddPost_BadRequest() throws Exception {
         // Prepare invalid test data
-        CreatePostRequest request = CreatePostRequest.builder()
-                .title("")  // Empty title is invalid
+        CreatePostRequest request = buildCreatePostRequest(builder -> builder
+                .title("")
                 .content("Post Content")
                 .summary("Post Summary")
-                .build();
+                .slug("invalid-title"));
 
         // Mock service to throw exception
         when(privateService.createPost(any(CreatePostRequest.class)))
@@ -263,7 +260,7 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testDeletePost_BadRequest() throws Exception {
+    void testDeletePost_BadRequest() throws Exception {
         // Mock service to throw exception
         doThrow(new IllegalArgumentException("유효하지 않은 게시글 ID입니다"))
                 .when(privateService).deletePost(-1);
@@ -278,13 +275,12 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testEditPost_BadRequest() throws Exception {
+    void testEditPost_BadRequest() throws Exception {
         // Prepare invalid test data
-        UpdatePostRequest request = UpdatePostRequest.builder()
-                .title("")  // Empty title is invalid
+        UpdatePostRequest request = buildUpdatePostRequest(builder -> builder
+                .title("")
                 .content("Updated Content")
-                .summary("Updated Summary")
-                .build();
+                .summary("Updated Summary"));
 
         // Mock service to throw exception
         when(privateService.updatePost(eq(1), any(UpdatePostRequest.class)))
@@ -304,7 +300,7 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testDeleteComment_NotFound() throws Exception {
+    void testDeleteComment_NotFound() throws Exception {
         // Mock service to throw exception
         doThrow(new NoSuchElementException("댓글을 찾을 수 없습니다"))
                 .when(privateService).deleteComment("999");
@@ -319,7 +315,7 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testDeletePost_NotFound() throws Exception {
+    void testDeletePost_NotFound() throws Exception {
         // Mock service to throw exception
         doThrow(new NoSuchElementException("게시글을 찾을 수 없습니다"))
                 .when(privateService).deletePost(999);
@@ -337,7 +333,7 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testDeleteComment_ServerError() throws Exception {
+    void testDeleteComment_ServerError() throws Exception {
         // Mock service to throw runtime exception
         doThrow(new RuntimeException("서버 내부 오류"))
                 .when(privateService).deleteComment("1");
@@ -351,7 +347,7 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testAddImage_ServerError() throws Exception {
+    void testAddImage_ServerError() throws Exception {
         // Prepare test data
         MockMultipartFile imageFile = new MockMultipartFile(
                 "image",
@@ -374,13 +370,13 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testAddPost_ServerError() throws Exception {
+    void testAddPost_ServerError() throws Exception {
         // Prepare test data
-        CreatePostRequest request = CreatePostRequest.builder()
+        CreatePostRequest request = buildCreatePostRequest(builder -> builder
                 .title("New Post")
                 .content("Post Content")
                 .summary("Post Summary")
-                .build();
+                .slug("new-post"));
 
         // Mock service to throw runtime exception
         when(privateService.createPost(any(CreatePostRequest.class)))
@@ -397,7 +393,7 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testDeletePost_ServerError() throws Exception {
+    void testDeletePost_ServerError() throws Exception {
         // Mock service to throw runtime exception
         doThrow(new RuntimeException("서버 내부 오류"))
                 .when(privateService).deletePost(1);
@@ -411,13 +407,13 @@ public class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    public void testEditPost_ServerError() throws Exception {
+    void testEditPost_ServerError() throws Exception {
         // Prepare test data
-        UpdatePostRequest request = UpdatePostRequest.builder()
+        UpdatePostRequest request = buildUpdatePostRequest(builder -> builder
                 .title("Updated Post")
                 .content("Updated Content")
                 .summary("Updated Summary")
-                .build();
+                .slug("updated-post"));
 
         // Mock service to throw runtime exception
         when(privateService.updatePost(eq(1), any(UpdatePostRequest.class)))

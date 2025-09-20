@@ -16,7 +16,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 public class AuthTest extends AbstractTestSupport {
 
     @Test
-    public void testLoginSuccess() throws Exception {
+    void testLoginSuccess() throws Exception {
         LoginRequest loginRequest = LoginRequest.builder()
                 .username("admin")
                 .password("password")
@@ -42,7 +42,7 @@ public class AuthTest extends AbstractTestSupport {
     }
 
     @Test
-    public void testLoginFailure() throws Exception {
+    void testLoginFailure() throws Exception {
         // Arrange
         LoginRequest loginRequest = LoginRequest.builder()
                 .username("admin")
@@ -60,7 +60,7 @@ public class AuthTest extends AbstractTestSupport {
     }
 
     @Test
-    public void testSessionValid() throws Exception {
+    void testSessionValid() throws Exception {
         // Arrange - First login to create a valid session
         LoginRequest loginRequest = LoginRequest.builder()
                 .username("admin")
@@ -86,7 +86,7 @@ public class AuthTest extends AbstractTestSupport {
     }
 
     @Test
-    public void testSessionInvalid() throws Exception {
+    void testSessionInvalid() throws Exception {
         // Act - Check session without a valid session cookie
         MvcResult result = mockMvc.perform(get("/session"))
                 .andReturn();

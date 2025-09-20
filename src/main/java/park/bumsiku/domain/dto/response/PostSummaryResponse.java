@@ -17,12 +17,14 @@ import java.util.stream.Collectors;
 @Builder
 public class PostSummaryResponse {
     private int id;
+    private String slug;
     private String title;
     private String summary;
     private List<String> tags;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Long views;
+    private String canonicalPath;
 
     public static PostSummaryResponse from(Post post) {
         List<String> tagNames = post.getTags().stream()
@@ -31,12 +33,14 @@ public class PostSummaryResponse {
 
         return PostSummaryResponse.builder()
                 .id(post.getId())
+                .slug(post.getSlug())
                 .title(post.getTitle())
                 .summary(post.getSummary())
                 .tags(tagNames)
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .views(post.getViews())
+                .canonicalPath("/posts/" + post.getSlug())
                 .build();
     }
 }

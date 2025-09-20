@@ -45,6 +45,17 @@ public class PublicService {
 
 
     @LogExecutionTime
+    public PostResponse getPostBySlug(String slug) {
+        Post post = postRepository.findBySlug(slug);
+        if (post == null) {
+            log.warn("Post with slug {} not found", slug);
+            throw new NoSuchElementException("Post not found");
+        }
+        return buildPostResponse(post);
+    }
+
+
+    @LogExecutionTime
     public PostResponse getPostById(int id) {
         Post post = requirePostById(id);
         return buildPostResponse(post);
@@ -105,6 +116,19 @@ public class PublicService {
         postRepository.update(post);
     }
 
+    @LogExecutionTime
+    public String resolveSlugById(int id) {
+        Post post = requirePostById(id);
+        return post.getSlug();
+    }
+
+    @LogExecutionTime
+    public List<String> getCanonicalPaths() {
+        return postRepository.findAllSlugs().stream()
+                .map(slug -> "/posts/" + slug)
+                .toList();
+    }
+
     private Post requirePostById(int id) {
         Post post = postRepository.findById(id);
         if (post == null) {
@@ -129,6 +153,7 @@ public class PublicService {
 
         return PostResponse.builder()
                 .id(post.getId())
+                .slug(post.getSlug())
                 .title(post.getTitle())
                 .content(post.getContent())
                 .summary(post.getSummary())
@@ -136,6 +161,7 @@ public class PublicService {
                 .views(post.getViews())
                 .createdAt(post.getCreatedAt().toString())
                 .updatedAt(post.getUpdatedAt().toString())
+                .canonicalPath("/posts/" + post.getSlug())
                 .build();
     }
 

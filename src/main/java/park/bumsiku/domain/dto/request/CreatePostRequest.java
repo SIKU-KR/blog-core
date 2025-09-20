@@ -26,4 +26,6 @@ public class CreatePostRequest {
     private String summary;
 
     private List<String> tags;
+
+    private String slug;
 }

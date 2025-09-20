@@ -7,8 +7,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import park.bumsiku.domain.dto.request.SlugGenerationRequest;
 import park.bumsiku.domain.dto.request.SummaryGenerationRequest;
 import park.bumsiku.domain.dto.response.Response;
+import park.bumsiku.domain.dto.response.SlugGenerationResponse;
 import park.bumsiku.domain.dto.response.SummaryGenerationResponse;
 
 @Tag(name = "Generative AI", description = "생성형 AI 관련 API")
@@ -28,5 +30,20 @@ public interface GenerativeApi {
     )
     @PostMapping("/ai/summary")
     Response<SummaryGenerationResponse> generateSummary(@RequestBody SummaryGenerationRequest request);
+
+    @Operation(
+            summary = "Slug 생성",
+            description = "입력된 텍스트를 기반으로 slug 생성합니다."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "OK",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = Response.class)
+            )
+    )
+    @PostMapping("/ai/slug")
+    Response<SlugGenerationResponse> generateSlug(@RequestBody SlugGenerationRequest request);
 
 }

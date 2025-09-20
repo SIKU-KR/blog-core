@@ -9,7 +9,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 import park.bumsiku.domain.dto.request.CommentRequest;
-import park.bumsiku.domain.dto.response.*;
+import park.bumsiku.domain.dto.response.CommentResponse;
+import park.bumsiku.domain.dto.response.PostListResponse;
+import park.bumsiku.domain.dto.response.Response;
+import park.bumsiku.domain.dto.response.TagResponse;
 
 import java.util.List;
 
@@ -49,8 +52,8 @@ public interface PublicAPI {
     );
 
     @Operation(
-            summary = "특정 게시글 조회",
-            description = "ID를 이용하여 특정 게시글 상세 정보를 조회합니다."
+            summary = "특정 게시글 조회 또는 리다이렉션",
+            description = "슬러그로 게시글을 조회하거나, 숫자 ID인 경우 슬러그 기반 URL로 리다이렉션합니다."
     )
     @ApiResponse(
             responseCode = "200",
@@ -60,13 +63,15 @@ public interface PublicAPI {
                     schema = @Schema(implementation = Response.class)
             )
     )
+    @ApiResponse(responseCode = "301", description = "Moved Permanently - 숫자 ID인 경우 슬러그 기반 URL로 리다이렉션")
     @ApiResponse(responseCode = "400", description = "잘못된 요청 (ID 형식 오류)")
     @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")
-    @GetMapping("/posts/{postId}")
-    Response<PostResponse> getPostById(
-            @Parameter(description = "조회할 게시글 ID")
-            @PathVariable("postId") int postId
+    @GetMapping("/posts/{slug}")
+    Object getPostBySlugOrRedirect(
+            @Parameter(description = "조회할 게시글 슬러그 또는 ID")
+            @PathVariable("slug") String slug
     );
+
 
     @Operation(
             summary = "특정 게시글의 댓글 목록 조회",
@@ -147,4 +152,12 @@ public interface PublicAPI {
     Response<List<TagResponse>> getTags();
 
     // 이전: /posts/by-tag는 /posts?tag= 로 통합되었습니다.
+
+    @Operation(
+            summary = "사이트맵용 게시글 경로 제공",
+            description = "slug 기반 게시글 URL 경로 목록을 반환합니다."
+    )
+    @ApiResponse(responseCode = "200", description = "OK")
+    @GetMapping("/sitemap")
+    Response<List<String>> getSitemapPaths();
 }

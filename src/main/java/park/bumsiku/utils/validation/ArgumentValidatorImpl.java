@@ -9,6 +9,7 @@ import park.bumsiku.domain.dto.request.UpdatePostRequest;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 @Component
 public class ArgumentValidatorImpl implements ArgumentValidator {
@@ -17,6 +18,9 @@ public class ArgumentValidatorImpl implements ArgumentValidator {
             Arrays.asList("jpg", "jpeg", "png", "gif", "webp"));
 
     private static final long MAX_IMAGE_SIZE = 20 * 1024 * 1024; // 20MB
+
+    private static final Pattern SLUG_PATTERN = Pattern.compile("^[a-z0-9]+(?:-[a-z0-9]+)*+$");
+    private static final int MAX_SLUG_LENGTH = 150;
 
     private void validateTitle(String title) {
         if (title == null || title.isBlank()) {
@@ -85,6 +89,19 @@ public class ArgumentValidatorImpl implements ArgumentValidator {
     }
 
     @Override
+    public void validateSlug(String slug) {
+        if (slug == null || slug.isBlank()) {
+            throw new IllegalArgumentException("유효한 슬러그를 입력해주세요");
+        }
+        if (slug.length() > MAX_SLUG_LENGTH) {
+            throw new IllegalArgumentException("슬러그는 1자 이상 150자 이하로 입력해주세요");
+        }
+        if (!SLUG_PATTERN.matcher(slug).matches()) {
+            throw new IllegalArgumentException("유효한 슬러그를 입력해주세요");
+        }
+    }
+
+    @Override
     public void validateCommentId(String commentId) {
         if (commentId == null) {
             throw new IllegalArgumentException("댓글 ID는 1 이상이어야 합니다");
@@ -108,6 +125,7 @@ public class ArgumentValidatorImpl implements ArgumentValidator {
         validateTitle(request.getTitle());
         validateContent(request.getContent());
         validateSummary(request.getSummary());
+        validateSlug(request.getSlug());
 
     }
 
@@ -119,6 +137,7 @@ public class ArgumentValidatorImpl implements ArgumentValidator {
         validateTitle(request.getTitle());
         validateContent(request.getContent());
         validateSummary(request.getSummary());
+        validateSlug(request.getSlug());
 
     }
 

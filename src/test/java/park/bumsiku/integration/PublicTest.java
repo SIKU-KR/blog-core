@@ -18,11 +18,12 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static park.bumsiku.support.TestFixtures.buildComment;
+import static park.bumsiku.support.TestFixtures.buildPost;
 
 @Transactional
-public class PublicTest extends AbstractTestSupport {
+class PublicTest extends AbstractTestSupport {
 
     private final List<Post> posts = new ArrayList<>();
     private final List<Comment> comments = new ArrayList<>();
@@ -32,7 +33,7 @@ public class PublicTest extends AbstractTestSupport {
     private CommentRepository commentRepository;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         // Clear existing data
         posts.clear();
         comments.clear();
@@ -45,16 +46,19 @@ public class PublicTest extends AbstractTestSupport {
     private void createTestPosts() {
         for (int i = 0; i < 15; i++) {
             // 조회수를 다양하게 설정 (인덱스가 높을수록 조회수도 높게)
-            Long views = (long) ((i + 1) * 10);
-            Post post = Post.builder()
-                    .title("Test Post " + (i + 1))
-                    .content("This is test content for post " + (i + 1))
-                    .summary("Summary of test post " + (i + 1))
-                    .state("published")
-                    .createdAt(LocalDateTime.now().minusDays(15 - i))
-                    .updatedAt(LocalDateTime.now().minusDays(15 - i))
+            final int index = i + 1;
+            final long views = index * 10;
+            final LocalDateTime timestamp = LocalDateTime.now().minusDays(15 - i);
+            Post post = buildPost(builder -> builder
+                    .id(null)
+                    .title("Test Post " + index)
+                    .slug("test-post-" + index)
+                    .content("This is test content for post " + index)
+                    .summary("Summary of test post " + index)
+                    .createdAt(timestamp)
+                    .updatedAt(timestamp)
                     .views(views)
-                    .build();
+            );
             posts.add(postRepository.insert(post));
         }
     }
@@ -62,30 +66,31 @@ public class PublicTest extends AbstractTestSupport {
     private void createTestComments() {
         for (int i = 0; i < 5; i++) {
             Post post = posts.get(i);
+            final int postIndex = i + 1;
 
             for (int j = 0; j < 3; j++) {
-                Comment comment = Comment.builder()
-                        .post(post)
-                        .authorName("Commenter " + (j + 1))
-                        .content("This is comment " + (j + 1) + " for post " + (i + 1))
-                        .build();
+                final int commentIndex = j + 1;
+                Comment comment = buildComment(post, builder -> builder
+                        .authorName("Commenter " + commentIndex)
+                        .content("This is comment " + commentIndex + " for post " + postIndex)
+                );
                 comments.add(commentRepository.save(comment));
             }
         }
 
         for (int i = 10; i < 15; i++) {
             Post post = posts.get(i);
-            Comment comment = Comment.builder()
-                    .post(post)
+            final int postIndex = i + 1;
+            Comment comment = buildComment(post, builder -> builder
                     .authorName("Single Commenter")
-                    .content("This is the only comment for post " + (i + 1))
-                    .build();
+                    .content("This is the only comment for post " + postIndex)
+            );
             comments.add(commentRepository.save(comment));
         }
     }
 
     @Test
-    public void testGetPostsWithDefaultPagination() throws Exception {
+    void testGetPostsWithDefaultPagination() throws Exception {
         mockMvc.perform(get("/posts")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -98,7 +103,7 @@ public class PublicTest extends AbstractTestSupport {
     }
 
     @Test
-    public void testGetPostsWithCustomPagination() throws Exception {
+    void testGetPostsWithCustomPagination() throws Exception {
         mockMvc.perform(get("/posts")
                         .param("page", "1")
                         .param("size", "5")
@@ -113,7 +118,7 @@ public class PublicTest extends AbstractTestSupport {
 
 
     @Test
-    public void testGetPostsWithNegativePageNumber() throws Exception {
+    void testGetPostsWithNegativePageNumber() throws Exception {
         mockMvc.perform(get("/posts")
                         .param("page", "-1")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -124,7 +129,7 @@ public class PublicTest extends AbstractTestSupport {
     }
 
     @Test
-    public void testGetPostsWithZeroPageSize() throws Exception {
+    void testGetPostsWithZeroPageSize() throws Exception {
         mockMvc.perform(get("/posts")
                         .param("size", "0")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -136,23 +141,21 @@ public class PublicTest extends AbstractTestSupport {
 
 
     @Test
-    public void testGetPostByIdSuccess() throws Exception {
-        int existingPostId = posts.get(0).getId();
+    void testGetPostBySlugSuccess() throws Exception {
+        String existingSlug = posts.get(0).getSlug();
 
-        mockMvc.perform(get("/posts/{postId}", existingPostId)
+        mockMvc.perform(get("/posts/{slug}", existingSlug)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.data.id", is(existingPostId)))
+                .andExpect(jsonPath("$.data.slug", is(existingSlug)))
                 .andExpect(jsonPath("$.data.title", startsWith("Test Post")))
                 .andExpect(jsonPath("$.data.content", startsWith("This is test content")));
     }
 
     @Test
-    public void testGetPostByIdNotFound() throws Exception {
-        int nonExistentPostId = 9999;
-
-        mockMvc.perform(get("/posts/{postId}", nonExistentPostId)
+    void testGetPostBySlugNotFound() throws Exception {
+        mockMvc.perform(get("/posts/{slug}", "missing-slug")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success", is(false)))
@@ -161,19 +164,27 @@ public class PublicTest extends AbstractTestSupport {
     }
 
     @Test
-    public void testGetPostByIdInvalid() throws Exception {
-        int invalidPostId = 0;
-
-        mockMvc.perform(get("/posts/{postId}", invalidPostId)
+    void testGetPostBySlugInvalid() throws Exception {
+        mockMvc.perform(get("/posts/{slug}", "Invalid Slug!")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.error.code", is(400)))
-                .andExpect(jsonPath("$.error.message", containsString("게시글 ID는 1 이상이어야 합니다")));
+                .andExpect(jsonPath("$.error.message", containsString("유효한 슬러그")));
     }
 
     @Test
-    public void testGetCommentsByPostIdWithMultipleComments() throws Exception {
+    void testGetPostByIdRedirectsToSlug() throws Exception {
+        Post post = posts.get(0);
+
+        mockMvc.perform(get("/posts/{postId}", post.getId())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isMovedPermanently())
+                .andExpect(header().string("Location", "/posts/" + post.getSlug()));
+    }
+
+    @Test
+    void testGetCommentsByPostIdWithMultipleComments() throws Exception {
         int postId = posts.get(0).getId();
 
         mockMvc.perform(get("/comments/{postId}", postId)
@@ -187,7 +198,7 @@ public class PublicTest extends AbstractTestSupport {
     }
 
     @Test
-    public void testGetCommentsByPostIdWithNoComments() throws Exception {
+    void testGetCommentsByPostIdWithNoComments() throws Exception {
         int postId = posts.get(5).getId();
 
         mockMvc.perform(get("/comments/{postId}", postId)
@@ -198,7 +209,7 @@ public class PublicTest extends AbstractTestSupport {
     }
 
     @Test
-    public void testGetCommentsByPostIdWithSingleComment() throws Exception {
+    void testGetCommentsByPostIdWithSingleComment() throws Exception {
         int postId = posts.get(10).getId();
 
         mockMvc.perform(get("/comments/{postId}", postId)
@@ -212,7 +223,7 @@ public class PublicTest extends AbstractTestSupport {
     }
 
     @Test
-    public void testGetCommentsByPostIdNotFound() throws Exception {
+    void testGetCommentsByPostIdNotFound() throws Exception {
         int nonExistentPostId = 9999;
 
         mockMvc.perform(get("/comments/{postId}", nonExistentPostId)
@@ -224,7 +235,7 @@ public class PublicTest extends AbstractTestSupport {
     }
 
     @Test
-    public void testGetCommentsByPostIdInvalid() throws Exception {
+    void testGetCommentsByPostIdInvalid() throws Exception {
         int invalidPostId = 0;
 
         mockMvc.perform(get("/comments/{postId}", invalidPostId)
@@ -236,7 +247,7 @@ public class PublicTest extends AbstractTestSupport {
     }
 
     @Test
-    public void testPostCommentSuccess() throws Exception {
+    void testPostCommentSuccess() throws Exception {
         int postId = posts.get(0).getId();
         String content = "This is a new test comment";
         String author = "Test Author";
@@ -258,7 +269,7 @@ public class PublicTest extends AbstractTestSupport {
     }
 
     @Test
-    public void testPostCommentInvalidPostId() throws Exception {
+    void testPostCommentInvalidPostId() throws Exception {
         int invalidPostId = 0;
         String content = "This is a test comment";
         String author = "Test Author";
@@ -278,7 +289,7 @@ public class PublicTest extends AbstractTestSupport {
     }
 
     @Test
-    public void testPostCommentNonExistentPostId() throws Exception {
+    void testPostCommentNonExistentPostId() throws Exception {
         int nonExistentPostId = 9999;
         String content = "This is a test comment";
         String author = "Test Author";
@@ -298,7 +309,7 @@ public class PublicTest extends AbstractTestSupport {
     }
 
     @Test
-    public void testPostCommentEmptyContent() throws Exception {
+    void testPostCommentEmptyContent() throws Exception {
         int postId = posts.get(0).getId();
         String content = "";
         String author = "Test Author";
@@ -318,7 +329,7 @@ public class PublicTest extends AbstractTestSupport {
     }
 
     @Test
-    public void testPostCommentContentTooLong() throws Exception {
+    void testPostCommentContentTooLong() throws Exception {
         int postId = posts.get(0).getId();
         // Create a string longer than 500 characters
         StringBuilder contentBuilder = new StringBuilder();
@@ -343,7 +354,7 @@ public class PublicTest extends AbstractTestSupport {
     }
 
     @Test
-    public void testPostCommentEmptyAuthor() throws Exception {
+    void testPostCommentEmptyAuthor() throws Exception {
         int postId = posts.get(0).getId();
         String content = "This is a test comment";
         String author = "";
@@ -363,7 +374,7 @@ public class PublicTest extends AbstractTestSupport {
     }
 
     @Test
-    public void testPostCommentAuthorTooShort() throws Exception {
+    void testPostCommentAuthorTooShort() throws Exception {
         int postId = posts.get(0).getId();
         String content = "This is a test comment";
         String author = "A"; // Only 1 character, minimum is 2
@@ -383,7 +394,7 @@ public class PublicTest extends AbstractTestSupport {
     }
 
     @Test
-    public void testPostCommentAuthorTooLong() throws Exception {
+    void testPostCommentAuthorTooLong() throws Exception {
         int postId = posts.get(0).getId();
         String content = "This is a test comment";
         String author = "ThisAuthorNameIsTooLongForTheSystem"; // More than 20 characters
@@ -403,7 +414,7 @@ public class PublicTest extends AbstractTestSupport {
     }
 
     @Test
-    public void testPostCommentNullRequest() throws Exception {
+    void testPostCommentNullRequest() throws Exception {
         int postId = posts.get(0).getId();
 
         mockMvc.perform(post("/comments/{postId}", postId)
@@ -413,7 +424,7 @@ public class PublicTest extends AbstractTestSupport {
 
 
     @Test
-    public void testIncrementPostViewsSuccess() throws Exception {
+    void testIncrementPostViewsSuccess() throws Exception {
         int postId = posts.get(0).getId();
         Post initialPost = postRepository.findById(postId);
         Long initialViews = initialPost.getViews();
@@ -429,7 +440,7 @@ public class PublicTest extends AbstractTestSupport {
     }
 
     @Test
-    public void testIncrementPostViewsNotFound() throws Exception {
+    void testIncrementPostViewsNotFound() throws Exception {
         int nonExistentPostId = 9999;
 
         mockMvc.perform(patch("/posts/{postId}/views", nonExistentPostId)
@@ -441,7 +452,7 @@ public class PublicTest extends AbstractTestSupport {
     }
 
     @Test
-    public void testIncrementPostViewsInvalidId() throws Exception {
+    void testIncrementPostViewsInvalidId() throws Exception {
         int invalidPostId = 0;
 
         mockMvc.perform(patch("/posts/{postId}/views", invalidPostId)
@@ -453,7 +464,7 @@ public class PublicTest extends AbstractTestSupport {
     }
 
     @Test
-    public void testIncrementPostViewsMultipleTimes() throws Exception {
+    void testIncrementPostViewsMultipleTimes() throws Exception {
         int postId = posts.get(1).getId();
         Post initialPost = postRepository.findById(postId);
         Long initialViews = initialPost.getViews();
@@ -471,7 +482,7 @@ public class PublicTest extends AbstractTestSupport {
     }
 
     @Test
-    public void testGetPostsSortedByViewsDesc() throws Exception {
+    void testGetPostsSortedByViewsDesc() throws Exception {
         mockMvc.perform(get("/posts")
                         .param("sort", "views,desc")
                         .param("size", "5")
@@ -485,7 +496,7 @@ public class PublicTest extends AbstractTestSupport {
     }
 
     @Test
-    public void testGetPostsSortedByViewsAsc() throws Exception {
+    void testGetPostsSortedByViewsAsc() throws Exception {
         mockMvc.perform(get("/posts")
                         .param("sort", "views,asc")
                         .param("size", "5")
@@ -499,7 +510,7 @@ public class PublicTest extends AbstractTestSupport {
     }
 
     @Test
-    public void testGetPostsSortedByCreatedAtAsc() throws Exception {
+    void testGetPostsSortedByCreatedAtAsc() throws Exception {
         mockMvc.perform(get("/posts")
                         .param("sort", "createdAt,asc")
                         .param("size", "3")
@@ -513,7 +524,7 @@ public class PublicTest extends AbstractTestSupport {
     }
 
     @Test
-    public void testGetPostsSortedByCreatedAtDesc() throws Exception {
+    void testGetPostsSortedByCreatedAtDesc() throws Exception {
         mockMvc.perform(get("/posts")
                         .param("sort", "createdAt,desc")
                         .param("size", "3")
@@ -528,7 +539,7 @@ public class PublicTest extends AbstractTestSupport {
 
 
     @Test
-    public void testGetPostsWithInvalidSort() throws Exception {
+    void testGetPostsWithInvalidSort() throws Exception {
         mockMvc.perform(get("/posts")
                         .param("sort", "invalidField,desc")
                         .param("size", "5")
@@ -540,7 +551,7 @@ public class PublicTest extends AbstractTestSupport {
     }
 
     @Test
-    public void testGetPostsWithInvalidDirection() throws Exception {
+    void testGetPostsWithInvalidDirection() throws Exception {
         mockMvc.perform(get("/posts")
                         .param("sort", "views,invalid")
                         .param("size", "5")

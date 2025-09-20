@@ -14,7 +14,7 @@ public class PostSortBuilderTest {
     private PostSortBuilder postSortBuilder;
 
     @Test
-    public void shouldReturnViewsDescSort() {
+    void shouldReturnViewsDescSort() {
         // when
         SortCriteria result = postSortBuilder.buildSortCriteria("views,desc");
 
@@ -25,7 +25,7 @@ public class PostSortBuilderTest {
     }
 
     @Test
-    public void shouldReturnViewsAscSort() {
+    void shouldReturnViewsAscSort() {
         // when
         SortCriteria result = postSortBuilder.buildSortCriteria("views,asc");
 
@@ -36,7 +36,7 @@ public class PostSortBuilderTest {
     }
 
     @Test
-    public void shouldReturnCreatedAtDescSort() {
+    void shouldReturnCreatedAtDescSort() {
         // when
         SortCriteria result = postSortBuilder.buildSortCriteria("createdAt,desc");
 
@@ -47,7 +47,7 @@ public class PostSortBuilderTest {
     }
 
     @Test
-    public void shouldReturnCreatedAtAscSort() {
+    void shouldReturnCreatedAtAscSort() {
         // when
         SortCriteria result = postSortBuilder.buildSortCriteria("createdAt,asc");
 
@@ -58,7 +58,7 @@ public class PostSortBuilderTest {
     }
 
     @Test
-    public void shouldReturnDefaultSortForNullInput() {
+    void shouldReturnDefaultSortForNullInput() {
         // when
         SortCriteria result = postSortBuilder.buildSortCriteria(null);
 
@@ -69,7 +69,7 @@ public class PostSortBuilderTest {
     }
 
     @Test
-    public void shouldReturnDefaultSortForEmptyInput() {
+    void shouldReturnDefaultSortForEmptyInput() {
         // when
         SortCriteria result = postSortBuilder.buildSortCriteria("");
 
@@ -80,7 +80,7 @@ public class PostSortBuilderTest {
     }
 
     @Test
-    public void shouldReturnDefaultSortForInvalidField() {
+    void shouldReturnDefaultSortForInvalidField() {
         // when
         SortCriteria result = postSortBuilder.buildSortCriteria("invalidField,desc");
 
@@ -91,7 +91,7 @@ public class PostSortBuilderTest {
     }
 
     @Test
-    public void shouldUseDescAsDefaultDirection() {
+    void shouldUseDescAsDefaultDirection() {
         // when
         SortCriteria result = postSortBuilder.buildSortCriteria("views");
 
@@ -102,7 +102,7 @@ public class PostSortBuilderTest {
     }
 
     @Test
-    public void shouldReturnDescForInvalidDirection() {
+    void shouldReturnDescForInvalidDirection() {
         // when
         SortCriteria result = postSortBuilder.buildSortCriteria("views,invalid");
 
@@ -113,7 +113,7 @@ public class PostSortBuilderTest {
     }
 
     @Test
-    public void shouldBeCaseInsensitive() {
+    void shouldBeCaseInsensitive() {
         // when
         SortCriteria result = postSortBuilder.buildSortCriteria("VIEWS,ASC");
 

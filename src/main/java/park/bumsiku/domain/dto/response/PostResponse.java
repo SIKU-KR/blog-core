@@ -11,6 +11,7 @@ import java.util.List;
 @ToString(exclude = "content")
 public class PostResponse {
     private int id;
+    private String slug;
     private String title;
     private String content;
     private String summary;
@@ -18,4 +19,5 @@ public class PostResponse {
     private String createdAt;
     private String updatedAt;
     private Long views;
+    private String canonicalPath;
 }

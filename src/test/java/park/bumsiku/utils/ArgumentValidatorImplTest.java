@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Import(MethodValidationTestConfig.class)
-public class ArgumentValidatorImplTest extends AbstractTestSupport {
+class ArgumentValidatorImplTest extends AbstractTestSupport {
 
     private ArgumentValidator validator;
 
@@ -50,6 +50,14 @@ public class ArgumentValidatorImplTest extends AbstractTestSupport {
 
 
     @Test
+    void testValidateSlug() {
+        assertDoesNotThrow(() -> validator.validateSlug("valid-slug"));
+        assertThrows(IllegalArgumentException.class, () -> validator.validateSlug("Invalid Slug!"));
+        assertThrows(IllegalArgumentException.class, () -> validator.validateSlug(""));
+    }
+
+
+    @Test
     void testValidatePagination() {
         // Valid pagination
         assertDoesNotThrow(() -> validator.validatePagination(0, 10));
@@ -68,6 +76,7 @@ public class ArgumentValidatorImplTest extends AbstractTestSupport {
                 .title("Valid Title")
                 .content("Valid content")
                 .summary("Valid summary")
+                .slug("valid-slug")
                 .build();
         assertDoesNotThrow(() -> validator.validatePostRequest(validRequest));
 
@@ -79,6 +88,7 @@ public class ArgumentValidatorImplTest extends AbstractTestSupport {
                 .title("")
                 .content("Valid content")
                 .summary("Valid summary")
+                .slug("valid-slug")
                 .build();
         assertThrows(IllegalArgumentException.class, () -> validator.validatePostRequest(invalidTitle));
 
@@ -87,6 +97,7 @@ public class ArgumentValidatorImplTest extends AbstractTestSupport {
                 .title("Valid Title")
                 .content("")
                 .summary("Valid summary")
+                .slug("valid-slug")
                 .build();
         assertThrows(IllegalArgumentException.class, () -> validator.validatePostRequest(invalidContent));
 
@@ -95,6 +106,7 @@ public class ArgumentValidatorImplTest extends AbstractTestSupport {
                 .title("Valid Title")
                 .content("Valid content")
                 .summary("")
+                .slug("valid-slug")
                 .build();
         assertThrows(IllegalArgumentException.class, () -> validator.validatePostRequest(invalidSummary));
 
@@ -103,6 +115,7 @@ public class ArgumentValidatorImplTest extends AbstractTestSupport {
                 .title("Valid Title")
                 .content("Valid content")
                 .summary("Valid summary")
+                .slug("valid-slug")
                 .build();
         assertDoesNotThrow(() -> validator.validatePostRequest(noCategory));
     }
@@ -114,6 +127,7 @@ public class ArgumentValidatorImplTest extends AbstractTestSupport {
                 .title("Valid Title")
                 .content("Valid content")
                 .summary("Valid summary")
+                .slug("valid-slug")
                 .build();
         assertDoesNotThrow(() -> validator.validatePostRequest(validRequest));
 
@@ -188,6 +202,7 @@ public class ArgumentValidatorImplTest extends AbstractTestSupport {
                 .title("Valid Title")
                 .content("Valid content")
                 .summary("Valid summary")
+                .slug("valid-slug")
                 .build();
         assertDoesNotThrow(() -> validator.validatePostIdAndPostRequest(1, validRequest));
 

@@ -29,6 +29,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static park.bumsiku.support.TestFixtures.*;
 
 @ExtendWith(MockitoExtension.class)
 public class PrivateServiceTest {
@@ -57,35 +58,25 @@ public class PrivateServiceTest {
         now = LocalDateTime.now();
     }
 
-    // Helper methods for creating test data
-    private Post createPost(Integer id, String title, String content, String summary) {
-        LocalDateTime now = LocalDateTime.now();
-        return Post.builder()
+    private Post samplePost(int id) {
+        return buildPost(builder -> builder
                 .id(id)
-                .title(title)
-                .content(content)
-                .summary(summary)
+                .slug("test-post-" + id)
+                .title("Test Title")
+                .content("Test Content")
+                .summary("Test Summary")
                 .createdAt(now)
                 .updatedAt(now)
-                .state("published")
-                .build();
+        );
     }
 
-    private Post createPost(Integer id, String title, String content, String summary,
-                            LocalDateTime createdAt, LocalDateTime updatedAt) {
-        return Post.builder()
+    private Comment sampleComment(long id, Post post, String authorName, String content) {
+        return buildComment(post, builder -> builder
                 .id(id)
-                .title(title)
+                .authorName(authorName)
                 .content(content)
-                .summary(summary)
-                .createdAt(createdAt)
-                .updatedAt(updatedAt)
-                .state("published")
-                .build();
-    }
-
-    private Comment createComment(Long id, Post post, String authorName, String content) {
-        return new Comment(id, post, authorName, content, LocalDateTime.now());
+                .createdAt(now)
+        );
     }
 
     private void assertPostResponseMatchesPost(PostResponse response, Post post) {
@@ -102,30 +93,16 @@ public class PrivateServiceTest {
         assertEquals(post.getUpdatedAt().toString(), response.getUpdatedAt());
     }
 
-    private void verifyPostFields(Post post, Integer id, String title, String content, String summary) {
-        assertEquals(id, post.getId());
-        assertEquals(title, post.getTitle());
-        assertEquals(content, post.getContent());
-        assertEquals(summary, post.getSummary());
-    }
-
 
     @Test
     @DisplayName("deleteComment should delete comment when comment exists")
     void deleteComment_whenCommentExists_shouldDeleteSuccessfully() {
         // given
-        // Create a post
-        Post post = Post.builder()
-                .id(1)
-                .title("Test Title")
-                .content("Test Content")
-                .summary("Test Summary")
-                .state("published")
-                .build();
+        Post post = samplePost(1);
 
         // Create a comment
         long commentId = 1L;
-        Comment comment = new Comment(commentId, post, "tester", "hello world", now);
+        Comment comment = sampleComment(commentId, post, "tester", "hello world");
 
         // Mock repository behavior
         when(commentRepository.findById(commentId)).thenReturn(java.util.Optional.of(comment));
@@ -229,24 +206,28 @@ public class PrivateServiceTest {
     @DisplayName("createPost should save post and return response when request is valid")
     void createPost_validRequest_shouldSavePostAndReturnResponse() {
         // given
-        CreatePostRequest request = CreatePostRequest.builder()
+        CreatePostRequest request = buildCreatePostRequest(builder -> builder
                 .title("New Post")
                 .content("Content")
                 .summary("Summary")
-                .build();
+                .slug("new-post")
+                .tags(List.of("tag1", "tag2"))
+        );
 
-        Post expectedPost = Post.builder()
+        Post expectedPost = buildPost(builder -> builder
                 .id(1)
+                .slug("new-post")
                 .title(request.getTitle())
                 .content(request.getContent())
                 .summary(request.getSummary())
                 .createdAt(now)
                 .updatedAt(now)
-                .state("published")
-                .build();
+        );
 
         // Mock repository behavior
         when(postRepository.insert(any(Post.class))).thenReturn(expectedPost);
+        when(postRepository.update(any(Post.class))).thenReturn(expectedPost);
+        doNothing().when(tagService).updatePostTags(any(Post.class), any());
 
 
         // when
@@ -256,8 +237,10 @@ public class PrivateServiceTest {
         // Verify response is not null and has expected values
         assertThat(result)
                 .isNotNull()
-                .extracting("title", "content")
+                .extracting("slug", "canonicalPath", "title", "content")
                 .containsExactly(
+                        request.getSlug(),
+                        "/posts/" + request.getSlug(),
                         request.getTitle(),
                         request.getContent()
                 );
@@ -267,22 +250,34 @@ public class PrivateServiceTest {
     }
 
     @Test
+    @DisplayName("createPost should reject duplicate slug")
+    void createPost_duplicateSlug_shouldThrowException() {
+        CreatePostRequest request = buildCreatePostRequest(builder -> builder
+                .title("New Post")
+                .content("Content")
+                .summary("Summary")
+                .slug("new-post")
+        );
+
+        when(postRepository.existsBySlug("new-post")).thenReturn(true);
+
+        assertThatThrownBy(() -> privateService.createPost(request))
+                .isInstanceOf(IllegalArgumentException.class);
+
+        verify(postRepository, never()).insert(any(Post.class));
+    }
+
+    @Test
     @DisplayName("deletePost should delete post and related data when post exists")
     void deletePost_whenPostExists_shouldDeletePostAndRelatedData() {
         // given
         // Create a post
         int postId = 1;
-        Post post = Post.builder()
-                .id(postId)
-                .title("Test Title")
-                .content("Test Content")
-                .summary("Test Summary")
-                .state("published")
-                .build();
+        Post post = samplePost(postId);
 
         // Create a comment for the post
         long commentId = 1L;
-        Comment comment = new Comment(commentId, post, "tester", "test comment", now);
+        Comment comment = sampleComment(commentId, post, "tester", "test comment");
         List<Comment> comments = List.of(comment);
 
         // Mock repository behavior
@@ -327,33 +322,34 @@ public class PrivateServiceTest {
         // Create a post
         int postId = 1;
         LocalDateTime originalUpdatedAt = now.minusHours(1);
-        Post post = Post.builder()
+        Post post = buildPost(builder -> builder
                 .id(postId)
+                .slug("test-post-" + postId)
                 .title("Original Title")
                 .content("Original Content")
                 .summary("Original Summary")
                 .createdAt(now.minusHours(2))
                 .updatedAt(originalUpdatedAt)
-                .state("published")
-                .build();
+        );
 
         // Create update request
-        UpdatePostRequest request = UpdatePostRequest.builder()
+        UpdatePostRequest request = buildUpdatePostRequest(builder -> builder
                 .title("Updated Title")
                 .content("Updated Content")
                 .summary("Updated Summary")
-                .build();
+                .slug("updated-title")
+        );
 
         // Create updated post
-        Post updatedPost = Post.builder()
+        Post updatedPost = buildPost(builder -> builder
                 .id(postId)
+                .slug("updated-title")
                 .title(request.getTitle())
                 .content(request.getContent())
                 .summary(request.getSummary())
                 .createdAt(post.getCreatedAt())
                 .updatedAt(now)
-                .state("published")
-                .build();
+        );
 
         // Mock repository behavior
         when(postRepository.findById(postId)).thenReturn(post);
@@ -368,9 +364,11 @@ public class PrivateServiceTest {
         // Verify response
         assertThat(result)
                 .isNotNull()
-                .extracting("id", "title", "content")
+                .extracting("id", "slug", "canonicalPath", "title", "content")
                 .containsExactly(
                         postId,
+                        request.getSlug(),
+                        "/posts/" + request.getSlug(),
                         request.getTitle(),
                         request.getContent()
                 );
@@ -378,6 +376,34 @@ public class PrivateServiceTest {
         // Verify the mocks were called
         verify(postRepository).findById(postId);
         verify(postRepository).update(any(Post.class));
+    }
+
+    @Test
+    @DisplayName("updatePost should reject duplicate slug from other posts")
+    void updatePost_duplicateSlug_shouldThrowException() {
+        int postId = 1;
+        Post post = buildPost(builder -> builder
+                .id(postId)
+                .slug("original")
+                .title("Original Title")
+                .content("Original Content")
+                .summary("Original Summary")
+        );
+
+        UpdatePostRequest request = buildUpdatePostRequest(builder -> builder
+                .title("Updated Title")
+                .content("Updated Content")
+                .summary("Updated Summary")
+                .slug("existing-slug")
+        );
+
+        when(postRepository.findById(postId)).thenReturn(post);
+        when(postRepository.existsBySlugExcludingId("existing-slug", postId)).thenReturn(true);
+
+        assertThatThrownBy(() -> privateService.updatePost(postId, request))
+                .isInstanceOf(IllegalArgumentException.class);
+
+        verify(postRepository, never()).update(any(Post.class));
     }
 
     @Test
@@ -389,6 +415,7 @@ public class PrivateServiceTest {
                 .title("Updated Title")
                 .content("Updated Content")
                 .summary("Updated Summary")
+                .slug("updated-title")
                 .build();
 
         // Mock repository behavior
