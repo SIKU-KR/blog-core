@@ -6,11 +6,13 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 import park.bumsiku.domain.dto.request.CommentRequest;
-import park.bumsiku.domain.dto.response.*;
+import park.bumsiku.domain.dto.response.CommentResponse;
+import park.bumsiku.domain.dto.response.PostListResponse;
+import park.bumsiku.domain.dto.response.Response;
+import park.bumsiku.domain.dto.response.TagResponse;
 
 import java.util.List;
 
