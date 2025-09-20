@@ -19,7 +19,7 @@ public class ArgumentValidatorImpl implements ArgumentValidator {
 
     private static final long MAX_IMAGE_SIZE = 20 * 1024 * 1024; // 20MB
 
-    private static final Pattern SLUG_PATTERN = Pattern.compile("^[a-z0-9]+(?:-[a-z0-9]+)*$");
+    private static final Pattern SLUG_PATTERN = Pattern.compile("^[a-z0-9]+(?:-[a-z0-9]+)*+$");
     private static final int MAX_SLUG_LENGTH = 150;
 
     private void validateTitle(String title) {
